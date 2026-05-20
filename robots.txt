@@ -1,0 +1,8 @@
+# Komplett Byggdrift AS - robots.txt
+User-agent: *
+Allow: /
+
+# Skjul interne verktøy
+Disallow: /anbudskalkulator.html
+
+Sitemap: https://komplettbyggdrift.no/sitemap.xml
