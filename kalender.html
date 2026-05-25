@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kalender – Komplett Byggdrift AS</title>
+<meta name="robots" content="noindex, nofollow">
+<style>
+  :root{
+    --primary:#1a3a5c;
+    --primary-dark:#0f2640;
+    --accent:#e8a317;
+    --bg:#f5f7fa;
+    --card:#ffffff;
+    --border:#dde3ec;
+    --text:#1d2939;
+    --muted:#667085;
+    --success:#16a34a;
+    --warning:#d97706;
+    --danger:#dc2626;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text);line-height:1.5}
+  header{background:var(--primary);color:#fff;padding:20px 0;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+  .container{max-width:1400px;margin:0 auto;padding:0 20px}
+  .logo{display:flex;align-items:center;gap:14px}
+  .logo-mark{width:48px;height:48px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--primary-dark);font-size:22px}
+  .logo h1{font-size:22px;font-weight:700}
+  .logo p{font-size:13px;opacity:.85}
+
+  /* Navigasjon mellom sider */
+  .nav-tabs{background:var(--primary-dark);padding:0}
+  .nav-tabs .container{display:flex;gap:0;padding:0 20px}
+  .nav-tab{padding:14px 24px;color:rgba(255,255,255,0.75);text-decoration:none;font-weight:600;font-size:14px;border-bottom:3px solid transparent;transition:all .15s}
+  .nav-tab:hover{color:#fff;background:rgba(255,255,255,0.05)}
+  .nav-tab.active{color:#fff;border-bottom-color:var(--accent);background:rgba(255,255,255,0.05)}
+
+  main{padding:20px 0 60px}
+  .page-title{font-size:26px;margin-bottom:6px;color:var(--primary-dark)}
+  .page-sub{color:var(--muted);margin-bottom:18px;font-size:14px}
+
+  /* Knapper */
+  .btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+  .btn{background:var(--primary);color:#fff;border:none;padding:11px 18px;border-radius:7px;cursor:pointer;font-weight:600;font-size:14px;text-decoration:none;display:inline-flex;align-items:center;gap:8px;transition:background .15s}
+  .btn:hover{background:var(--primary-dark)}
+  .btn-accent{background:var(--accent);color:var(--primary-dark)}
+  .btn-accent:hover{background:#d4920d}
+  .btn-outline{background:#fff;color:var(--primary);border:1.5px solid var(--border)}
+  .btn-outline:hover{background:#f5f7fa}
+
+  /* Visningsvelger */
+  .view-switcher{display:inline-flex;background:#fff;border:1.5px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:14px}
+  .view-btn{background:none;border:none;padding:8px 14px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer}
+  .view-btn.active{background:var(--primary);color:#fff}
+
+  /* Kalender-container */
+  .calendar-wrapper{background:#fff;border-radius:10px;border:1px solid var(--border);overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+  .calendar-frame{width:100%;height:780px;border:0;display:block}
+
+  /* Info-banner */
+  .info-banner{background:#fff8e6;border:1px solid #f4d77f;color:#7a5a14;padding:12px 16px;border-radius:8px;margin-bottom:16px;font-size:14px}
+  .info-banner strong{color:#5a4210}
+
+  /* Brukerfilter */
+  .user-filter{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;align-items:center}
+  .user-filter-label{font-size:13px;color:var(--muted);font-weight:600;margin-right:6px}
+  .user-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;background:#fff;border:1.5px solid var(--border);border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s}
+  .user-chip.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+  .user-chip .dot{width:10px;height:10px;border-radius:50%}
+
+  /* Passord-skjerm */
+  .pwd-screen{position:fixed;inset:0;background:var(--primary);display:flex;align-items:center;justify-content:center;z-index:9999}
+  .pwd-box{background:#fff;padding:36px 32px;border-radius:12px;box-shadow:0 20px 50px rgba(0,0,0,.3);max-width:380px;width:90%;text-align:center}
+  .pwd-box h2{color:var(--primary-dark);margin-bottom:8px;font-size:22px}
+  .pwd-box p{color:var(--muted);margin-bottom:20px;font-size:14px}
+  .pwd-box input{width:100%;padding:12px 14px;font-size:18px;border:2px solid var(--border);border-radius:8px;margin-bottom:14px;text-align:center;letter-spacing:4px}
+  .pwd-box input:focus{outline:none;border-color:var(--primary)}
+  .pwd-box button{width:100%;background:var(--primary);color:#fff;border:none;padding:12px;font-size:15px;font-weight:600;border-radius:8px;cursor:pointer}
+  .pwd-box button:hover{background:var(--primary-dark)}
+  .pwd-error{color:var(--danger);font-size:13px;margin-top:8px;display:none}
+
+  /* Hoved-innhold (gjemt før passord) */
+  #app-content{display:none}
+
+  /* MOBIL */
+  @media (max-width:768px){
+    .container{padding:0 12px}
+    header{padding:12px 0}
+    .logo h1{font-size:17px}
+    .logo p{font-size:11px}
+    .logo-mark{width:40px;height:40px;font-size:18px}
+
+    .nav-tabs .container{padding:0 12px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+    .nav-tab{padding:11px 16px;font-size:13px;flex-shrink:0;white-space:nowrap}
+
+    main{padding:14px 0 30px}
+    .page-title{font-size:20px}
+    .page-sub{font-size:13px}
+
+    .btn{padding:10px 14px;font-size:13px;min-height:44px}
+    .calendar-frame{height:600px}
+
+    .user-filter{gap:6px}
+    .user-chip{font-size:12px;padding:5px 10px}
+
+    .pwd-box{padding:26px 22px}
+    .pwd-box h2{font-size:19px}
+    .pwd-box input{font-size:16px;padding:10px}
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ PASSORD-SKJERM ============ -->
+<div class="pwd-screen" id="pwd-screen">
+  <div class="pwd-box">
+    <div class="logo-mark" style="margin:0 auto 16px">KB</div>
+    <h2>Komplett Byggdrift</h2>
+    <p>Skriv inn firmakode for å åpne kalenderen</p>
+    <input type="password" id="pwd-input" placeholder="• • • • • •" autocomplete="off" inputmode="numeric">
+    <button onclick="sjekkPassord()">Åpne kalender</button>
+    <div class="pwd-error" id="pwd-error">Feil kode. Prøv igjen.</div>
+  </div>
+</div>
+
+<!-- ============ HOVED-INNHOLD ============ -->
+<div id="app-content">
+
+<header>
+  <div class="container logo">
+    <div class="logo-mark">KB</div>
+    <div>
+      <h1>Komplett Byggdrift AS</h1>
+      <p>Kalender · komplettbyggdrift.no</p>
+    </div>
+  </div>
+</header>
+
+<nav class="nav-tabs">
+  <div class="container">
+    <a href="anbudskalkulator.html" class="nav-tab">Anbudskalkulator</a>
+    <a href="kalender.html" class="nav-tab active">Kalender</a>
+    <a href="hms.html" class="nav-tab">HMS</a>
+  </div>
+</nav>
+
+<main>
+<div class="container">
+
+  <h2 class="page-title">Felles kalender</h2>
+  <p class="page-sub">Oversikt over hva alle jobber med. Synkroniseres direkte med Google Kalender.</p>
+
+  <div class="info-banner" id="config-banner" style="display:none">
+    <strong>Kalender ikke satt opp ennå.</strong> Se <code>GOOGLE_KALENDER_OPPSETT.md</code> for å konfigurere kalender-ID-ene øverst i denne filen.
+  </div>
+
+  <div class="btn-row">
+    <a href="https://calendar.google.com/calendar/u/0/r/eventedit" target="_blank" rel="noopener" class="btn btn-accent">
+      Ny hendelse
+    </a>
+    <a href="https://calendar.google.com" target="_blank" rel="noopener" class="btn btn-outline">
+      Åpne i Google Kalender
+    </a>
+    <button class="btn btn-outline" onclick="oppdaterKalender()">
+      Oppdater visning
+    </button>
+  </div>
+
+  <div class="view-switcher">
+    <button class="view-btn" data-view="WEEK" onclick="settVisning('WEEK')">Uke</button>
+    <button class="view-btn active" data-view="MONTH" onclick="settVisning('MONTH')">Måned</button>
+    <button class="view-btn" data-view="AGENDA" onclick="settVisning('AGENDA')">Liste</button>
+  </div>
+
+  <div class="user-filter" id="user-filter">
+    <span class="user-filter-label">Vis:</span>
+  </div>
+
+  <div class="calendar-wrapper">
+    <iframe class="calendar-frame" id="calendar-frame" src="about:blank" title="Komplett Byggdrift kalender"></iframe>
+  </div>
+
+  <p style="font-size:12px;color:var(--muted);margin-top:12px;text-align:center">
+    Hendelser legges til via Google Kalender-appen på mobil eller via "Ny hendelse"-knappen over.
+  </p>
+
+</div>
+</main>
+
+</div>
+
+<script>
+// ============================================
+// KONFIGURASJON - bytt ut med riktige kalender-ID-er
+// Se GOOGLE_KALENDER_OPPSETT.md for hvordan du finner ID-ene
+// ============================================
+const KALENDERE = {
+  felles: {
+    id: 'c_20de9ccacfce1609c2a2e13a6cd6b0648d1190ddb66f47c1832c7a023779ae74@group.calendar.google.com',
+    navn: 'Felles',
+    farge: '%23e8a317'   // gul (URL-encoded #)
+  },
+  stephen: {
+    id: 'stephen@komplettbyggdrift.no',
+    navn: 'Stephen',
+    farge: '%231a3a5c'   // mørkeblå
+  },
+  eirik: {
+    id: 'eirik@komplettbyggdrift.no',
+    navn: 'Eirik',
+    farge: '%2316a34a'   // grønn
+  },
+  eivind: {
+    id: 'eivind@komplettbyggdrift.no',
+    navn: 'Eivind',
+    farge: '%23dc2626'   // rød
+  }
+};
+
+const FIRMAKODE = '671342';
+const TIDSSONE = 'Europe/Oslo';
+
+// ============================================
+// STATE
+// ============================================
+let aktiveBrukere = {felles:true, stephen:true, eirik:true, eivind:true};
+let aktivVisning = 'MONTH';
+
+// ============================================
+// PASSORD
+// ============================================
+function sjekkPassord(){
+  const inp = document.getElementById('pwd-input').value.trim();
+  if(inp === FIRMAKODE){
+    sessionStorage.setItem('kb_auth','1');
+    visApp();
+  } else {
+    document.getElementById('pwd-error').style.display = 'block';
+    document.getElementById('pwd-input').value = '';
+    document.getElementById('pwd-input').focus();
+  }
+}
+
+function visApp(){
+  document.getElementById('pwd-screen').style.display = 'none';
+  document.getElementById('app-content').style.display = 'block';
+  bygg();
+}
+
+// Enter-tast i passord-felt
+document.getElementById('pwd-input').addEventListener('keypress', e => {
+  if(e.key === 'Enter') sjekkPassord();
+});
+
+// ============================================
+// BYGGER GRENSESNITT
+// ============================================
+function bygg(){
+  // Sjekk om kalender-IDer er konfigurert
+  const ikkeKonfigurert = Object.values(KALENDERE).some(k => k.id.includes('xxxxxxxxx'));
+  if(ikkeKonfigurert){
+    document.getElementById('config-banner').style.display = 'block';
+  }
+
+  // Bygg brukerfilter-chips
+  const wrap = document.getElementById('user-filter');
+  Object.entries(KALENDERE).forEach(([nokkel, kal]) => {
+    const chip = document.createElement('button');
+    chip.className = 'user-chip active';
+    chip.dataset.key = nokkel;
+    chip.innerHTML = `<span class="dot" style="background:${decodeURIComponent(kal.farge)}"></span>${kal.navn}`;
+    chip.onclick = () => toggleBruker(nokkel, chip);
+    wrap.appendChild(chip);
+  });
+
+  oppdaterKalender();
+}
+
+function toggleBruker(nokkel, chip){
+  aktiveBrukere[nokkel] = !aktiveBrukere[nokkel];
+  chip.classList.toggle('active');
+  oppdaterKalender();
+}
+
+function settVisning(visning){
+  aktivVisning = visning;
+  document.querySelectorAll('.view-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.view === visning);
+  });
+  oppdaterKalender();
+}
+
+function oppdaterKalender(){
+  let url = 'https://calendar.google.com/calendar/embed?';
+  url += 'ctz=' + encodeURIComponent(TIDSSONE);
+  url += '&mode=' + aktivVisning;
+  url += '&showTitle=0&showNav=1&showDate=1&showPrint=0&showTabs=1&showCalendars=0&showTz=0';
+  url += '&wkst=2'; // Mandag som første ukedag
+
+  Object.entries(KALENDERE).forEach(([nokkel, kal]) => {
+    if(aktiveBrukere[nokkel] && !kal.id.includes('xxxxxxxxx')){
+      url += '&src=' + encodeURIComponent(kal.id);
+      url += '&color=' + kal.farge;
+    }
+  });
+
+  document.getElementById('calendar-frame').src = url;
+}
+
+// ============================================
+// INIT
+// ============================================
+if(sessionStorage.getItem('kb_auth') === '1'){
+  visApp();
+} else {
+  setTimeout(() => document.getElementById('pwd-input').focus(), 100);
+}
+</script>
+</body>
+</html>
