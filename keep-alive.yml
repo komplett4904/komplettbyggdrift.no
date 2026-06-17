@@ -1,0 +1,49 @@
+name: Supabase Keep-Alive
+
+# Holder Supabase-prosjektet aktivt slik at det ikke pauses på gratis-tier.
+# Kjøres hver dag kl 06:00 UTC (08:00 norsk tid sommer / 07:00 vintertid).
+
+on:
+  schedule:
+    - cron: '0 6 * * *'
+  workflow_dispatch:  # Tillater manuell kjøring fra GitHub
+
+env:
+  SB_URL: https://tuiljcklknbjjkbulriq.supabase.co
+  SB_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR1aWxqY2tsa25iamprYnVscmlxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1NDY0MTYsImV4cCI6MjA5NTEyMjQxNn0.v45fdp9jfRbXA4Lr57AV3a4hbHyHn6Fxq5CXpdNf4Ic
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping prosjekter-tabell
+        run: |
+          curl -s -o /dev/null -w "prosjekter: HTTP %{http_code}\n" \
+            "$SB_URL/rest/v1/prosjekter?select=id&limit=1" \
+            -H "apikey: $SB_KEY" -H "Authorization: Bearer $SB_KEY"
+
+      - name: Ping HMS-tabeller
+        run: |
+          for t in hms_sja hms_avvik hms_vernerunde hms_stoffer; do
+            curl -s -o /dev/null -w "$t: HTTP %{http_code}\n" \
+              "$SB_URL/rest/v1/$t?select=id&limit=1" \
+              -H "apikey: $SB_KEY" -H "Authorization: Bearer $SB_KEY"
+          done
+
+      - name: Ping engangskoder
+        run: |
+          curl -s -o /dev/null -w "engangskoder: HTTP %{http_code}\n" \
+            "$SB_URL/rest/v1/engangskoder?select=id&limit=1" \
+            -H "apikey: $SB_KEY" -H "Authorization: Bearer $SB_KEY"
+
+      - name: Ping Storage (bilder)
+        run: |
+          curl -s -o /dev/null -w "storage list: HTTP %{http_code}\n" \
+            "$SB_URL/storage/v1/object/list/avvik-bilder" \
+            -H "apikey: $SB_KEY" -H "Authorization: Bearer $SB_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"limit":1,"offset":0}' \
+            -X POST
+
+      - name: Bekreft
+        run: echo "Keep-alive utført $(date -u +'%Y-%m-%d %H:%M UTC')"
