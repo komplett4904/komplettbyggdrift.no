@@ -1,38 +1,36 @@
-// Komplett Byggdrift Service Worker
-const CACHE_NAME = 'kb-v1';
+// Cache only this application's public static files.
+const CACHE_NAME = 'kb-static-v2';
 const ASSETS = [
-  '/anbudskalkulator.html',
-  '/kalender.html',
-  '/hms.html',
-  '/icon-192.png',
-  '/icon-512.png',
-  '/manifest.json'
+  "/anbudskalkulator.html",
+  "/hms.html",
+  "/kalender.html",
+  "/kb-database.js",
+  "/anbudskalkulator-1.js",
+  "/anbudskalkulator-2.js",
+  "/anbudskalkulator-1.css",
+  "/anbudskalkulator-2.css",
+  "/anbudskalkulator-3.css",
+  "/anbudskalkulator-4.css",
+  "/hms-1.js",
+  "/hms-1.css",
+  "/kalender-1.js",
+  "/kalender-1.css",
+  "/icon-192.png",
+  "/icon-512.png",
+  "/manifest.json"
 ];
-
-self.addEventListener('install', e => {
-  e.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS).catch(()=>{}))
-  );
-  self.skipWaiting();
+self.addEventListener('install', event => {
+  event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS)));
 });
-
-self.addEventListener('activate', e => {
-  e.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
-    )
-  );
-  self.clients.claim();
+self.addEventListener('activate', event => {
+  event.waitUntil(caches.keys().then(keys => Promise.all(
+    keys.filter(key => key !== CACHE_NAME && (key === 'kb-v1' || key.startsWith('kb-static-'))).map(key => caches.delete(key))
+  )).then(() => self.clients.claim()));
 });
-
-self.addEventListener('fetch', e => {
-  // Bare GET-requester
-  if (e.request.method !== 'GET') return;
-  // La Supabase, Google Calendar, CDN-er gå rett til nett
-  const url = new URL(e.request.url);
-  if (!url.hostname.includes('komplettbyggdrift.no') &&
-      url.hostname !== self.location.hostname) return;
-  e.respondWith(
-    fetch(e.request).catch(() => caches.match(e.request))
-  );
+self.addEventListener('fetch', event => {
+  const url = new URL(event.request.url);
+  if(event.request.method !== 'GET' || url.origin !== self.location.origin || !ASSETS.includes(url.pathname)) return;
+  event.respondWith(fetch(event.request).catch(async () =>
+    (await caches.match(event.request)) || new Response('Ingen nettforbindelse. Koble til nett og prøv igjen.', {status:503,headers:{'Content-Type':'text/plain; charset=utf-8'}})
+  ));
 });
