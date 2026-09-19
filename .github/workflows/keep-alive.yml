@@ -49,7 +49,7 @@ jobs:
             "$SB_URL/storage/v1/object/list/$bucket" \
             -H "apikey: $SB_KEY" -H "Authorization: Bearer $SB_KEY" \
             -H "Content-Type: application/json" \
-            -d '{"limit":1,"offset":0}' \
+            -d '{"prefix":"","limit":1,"offset":0}' \
             -X POST
           done
 
