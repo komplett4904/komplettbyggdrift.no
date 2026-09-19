@@ -1,12 +1,14 @@
 name: Supabase Keep-Alive
 
-# Holder Supabase-prosjektet aktivt slik at det ikke pauses på gratis-tier.
-# Kjøres hver dag kl 06:00 UTC (08:00 norsk tid sommer / 07:00 vintertid).
+# Kontrollerer Supabase daglig. GitHub kan deaktivere planen etter 60 dager uten repoaktivitet.
+# Kjøres hver dag kl 06:17 UTC (08:17 norsk sommertid / 07:17 vintertid).
 
 on:
   schedule:
-    - cron: '0 6 * * *'
+    - cron: '17 6 * * *'
   workflow_dispatch:  # Tillater manuell kjøring fra GitHub
+
+permissions: {}
 
 env:
   SB_URL: https://tuiljcklknbjjkbulriq.supabase.co
@@ -15,35 +17,41 @@ env:
 jobs:
   ping:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        shell: bash
     steps:
       - name: Ping prosjekter-tabell
         run: |
-          curl -s -o /dev/null -w "prosjekter: HTTP %{http_code}\n" \
-            "$SB_URL/rest/v1/prosjekter?select=id&limit=1" \
+          curl --fail --silent --show-error --retry 2 --connect-timeout 10 --max-time 30 -o /dev/null -w "prosjekter: HTTP %{http_code}\n" \
+            "$SB_URL/rest/v1/prosjekter?select=id&limit=0" \
             -H "apikey: $SB_KEY" -H "Authorization: Bearer $SB_KEY"
 
       - name: Ping HMS-tabeller
         run: |
           for t in hms_sja hms_avvik hms_vernerunde hms_stoffer; do
-            curl -s -o /dev/null -w "$t: HTTP %{http_code}\n" \
-              "$SB_URL/rest/v1/$t?select=id&limit=1" \
+            curl --fail --silent --show-error --retry 2 --connect-timeout 10 --max-time 30 -o /dev/null -w "$t: HTTP %{http_code}\n" \
+              "$SB_URL/rest/v1/$t?select=id&limit=0" \
               -H "apikey: $SB_KEY" -H "Authorization: Bearer $SB_KEY"
           done
 
       - name: Ping engangskoder
         run: |
-          curl -s -o /dev/null -w "engangskoder: HTTP %{http_code}\n" \
-            "$SB_URL/rest/v1/engangskoder?select=id&limit=1" \
+          curl --fail --silent --show-error --retry 2 --connect-timeout 10 --max-time 30 -o /dev/null -w "engangskoder: HTTP %{http_code}\n" \
+            "$SB_URL/rest/v1/engangskoder?select=id&limit=0" \
             -H "apikey: $SB_KEY" -H "Authorization: Bearer $SB_KEY"
 
       - name: Ping Storage (bilder)
         run: |
-          curl -s -o /dev/null -w "storage list: HTTP %{http_code}\n" \
-            "$SB_URL/storage/v1/object/list/avvik-bilder" \
+          for bucket in befaring-bilder prosjekt-bilder avvik-bilder; do
+          curl --fail --silent --show-error --retry 2 --connect-timeout 10 --max-time 30 -o /dev/null -w "$bucket: HTTP %{http_code}\n" \
+            "$SB_URL/storage/v1/object/list/$bucket" \
             -H "apikey: $SB_KEY" -H "Authorization: Bearer $SB_KEY" \
             -H "Content-Type: application/json" \
             -d '{"limit":1,"offset":0}' \
             -X POST
+          done
 
       - name: Bekreft
         run: echo "Keep-alive utført $(date -u +'%Y-%m-%d %H:%M UTC')"
