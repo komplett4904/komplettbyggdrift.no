@@ -59,8 +59,8 @@
 <main>
 <div class="container">
 
-  <h2 class="page-title">Felles kalender</h2>
-  <p class="page-sub">Oversikt over hva alle jobber med. Synkroniseres direkte med Google Kalender.</p>
+  <h2 class="page-title">Arbeidsplan</h2>
+  <p class="page-sub">Planlegg arbeidsuken sammen. Avtalene ligger i Google Kalender og følger med på mobilen.</p>
 
   <div class="info-banner" id="config-banner" style="display:none">
     <strong>Kalender ikke satt opp ennå.</strong> Se <code>GOOGLE_KALENDER_OPPSETT.md</code> for å konfigurere kalender-ID-ene øverst i denne filen.
@@ -79,9 +79,30 @@
     </button>
   </div>
 
-  <div class="view-switcher">
-    <button class="view-btn" data-view="WEEK" onclick="settVisning('WEEK')">Uke</button>
-    <button class="view-btn active" data-view="MONTH" onclick="settVisning('MONTH')">Måned</button>
+  <section class="planning-card" aria-labelledby="plan-heading">
+  <h2 id="plan-heading">Planlegg et oppdrag</h2>
+  <p>Fyll inn arbeidet og åpne et utkast i Google Kalender. Kontroller kalender, deltakere og varsling før du trykker Lagre der.</p>
+  <form id="work-plan">
+    <div class="planning-grid">
+      <label>Prosjekt / arbeid<input id="plan-title" required maxlength="160" placeholder="F.eks. Oppussing av bad"></label>
+      <label>Aktivitet<select id="plan-type"><option>Arbeid</option><option>Befaring</option><option>Levering</option><option>HMS / vernerunde</option><option>Overlevering</option></select></label>
+      <label>Kalender<select id="plan-calendar"><option value="felles">Felles arbeidsplan</option><option value="mine">Min kalender</option></select></label>
+      <label>Adresse<input id="plan-address" maxlength="200" autocomplete="off" placeholder="Arbeidssted (valgfritt)"></label>
+      <label>Fra dato<input id="plan-date" type="date" required></label>
+      <label>Til dato<input id="plan-end-date" type="date" required></label>
+      <label>Fra klokken<input id="plan-start" type="time" value="07:00" required></label>
+      <label>Til klokken<input id="plan-end" type="time" value="15:00" required></label>
+    </div>
+    <label class="planning-notes">Arbeidsbeskrivelse<textarea id="plan-notes" rows="3" maxlength="1800" placeholder="Hva skal gjøres, hvem er ansvarlig, og hva må være klart?"></textarea></label>
+    <div class="btn-row"><button class="btn btn-accent" type="submit">Klargjør i Google Kalender</button><a id="plan-draft" class="btn btn-outline" target="_blank" rel="noopener noreferrer" hidden>Åpne kalenderutkast</a><a id="plan-map" class="btn btn-outline" target="_blank" rel="noopener noreferrer" hidden>Se arbeidssted i Maps</a></div>
+    <p id="plan-status" role="status"></p>
+  </form>
+</section>
+<div class="btn-row"><button class="btn btn-outline" id="show-all">Alle kalendere</button><button class="btn btn-outline" id="show-mine">Bare meg</button><button class="btn btn-outline" id="show-team">Felles arbeidsplan</button></div>
+<p id="calendar-empty" role="status" hidden>Velg minst én kalender for å vise avtaler.</p>
+<div class="view-switcher">
+    <button class="view-btn active" data-view="WEEK" onclick="settVisning('WEEK')">Uke</button>
+    <button class="view-btn" data-view="MONTH" onclick="settVisning('MONTH')">Måned</button>
     <button class="view-btn" data-view="AGENDA" onclick="settVisning('AGENDA')">Liste</button>
   </div>
 
@@ -94,15 +115,16 @@
   </div>
 
   <p style="font-size:12px;color:var(--muted);margin-top:12px;text-align:center">
-    Hendelser legges til via Google Kalender-appen på mobil eller via "Ny hendelse"-knappen over.
+    Bruk felles arbeidsplan for felles oppdrag. Personlige avtaler kan ligge i egen kalender. Hvis en kalender mangler, åpne Google Kalender med firmaadressen din og kontroller delingen.
   </p>
 
 </div>
-</main>
+<section class="container google-tools" aria-labelledby="google-heading"><h2 id="google-heading">Google-verktøy på jobb</h2><div class="btn-row"><a class="btn btn-outline" data-google="drive" target="_blank" rel="noopener noreferrer">Drive – dokumenter og bilder</a><a class="btn btn-outline" data-google="tasks" target="_blank" rel="noopener noreferrer">Tasks – mine oppgaver</a><a class="btn btn-outline" data-google="meet" target="_blank" rel="noopener noreferrer">Meet – videomøter</a></div><p>Del dokumenter med de som trenger dem. Snarveiene åpner Google; nettstedet får ingen ekstra tilgang til e-post eller filer.</p></section></main>
 
 </div>
 
 <script type="text/plain" data-kb-script="/kalender-1.js"></script>
+<script type="text/plain" data-kb-script="/kb-planning.js"></script>
 </body>
 </html>
 

@@ -100,3 +100,6 @@
     .pwd-box h2{font-size:19px}
     .pwd-box input{font-size:16px;padding:10px}
   }
+
+/* Work planning */
+.planning-card{background:white;border:1px solid var(--border);border-radius:12px;padding:24px;margin:24px 0}.planning-card h2{font-size:20px}.planning-card p,.google-tools p{color:var(--muted);font-size:14px;margin:8px 0 16px}.planning-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}.planning-card label{display:flex;flex-direction:column;gap:6px;font-weight:600;font-size:14px}.planning-card input,.planning-card select,.planning-card textarea{width:100%;font:inherit;border:1px solid #aebccc;border-radius:6px;padding:10px;background:white;color:var(--text)}.planning-notes{margin:16px 0}.planning-card [hidden],[hidden]{display:none!important}.google-tools{padding-bottom:90px}.google-tools h2{font-size:20px}.btn:focus-visible,.user-chip:focus-visible,.view-btn:focus-visible{outline:3px solid #e8a317;outline-offset:3px}@media(max-width:900px){.planning-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:500px){.planning-grid{grid-template-columns:1fr}.planning-card{padding:16px}.calendar-frame{min-height:600px}}

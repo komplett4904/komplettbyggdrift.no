@@ -32,7 +32,10 @@ const TIDSSONE = 'Europe/Oslo';
 // STATE
 // ============================================
 let aktiveBrukere = {felles:true, stephen:true, eirik:true, eivind:true};
-let aktivVisning = 'MONTH';
+let aktivVisning = matchMedia('(max-width: 650px)').matches ? 'AGENDA' : 'WEEK';
+const calendarPreferenceKey='kb_calendar_view_v2_'+KBAuth.employee.id;
+try{const saved=JSON.parse(localStorage.getItem(calendarPreferenceKey));if(saved){if(['WEEK','MONTH','AGENDA'].includes(saved.view))aktivVisning=saved.view;for(const key of Object.keys(aktiveBrukere))if(typeof saved.users?.[key]==='boolean')aktiveBrukere[key]=saved.users[key];}}catch{}
+function saveCalendarPreferences(){try{localStorage.setItem(calendarPreferenceKey,JSON.stringify({view:aktivVisning,users:aktiveBrukere}));}catch{}}
 
 // ============================================
 // PASSORD
@@ -62,7 +65,8 @@ function bygg(){
   const wrap = document.getElementById('user-filter');
   Object.entries(KALENDERE).forEach(([nokkel, kal]) => {
     const chip = document.createElement('button');
-    chip.className = 'user-chip active';
+    chip.className = 'user-chip'+(aktiveBrukere[nokkel]?' active':'');
+    chip.setAttribute('aria-pressed',String(aktiveBrukere[nokkel]));
     chip.dataset.key = nokkel;
     chip.innerHTML = `<span class="dot" style="background:${decodeURIComponent(kal.farge)}"></span>${kal.navn}`;
     chip.onclick = () => toggleBruker(nokkel, chip);
@@ -74,7 +78,8 @@ function bygg(){
 
 function toggleBruker(nokkel, chip){
   aktiveBrukere[nokkel] = !aktiveBrukere[nokkel];
-  chip.classList.toggle('active');
+  chip.classList.toggle('active',aktiveBrukere[nokkel]);
+  chip.setAttribute('aria-pressed',String(aktiveBrukere[nokkel]));
   oppdaterKalender();
 }
 
@@ -87,6 +92,12 @@ function settVisning(visning){
 }
 
 function oppdaterKalender(){
+  saveCalendarPreferences();
+  document.querySelectorAll('.view-btn').forEach(b=>{b.classList.toggle('active',b.dataset.view===aktivVisning);b.setAttribute('aria-pressed',String(b.dataset.view===aktivVisning));});
+  const any=Object.values(aktiveBrukere).some(Boolean);
+  document.getElementById('calendar-empty').hidden=any;
+  document.getElementById('calendar-frame').hidden=!any;
+  if(!any){document.getElementById('calendar-frame').src='about:blank';return;}
   let url = 'https://calendar.google.com/calendar/embed?';
   url += 'ctz=' + encodeURIComponent(TIDSSONE);
   url += '&mode=' + aktivVisning;
