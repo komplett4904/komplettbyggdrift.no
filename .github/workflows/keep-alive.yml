@@ -1,57 +1,41 @@
 name: Supabase Keep-Alive
 
+
 # Kontrollerer Supabase daglig. GitHub kan deaktivere planen etter 60 dager uten repoaktivitet.
 # Kjøres hver dag kl 06:17 UTC (08:17 norsk sommertid / 07:17 vintertid).
+
 
 on:
   schedule:
     - cron: '17 6 * * *'
+
   workflow_dispatch:  # Tillater manuell kjøring fra GitHub
 
+
 permissions: {}
+
 
 env:
   SB_URL: https://tuiljcklknbjjkbulriq.supabase.co
   SB_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR1aWxqY2tsa25iamprYnVscmlxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1NDY0MTYsImV4cCI6MjA5NTEyMjQxNn0.v45fdp9jfRbXA4Lr57AV3a4hbHyHn6Fxq5CXpdNf4Ic
 
+
 jobs:
   ping:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 5
     defaults:
       run:
         shell: bash
     steps:
-      - name: Ping prosjekter-tabell
+      - name: Check Auth service health
         run: |
-          curl --fail --silent --show-error --retry 2 --connect-timeout 10 --max-time 30 -o /dev/null -w "prosjekter: HTTP %{http_code}\n" \
-            "$SB_URL/rest/v1/prosjekter?select=id&limit=0" \
-            -H "apikey: $SB_KEY" -H "Authorization: Bearer $SB_KEY"
-
-      - name: Ping HMS-tabeller
+          curl --fail --silent --show-error --retry 2 --connect-timeout 10 --max-time 30 -o /dev/null -w "Auth HTTP %{http_code}" "$SB_URL/auth/v1/health" -H "apikey: $SB_KEY"
+      - name: Verify anonymous project access is denied
         run: |
-          for t in hms_sja hms_avvik hms_vernerunde hms_stoffer; do
-            curl --fail --silent --show-error --retry 2 --connect-timeout 10 --max-time 30 -o /dev/null -w "$t: HTTP %{http_code}\n" \
-              "$SB_URL/rest/v1/$t?select=id&limit=0" \
-              -H "apikey: $SB_KEY" -H "Authorization: Bearer $SB_KEY"
-          done
-
-      - name: Ping engangskoder
-        run: |
-          curl --fail --silent --show-error --retry 2 --connect-timeout 10 --max-time 30 -o /dev/null -w "engangskoder: HTTP %{http_code}\n" \
-            "$SB_URL/rest/v1/engangskoder?select=id&limit=0" \
-            -H "apikey: $SB_KEY" -H "Authorization: Bearer $SB_KEY"
-
-      - name: Ping Storage (bilder)
-        run: |
-          for bucket in befaring-bilder prosjekt-bilder avvik-bilder; do
-          curl --fail --silent --show-error --retry 2 --connect-timeout 10 --max-time 30 -o /dev/null -w "$bucket: HTTP %{http_code}\n" \
-            "$SB_URL/storage/v1/object/list/$bucket" \
-            -H "apikey: $SB_KEY" -H "Authorization: Bearer $SB_KEY" \
-            -H "Content-Type: application/json" \
-            -d '{"prefix":"","limit":1,"offset":0}' \
-            -X POST
-          done
-
-      - name: Bekreft
-        run: echo "Keep-alive utført $(date -u +'%Y-%m-%d %H:%M UTC')"
+          status=$(curl --silent --show-error --retry 2 --connect-timeout 10 --max-time 30 -o /dev/null -w '%{http_code}' "$SB_URL/rest/v1/prosjekter?select=id&limit=0" -H "apikey: $SB_KEY" -H "Authorization: Bearer $SB_KEY")
+          if [[ "$status" != "401" && "$status" != "403" ]]; then
+            echo "Expected anonymous access denial, received HTTP $status"
+            exit 1
+          fi
+          echo "Anonymous project access is denied (HTTP $status)."
