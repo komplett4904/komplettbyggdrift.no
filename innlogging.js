@@ -8,6 +8,11 @@ async function showIdentity() {
     statusElement.textContent = employee ? `Innlogging bekreftet. Hei, ${employee.name}! Du bruker ${employee.email}.` : 'Du er ikke innlogget.';
     loginButton.hidden = !!employee;
     logoutButton.hidden = !employee;
+    document.getElementById('tools').hidden = !employee;
+    if(employee){
+      const next=sessionStorage.getItem('kb_return_to');sessionStorage.removeItem('kb_return_to');
+      if(['/anbudskalkulator.html','/hms.html','/kalender.html','/demokoder.html'].includes(next))location.replace(next);
+    }
   } catch (error) {
     statusElement.textContent = error.message || 'Innloggingen kunne ikke kontrolleres.';
     loginButton.hidden = false;

@@ -7,12 +7,14 @@
     ['stephen@komplettbyggdrift.no', 'Stephen']
   ]);
   function client() { return window.KBDatabase.getClient(); }
+  let currentEmployee = null;
   function accessError(message, code) {
     const error = new Error(message);
     error.code = code;
     return error;
   }
   async function getEmployee() {
+    currentEmployee = null;
     const { data: sessionData, error: sessionError } = await client().auth.getSession();
     if (sessionError) throw accessError('Innloggingen kunne ikke kontrolleres. Prøv igjen.', 'session_error');
     if (!sessionData.session) return null;
@@ -24,23 +26,32 @@
     if (!user.id || !user.email_confirmed_at || !employees.has(email)) {
       throw accessError('Denne Google-kontoen har ikke tilgang. Bruk firmaadressen din.', 'forbidden');
     }
-    return Object.freeze({ id: user.id, email, name: employees.get(email) });
+    const { data: allowed, error: permissionError } = await client().rpc('kb_employee_access');
+    if(permissionError || allowed !== true) throw accessError('Kontotilgangen kunne ikke bekreftes. Prøv igjen eller kontakt Stephen.', 'forbidden');
+    currentEmployee = Object.freeze({ id: user.id, email, name: employees.get(email) });
+    return currentEmployee;
   }
   async function signIn() {
     const allowedPages = ['/innlogging.html', '/anbudskalkulator.html', '/hms.html', '/kalender.html'];
-    const page = allowedPages.includes(window.location.pathname) ? window.location.pathname : '/anbudskalkulator.html';
+    if(allowedPages.includes(window.location.pathname) && window.location.pathname !== '/innlogging.html') window.sessionStorage.setItem('kb_return_to',window.location.pathname);
     // Fixed production origin prevents untrusted redirect query parameters from being reused.
     const { error } = await client().auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: 'https://komplettbyggdrift.no' + page, queryParams: { prompt: 'select_account' } }
+      options: { redirectTo: 'https://komplettbyggdrift.no/innlogging.html', queryParams: { prompt: 'select_account' } }
     });
     if (error) throw accessError('Google-innlogging kunne ikke startes. Prøv igjen.', 'login_error');
   }
   async function signOut() {
+    currentEmployee = null;
     const { error } = await client().auth.signOut();
     if (error) throw accessError('Utloggingen kunne ikke fullføres. Prøv igjen.', 'logout_error');
     // Remove obsolete UI flags so they cannot reopen legacy screens after migration.
     for (const key of ['kb_auth', 'kb_bruker', 'kb_via_firmakode']) window.sessionStorage.removeItem(key);
   }
-  window.KBAuth = Object.freeze({ getEmployee, signIn, signOut });
+  async function logoutAndReturn() {
+    document.body.style.visibility='hidden';
+    try { await signOut(); }
+    finally { window.location.replace('/innlogging.html'); }
+  }
+  window.KBAuth = Object.freeze({ getEmployee, signIn, signOut, logoutAndReturn, get employee(){return currentEmployee;} });
 })();

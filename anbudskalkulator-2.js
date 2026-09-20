@@ -106,7 +106,7 @@ function oppdaterPaAnbudBadge(){
 function apneAnbudskalkulator(){
   document.getElementById('hovedmeny').classList.add('hidden');
   // Sjekk om bruker har foretrukket fag
-  const bruker=sessionStorage.getItem('kb_bruker');
+  const bruker=window.KBAuth.employee?.name;
   const foretrukket=bruker?localStorage.getItem('kb_pref_fag_'+bruker):null;
   if(foretrukket==='rorlegger'||foretrukket==='tomrer'){
     velgFag(foretrukket);
@@ -120,7 +120,7 @@ function apneAnbudskalkulator(){
 }
 
 function settForetrukketFag(fag){
-  const bruker=sessionStorage.getItem('kb_bruker');
+  const bruker=window.KBAuth.employee?.name;
   if(!bruker)return;
   if(fag==='ingen'){
     localStorage.removeItem('kb_pref_fag_'+bruker);
@@ -131,7 +131,7 @@ function settForetrukketFag(fag){
 }
 
 function hentForetrukketFag(){
-  const bruker=sessionStorage.getItem('kb_bruker');
+  const bruker=window.KBAuth.employee?.name;
   if(!bruker)return null;
   return localStorage.getItem('kb_pref_fag_'+bruker);
 }
@@ -150,7 +150,7 @@ function oppdaterFagPrefBadge(){
 }
 
 function endreFagPref(){
-  const bruker=sessionStorage.getItem('kb_bruker');
+  const bruker=window.KBAuth.employee?.name;
   if(bruker){
     localStorage.removeItem('kb_pref_fag_'+bruker);
   }
@@ -160,7 +160,7 @@ function endreFagPref(){
 function oppdaterHilsen(){
   const el=document.getElementById('hovedmenyTittel');
   if(!el)return;
-  const navn=sessionStorage.getItem('kb_bruker');
+  const navn=window.KBAuth.employee?.name;
   if(navn && navn!=='Gjest' && navn!=='Ukjent'){
     el.textContent='Hei '+navn+', hva vil du gjøre?';
   } else if(navn==='Gjest'){
@@ -2793,7 +2793,7 @@ const SUPABASE_KEY=window.KBDatabase.key;
 let sb=null;
 try{ if(window.supabase) sb=window.KBDatabase.getClient(); }catch(e){console.error('Supabase init feilet:',e);}
 
-function hentBruker(){ return sessionStorage.getItem('kb_bruker')||'Ukjent'; }
+function hentBruker(){ return window.KBAuth.employee?.name||'Ukjent'; }
 
 function visSkyStatus(tekst,farge){
   const ind=document.getElementById('sky-status');
@@ -2877,169 +2877,14 @@ async function importerLokaleProsjekter(){
 }
 
 // Bruker-velger (vises etter passord)
-function visBrukerVelger(){
-  if(sessionStorage.getItem('kb_bruker')){return;}
-  const eksisterer=document.getElementById('brukerVelger');
-  if(eksisterer)return;
-  const d=document.createElement('div');
-  d.id='brukerVelger';
-  d.style.cssText='position:fixed;inset:0;background:#1a3a5c;z-index:9998;display:flex;align-items:center;justify-content:center;font-family:-apple-system,sans-serif';
-  d.innerHTML=`
-    <div style="background:#fff;padding:40px 50px;border-radius:14px;max-width:420px;width:90%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3)">
-      <div style="font-size:42px;margin-bottom:8px">👋</div>
-      <h2 style="color:#1a3a5c;font-size:22px;margin-bottom:6px">Hvem er du?</h2>
-      <p style="color:#667085;font-size:14px;margin-bottom:20px">Velg navn for å spore hvem som lagrer hva</p>
-      <div style="display:grid;gap:10px">
-        <button onclick="velgBruker('Eivind')" style="background:#1a3a5c;color:#fff;border:none;padding:14px;border-radius:8px;font-size:16px;font-weight:600;cursor:pointer">Eivind</button>
-        <button onclick="velgBruker('Eirik')" style="background:#1a3a5c;color:#fff;border:none;padding:14px;border-radius:8px;font-size:16px;font-weight:600;cursor:pointer">Eirik</button>
-        <button onclick="velgBruker('Stephen')" style="background:#1a3a5c;color:#fff;border:none;padding:14px;border-radius:8px;font-size:16px;font-weight:600;cursor:pointer">Stephen</button>
-      </div>
-    </div>`;
-  document.body.appendChild(d);
-}
+function visBrukerVelger(){ /* Identity comes from verified Google sign-in. */ }
 
-function velgBruker(navn){
-  sessionStorage.setItem('kb_bruker',navn);
-  const v=document.getElementById('brukerVelger');
-  if(v)v.remove();
-  syncFraSky();
-  oppdaterTilgangsRettigheter();
-  if(typeof oppdaterHilsen==='function')oppdaterHilsen();
-  // Sjekk om innlogget via firmakode og trenger personlig passord
-  const viaFirmakode=sessionStorage.getItem('kb_via_firmakode')==='1';
-  if(viaFirmakode && navn!=='Gjest'){
-    harPersonligPassord(navn).then(harPass=>{
-      if(!harPass){
-        visSettPersonligPassord(navn);
-      } else {
-        // Har allerede passord - spør om fag
-        const lagretFag=localStorage.getItem('kb_pref_fag_'+navn);
-        if(!lagretFag){
-          setTimeout(visFagVelgerForstegangs,300);
-        } else {
-          if(typeof oppdaterFagPrefBadge==='function')oppdaterFagPrefBadge();
-        }
-      }
-    });
-    return;
-  }
-  // Sjekk om brukeren har satt foretrukket fag - hvis ikke, spør
-  const lagretFag=localStorage.getItem('kb_pref_fag_'+navn);
-  if(!lagretFag){
-    setTimeout(visFagVelgerForstegangs,300);
-  } else {
-    if(typeof oppdaterFagPrefBadge==='function')oppdaterFagPrefBadge();
-  }
-}
+function velgBruker(){ /* Identity comes from verified Google sign-in. */ }
 
-function visSettPersonligPassord(navn){
-  if(document.getElementById('settPassordSkjerm'))return;
-  const d=document.createElement('div');
-  d.id='settPassordSkjerm';
-  d.style.cssText='position:fixed;inset:0;background:#1a3a5c;z-index:9996;display:flex;align-items:center;justify-content:center;padding:20px;font-family:-apple-system,sans-serif';
-  d.innerHTML=`
-    <div style="background:#fff;padding:36px 32px;border-radius:14px;max-width:420px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3)">
-      <div style="font-size:42px;margin-bottom:8px">🔐</div>
-      <h2 style="color:#1a3a5c;font-size:22px;margin-bottom:6px">Velg ditt personlige passord</h2>
-      <p style="color:#667085;font-size:14px;margin-bottom:16px">Neste gang du logger inn, bruker du bare denne koden - da slipper du å velge navn.</p>
-      <input type="password" id="nyPersonligPass" placeholder="Min 4 sifre" inputmode="numeric" style="width:100%;padding:14px;border:2px solid #dde3ec;border-radius:8px;font-size:20px;text-align:center;letter-spacing:4px;margin-bottom:10px">
-      <input type="password" id="nyPersonligPassGjenta" placeholder="Gjenta koden" inputmode="numeric" style="width:100%;padding:14px;border:2px solid #dde3ec;border-radius:8px;font-size:20px;text-align:center;letter-spacing:4px;margin-bottom:14px">
-      <div id="nyPassordFeil" style="color:#dc2626;font-size:13px;margin-bottom:10px;min-height:18px"></div>
-      <button onclick="lagreNyttPersonligPassord('${navn}')" style="background:#1a3a5c;color:#fff;border:none;padding:14px;border-radius:8px;font-size:16px;font-weight:700;cursor:pointer;width:100%;margin-bottom:8px">Lagre og fortsett</button>
-      <button onclick="hoppOverPersonligPassord()" style="background:none;color:#667085;border:none;padding:8px;cursor:pointer;font-size:12px;text-decoration:underline">Hopp over (kan settes senere)</button>
-    </div>`;
-  document.body.appendChild(d);
-  setTimeout(()=>document.getElementById('nyPersonligPass')?.focus(),100);
-}
-
-async function lagreNyttPersonligPassord(navn){
-  const p1=document.getElementById('nyPersonligPass').value.trim();
-  const p2=document.getElementById('nyPersonligPassGjenta').value.trim();
-  const feil=document.getElementById('nyPassordFeil');
-  if(p1.length<4){feil.textContent='Passord må ha minst 4 tegn';return;}
-  if(p1!==p2){feil.textContent='Passordene er ikke like';return;}
-  if(p1==='671342'){feil.textContent='Kan ikke bruke firmakoden. Velg noe annet.';return;}
-  feil.textContent='Lagrer...';
-  const ok=await settPersonligPassord(navn,p1);
-  if(!ok){feil.textContent='Feil ved lagring. Prøv igjen.';return;}
-  sessionStorage.removeItem('kb_via_firmakode');
-  const d=document.getElementById('settPassordSkjerm');
-  if(d)d.remove();
-  alert('Passord lagret. Neste gang logger du inn med koden din direkte.');
-  const lagretFag=localStorage.getItem('kb_pref_fag_'+navn);
-  if(!lagretFag)setTimeout(visFagVelgerForstegangs,300);
-  else if(typeof oppdaterFagPrefBadge==='function')oppdaterFagPrefBadge();
-}
-
-function hoppOverPersonligPassord(){
-  sessionStorage.removeItem('kb_via_firmakode');
-  const d=document.getElementById('settPassordSkjerm');
-  if(d)d.remove();
-  const navn=sessionStorage.getItem('kb_bruker');
-  const lagretFag=localStorage.getItem('kb_pref_fag_'+navn);
-  if(!lagretFag)setTimeout(visFagVelgerForstegangs,300);
-  else if(typeof oppdaterFagPrefBadge==='function')oppdaterFagPrefBadge();
-}
-
-async function endrePersonligPassord(){
-  const navn=sessionStorage.getItem('kb_bruker');
-  if(!navn||navn==='Gjest'){alert('Du må være innlogget som ansatt.');return;}
-  const nyKode=prompt('Nytt personlig passord (min 4 sifre):');
-  if(!nyKode||nyKode.length<4){alert('Passord må ha minst 4 tegn.');return;}
-  if(nyKode==='671342'){alert('Kan ikke bruke firmakoden.');return;}
-  const gjenta=prompt('Gjenta:');
-  if(nyKode!==gjenta){alert('Passordene er ikke like.');return;}
-  const ok=await settPersonligPassord(navn,nyKode);
-  alert(ok?'✓ Passord endret.':'Feil ved lagring.');
-}
-
-function visFagVelgerForstegangs(){
-  if(document.getElementById('fagVelgerForstegangs'))return;
-  const navn=sessionStorage.getItem('kb_bruker')||'';
-  const d=document.createElement('div');
-  d.id='fagVelgerForstegangs';
-  d.style.cssText='position:fixed;inset:0;background:#1a3a5c;z-index:9997;display:flex;align-items:center;justify-content:center;font-family:-apple-system,sans-serif;padding:20px';
-  d.innerHTML=`
-    <div style="background:#fff;padding:36px 32px;border-radius:14px;max-width:480px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3)">
-      <div style="font-size:42px;margin-bottom:8px">🔨🔧</div>
-      <h2 style="color:#1a3a5c;font-size:22px;margin-bottom:6px">Hei ${navn}!</h2>
-      <p style="color:#667085;font-size:14px;margin-bottom:6px">Hvilket fag jobber du mest med?</p>
-      <p style="color:#92400e;font-size:12px;margin-bottom:20px;background:#fff8e6;padding:8px 12px;border-radius:8px;border:1px solid #f0d68a">Da lander du rett på det du oftest gjør. Du kan alltid bytte ved å trykke <strong>← Tilbake</strong>, eller trykke <strong>Komplett Byggdrift-logoen</strong> for å se alt.</p>
-      <div style="display:grid;gap:10px">
-        <button onclick="velgForstegangsFag('tomrer')" style="background:#fff4e6;color:#1a3a5c;border:2px solid #fbbf24;padding:18px;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;text-align:left;display:flex;align-items:center;gap:14px">
-          <span style="font-size:32px">🔨</span>
-          <div>
-            <div style="font-size:17px">Tømrer / bygg</div>
-            <div style="font-size:12px;color:#667085;font-weight:500">Tak, kledning, vindu, dør, listverk</div>
-          </div>
-        </button>
-        <button onclick="velgForstegangsFag('rorlegger')" style="background:#e6f4ff;color:#1a3a5c;border:2px solid #60a5fa;padding:18px;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;text-align:left;display:flex;align-items:center;gap:14px">
-          <span style="font-size:32px">🔧</span>
-          <div>
-            <div style="font-size:17px">Rørlegger / VVS</div>
-            <div style="font-size:12px;color:#667085;font-weight:500">Bad, vaskerom, VVS-anbud, service</div>
-          </div>
-        </button>
-        <button onclick="velgForstegangsFag('begge')" style="background:#f0fdf4;color:#166534;border:1px solid #86efac;padding:14px;border-radius:8px;font-size:14px;cursor:pointer;font-weight:600">Jeg jobber med begge fag - vil ha tilgang til alt</button>
-        <button onclick="velgForstegangsFag('spor')" style="background:#f5f7fa;color:#667085;border:1px solid #dde3ec;padding:12px;border-radius:8px;font-size:13px;cursor:pointer">Jeg gjør litt av begge - spør meg hver gang</button>
-      </div>
-      <p style="font-size:11px;color:#9ca3af;margin-top:14px">Velg gjerne nå - du kan endre når som helst</p>
-    </div>`;
-  document.body.appendChild(d);
-}
-
-function velgForstegangsFag(fag){
-  const bruker=sessionStorage.getItem('kb_bruker');
-  if(bruker){
-    localStorage.setItem('kb_pref_fag_'+bruker,fag);
-  }
-  const d=document.getElementById('fagVelgerForstegangs');
-  if(d)d.remove();
-  if(typeof oppdaterFagPrefBadge==='function')oppdaterFagPrefBadge();
-}
+function visSettPersonligPassord(){ alert('Innlogging og passord administreres av Google.'); }
 
 function erGjest(){
-  return sessionStorage.getItem('kb_bruker')==='Gjest';
+  return window.KBAuth.employee?.name==='Gjest';
 }
 
 function oppdaterTilgangsRettigheter(){
@@ -3049,10 +2894,10 @@ function oppdaterTilgangsRettigheter(){
 
 // Init etter at alt er klart
 window.addEventListener('DOMContentLoaded',()=>{
-  if(sessionStorage.getItem('kb_auth')==='1'){
+  if((window.KBAuth.employee ? '1' : null)==='1'){
     setTimeout(()=>{
       visBrukerVelger();
-      if(sessionStorage.getItem('kb_bruker')){syncFraSky();oppdaterTilgangsRettigheter();oppdaterHilsen();}
+      if(window.KBAuth.employee?.name){syncFraSky();oppdaterTilgangsRettigheter();oppdaterHilsen();}
       setTimeout(oppdaterPaAnbudBadge,1500);
       if(typeof aktiverAdresseSok==='function')aktiverAdresseSok();
     },200);
@@ -3062,7 +2907,7 @@ window.addEventListener('DOMContentLoaded',()=>{
   if(typeof origSjekkPassord==='function'){
     window.sjekkPassord=function(){
       origSjekkPassord();
-      if(sessionStorage.getItem('kb_auth')==='1'){
+      if((window.KBAuth.employee ? '1' : null)==='1'){
         setTimeout(visBrukerVelger,100);
       }
     };
@@ -3308,118 +3153,8 @@ function restorePstState(state){
 // =========================================
 // ENGANGSKODER
 // =========================================
-function openEngangskoder(){
-  document.getElementById('engangskoderModal').style.display='block';
-  document.body.style.overflow='hidden';
-  hentEngangskoder();
-}
-function closeEngangskoder(){
-  document.getElementById('engangskoderModal').style.display='none';
-  document.body.style.overflow='';
-}
+function openEngangskoder(){ location.href='/demokoder.html'; }
 
-async function hentEngangskoder(){
-  const el=document.getElementById('engangskoderInnhold');
-  if(!sb){el.innerHTML='<p style="color:var(--muted)">Sky-tilkobling mangler.</p>';return;}
-  el.innerHTML='<p style="color:var(--muted)">Henter...</p>';
-  try{
-    const {data,error}=await sb.from('engangskoder').select('*').order('opprettet_dato',{ascending:false});
-    if(error)throw error;
-    renderEngangskoder(data||[]);
-  }catch(e){
-    el.innerHTML='<p style="color:var(--danger)">Feil ved henting: '+e.message+'. Har du kjørt SUPABASE_ENGANGSKODER.sql?</p>';
-  }
-}
-
-function renderEngangskoder(liste){
-  const el=document.getElementById('engangskoderInnhold');
-  const aktive=liste.filter(k=>!k.brukt);
-  const brukte=liste.filter(k=>k.brukt);
-  let html='';
-
-  html+='<h3 style="color:var(--primary-dark);margin-bottom:10px;font-size:15px">Aktive (ubrukte) koder</h3>';
-  if(aktive.length===0){
-    html+='<p style="color:var(--muted);background:#f5f7fa;padding:14px;border-radius:8px;margin-bottom:18px">Ingen aktive koder. Klikk "+ Generer ny kode" for å lage en.</p>';
-  } else {
-    html+='<div style="display:grid;gap:8px;margin-bottom:18px">';
-    aktive.forEach(k=>{
-      const dato=new Date(k.opprettet_dato).toLocaleDateString('nb-NO');
-      html+=`<div style="background:#dcfce7;border:1px solid #86efac;border-radius:8px;padding:14px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
-        <div style="flex:1;min-width:200px">
-          <div style="font-family:monospace;font-size:24px;font-weight:800;color:#15803d;letter-spacing:2px">${escapeHtml(k.kode)}</div>
-          <div style="font-size:12px;color:#166534;margin-top:4px">${escapeHtml(k.beskrivelse||'Ingen beskrivelse')} · Laget ${dato} av ${escapeHtml(k.opprettet_av||'-')}</div>
-        </div>
-        <div style="display:flex;gap:6px">
-          <button onclick="kopierKode('${escapeHtml(k.kode)}')" style="background:#fff;color:#15803d;border:1px solid #86efac;padding:6px 12px;border-radius:5px;cursor:pointer;font-weight:600;font-size:12px">📋 Kopier</button>
-          <button onclick="slettEngangskode('${escapeHtml(k.id)}')" style="background:#fff;color:#dc2626;border:1px solid #fca5a5;padding:6px 12px;border-radius:5px;cursor:pointer;font-weight:600;font-size:12px">🗑️ Slett</button>
-        </div>
-      </div>`;
-    });
-    html+='</div>';
-  }
-
-  if(brukte.length>0){
-    html+='<h3 style="color:var(--muted);margin-bottom:10px;font-size:14px;text-transform:uppercase;letter-spacing:0.3px">Brukte koder (historikk)</h3>';
-    html+='<div style="display:grid;gap:6px">';
-    brukte.slice(0,20).forEach(k=>{
-      const datoBrukt=k.brukt_dato?new Date(k.brukt_dato).toLocaleString('nb-NO'):'';
-      html+=`<div style="background:#f5f7fa;border:1px solid var(--border);border-radius:6px;padding:10px;display:flex;justify-content:space-between;align-items:center;opacity:0.7;font-size:12px;flex-wrap:wrap;gap:6px">
-        <div><span style="font-family:monospace;font-weight:600">${escapeHtml(k.kode)}</span> · ${escapeHtml(k.beskrivelse||'-')}</div>
-        <div style="color:var(--muted)">Brukt ${datoBrukt}</div>
-      </div>`;
-    });
-    html+='</div>';
-  }
-
-  el.innerHTML=html;
-}
-
-async function genererEngangskode(){
-  if(erGjest()){alert('Gjester kan ikke generere nye koder. Logg inn med firmakode.');return;}
-  if(!sb){alert('Sky-tilkobling mangler.');return;}
-  const beskrivelse=prompt('Hva er denne koden for? (f.eks. "Demo til kunde Hansen")','');
-  if(beskrivelse===null)return;
-  // Generer en tilfeldig 4-sifret kode
-  let kode;
-  let forsok=0;
-  do{
-    kode=Math.floor(1000+Math.random()*9000).toString();
-    forsok++;
-  }while(forsok<10);
-  try{
-    const {error}=await sb.from('engangskoder').insert({
-      id:Date.now().toString(),
-      kode,
-      beskrivelse:beskrivelse.trim()||null,
-      opprettet_av:hentBruker()
-    });
-    if(error)throw error;
-    hentEngangskoder();
-  }catch(e){
-    alert('Feil: '+e.message);
-  }
-}
-
-async function slettEngangskode(id){
-  if(erGjest()){alert('Gjester kan ikke slette koder.');return;}
-  if(!confirm('Slett denne koden permanent?'))return;
-  try{
-    await sb.from('engangskoder').delete().eq('id',id);
-    hentEngangskoder();
-  }catch(e){alert('Feil: '+e.message);}
-}
-
-function kopierKode(kode){
-  navigator.clipboard.writeText(kode).then(()=>{
-    alert('Kopiert: '+kode);
-  }).catch(()=>{
-    prompt('Kopier denne koden:',kode);
-  });
-}
-
-
-
-// =========================================
 // PWA: installer som app
 // =========================================
 (function(){
@@ -3512,12 +3247,12 @@ function kopierKode(kode){
   }
 
   function erStephen(){
-    return sessionStorage.getItem('kb_bruker')==='Stephen';
+    return window.KBAuth.employee?.name==='Stephen';
   }
 
   function settInnBoble(){
     if(document.getElementById('tilbakemeldingBoble'))return;
-    if(sessionStorage.getItem('kb_auth')!=='1')return;
+    if((window.KBAuth.employee ? '1' : null)!=='1')return;
 
     const b=document.createElement('div');
     b.id='tilbakemeldingBoble';
@@ -3569,7 +3304,7 @@ function kopierKode(kode){
       const {error}=await kbSb.from('tilbakemeldinger').insert({
         id:Date.now().toString(),
         melding:tekst,
-        fra:sessionStorage.getItem('kb_bruker')||'Ukjent',
+        fra:window.KBAuth.employee?.name||'Ukjent',
         side:hentSidenavn(),
         url:location.pathname,
         bruker_agent:navigator.userAgent.slice(0,200)
@@ -3699,7 +3434,7 @@ function kopierKode(kode){
 
   // Init: vises etter bruker-velger har valgt
   function vent(){
-    if(sessionStorage.getItem('kb_auth')==='1' && sessionStorage.getItem('kb_bruker')){
+    if((window.KBAuth.employee ? '1' : null)==='1' && window.KBAuth.employee?.name){
       settInnBoble();
     } else {
       setTimeout(vent,1000);
@@ -4278,14 +4013,7 @@ function visKundeHistorikk(kunde){
 
 
 
-function loggUt(){
-  if(!confirm('Logg ut nå?'))return;
-  sessionStorage.removeItem('kb_auth');
-  sessionStorage.removeItem('kb_bruker');
-  sessionStorage.removeItem('kb_via_firmakode');
-  localStorage.removeItem('kb_last_activity');
-  location.reload();
-}
+async function loggUt(){ await window.KBAuth.logoutAndReturn(); }
 
 
 // =========================================
@@ -4370,40 +4098,4 @@ function aktiverAdresseSok(){
 }
 
 // =========================================
-// AUTO-LOGOUT etter 30 min inaktivitet
-// =========================================
-(function(){
-  const TIMEOUT_MS = 30 * 60 * 1000;
-  const STORAGE_KEY = 'kb_last_activity';
-
-  function oppdaterAktivitet(){
-    if(sessionStorage.getItem('kb_auth') === '1'){
-      localStorage.setItem(STORAGE_KEY, Date.now().toString());
-    }
-  }
-
-  function sjekkTimeout(){
-    if(sessionStorage.getItem('kb_auth') !== '1') return;
-    const sist = parseInt(localStorage.getItem(STORAGE_KEY) || '0');
-    if(sist === 0){ oppdaterAktivitet(); return; }
-    if(Date.now() - sist > TIMEOUT_MS){
-      sessionStorage.removeItem('kb_auth');
-      sessionStorage.removeItem('kb_bruker');
-      localStorage.removeItem(STORAGE_KEY);
-      alert('Du er logget ut på grunn av inaktivitet (30 min). Skriv inn koden igjen.');
-      location.reload();
-    }
-  }
-
-  ['click','keydown','scroll','touchstart'].forEach(e=>{
-    document.addEventListener(e, oppdaterAktivitet, {passive: true});
-  });
-
-  setInterval(sjekkTimeout, 30000);
-
-  if(sessionStorage.getItem('kb_auth') === '1'){
-    sjekkTimeout();
-    oppdaterAktivitet();
-  }
-})();
-
+// Session expiry and inactivity handled by kb-gate.js.

@@ -14,6 +14,9 @@
 <meta name="apple-mobile-web-app-title" content="KB">
 <link rel="apple-touch-icon" href="/icon-180.png">
 <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+<script src="/kb-auth.js"></script>
+<script src="/kb-media.js"></script>
+<script src="/kb-gate.js" defer></script>
 </head>
 <body>
 
@@ -30,14 +33,14 @@
   </div>
 </div>
 
-<script src="/anbudskalkulator-1.js"></script>
+
 
 
 <header>
   <div class="container logo" style="position:relative;cursor:pointer" onclick="if(typeof visHovedmeny==='function')visHovedmeny()" title="Tilbake til hovedmeny">
     <div class="header-knapper" style="position:absolute;right:0;top:50%;transform:translateY(-50%);display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end">
       <button onclick="event.stopPropagation();openProsjekter()" class="hdr-btn" title="Lagrede prosjekter"><span class="hdr-ikon">📂</span><span class="hdr-tekst">Prosjekter</span></button>
-      <button id="engangskoderBtn" onclick="event.stopPropagation();openEngangskoder()" class="hdr-btn" style="display:none" title="Generer gjeste-koder"><span class="hdr-ikon">🔑</span><span class="hdr-tekst">Engangskoder</span></button>
+      <button id="engangskoderBtn" onclick="event.stopPropagation();openEngangskoder()" class="hdr-btn" style="display:none" title="Lag gjestekoder til demovisningen"><span class="hdr-ikon">🔑</span><span class="hdr-tekst">Demokoder</span></button>
       <button onclick="event.stopPropagation();openInfo()" class="hdr-btn" title="Hvordan bruke kalkulatoren"><span class="hdr-ikon">ℹ</span><span class="hdr-tekst">Hjelp</span></button>
       <button onclick="event.stopPropagation();openPrisInnstillinger()" class="hdr-btn" title="Innstillinger"><span class="hdr-ikon">⚙</span><span class="hdr-tekst">Innstillinger</span></button>
       <button onclick="event.stopPropagation();loggUt()" class="hdr-btn hdr-btn-red" title="Logg ut"><span class="hdr-ikon">🚪</span><span class="hdr-tekst">Logg ut</span></button>
@@ -1324,7 +1327,6 @@ Generelt tverrfaglig samarbeid.</textarea>
 
 <link rel="stylesheet" href="/anbudskalkulator-4.css">
 
-<script src="/anbudskalkulator-2.js"></script>
+<script type="text/plain" data-kb-script="/anbudskalkulator-2.js"></script>
 </body>
 </html>
-

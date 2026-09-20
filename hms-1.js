@@ -4,7 +4,6 @@
 // ============================================
 const SUPABASE_URL=window.KBDatabase.url;
 const SUPABASE_KEY=window.KBDatabase.key;
-const FIRMAKODE='671342';
 let sb=null;
 try{ if(window.supabase) sb=window.KBDatabase.getClient(); }catch(e){console.error(e);}
 
@@ -48,97 +47,17 @@ let redigerSjaId=null, redigerAvvikId=null, redigerVrId=null, redigerStoffId=nul
 // ============================================
 // PASSORD OG BRUKER
 // ============================================
-async function sjekkEngangskode(kode){
-  try{
-    if(!window.supabase)return false;
-    const sbe=window.KBDatabase.getClient();
-    const {data,error}=await sbe.from('engangskoder').select('*').eq('kode',kode).eq('brukt',false).maybeSingle();
-    if(error||!data)return false;
-    if(data.gyldig_til && new Date(data.gyldig_til)<new Date())return false;
-    await sbe.from('engangskoder').update({brukt:true,brukt_dato:new Date().toISOString(),brukt_av:'gjest'}).eq('id',data.id);
-    return true;
-  }catch(e){console.error(e);return false;}
-}
-
-async function hashPassord(passord){
-  const buffer=new TextEncoder().encode(passord);
-  const hashBuffer=await crypto.subtle.digest('SHA-256',buffer);
-  return Array.from(new Uint8Array(hashBuffer)).map(b=>b.toString(16).padStart(2,'0')).join('');
-}
-
-async function sjekkPersonligPassord(kode){
-  try{
-    if(!window.supabase)return null;
-    const sbLoc=window.KBDatabase.getClient();
-    const hash=await hashPassord(kode);
-    const {data,error}=await sbLoc.from('brukere').select('*').eq('passord_hash',hash).maybeSingle();
-    if(error||!data)return null;
-    return data.navn;
-  }catch(e){console.error(e);return null;}
-}
-
-async function sjekkPassord(){
-  const inp=document.getElementById('pwd-input').value.trim();
-  // 1. Personlig passord først
-  const brukerNavn=await sjekkPersonligPassord(inp);
-  if(brukerNavn){
-    sessionStorage.setItem('kb_auth','1');
-    sessionStorage.setItem('kb_bruker',brukerNavn);
-    visApp();
-    return;
-  }
-  // 2. Firmakode
-  if(inp===FIRMAKODE){
-    sessionStorage.setItem('kb_auth','1');
-    visApp();
-    return;
-  }
-  // 3. Engangskode
-  if(await sjekkEngangskode(inp)){
-    sessionStorage.setItem('kb_auth','1');
-    sessionStorage.setItem('kb_bruker','Gjest');
-    visApp();
-    return;
-  }
-  document.getElementById('pwd-error').style.display='block';
-  document.getElementById('pwd-input').value='';
-}
-document.getElementById('pwd-input').addEventListener('keypress',e=>{ if(e.key==='Enter')sjekkPassord(); });
-
 function visApp(){
   document.getElementById('pwd-screen').style.display='none';
   document.getElementById('app-content').style.display='block';
   visBrukerVelger();
-  if(sessionStorage.getItem('kb_bruker'))hentAlt();
+  if(window.KBAuth.employee?.name)hentAlt();
 }
 
-function hentBruker(){ return sessionStorage.getItem('kb_bruker')||'Ukjent'; }
+function hentBruker(){ return window.KBAuth.employee?.name||'Ukjent'; }
 
-function visBrukerVelger(){
-  if(sessionStorage.getItem('kb_bruker'))return;
-  if(document.getElementById('brukerVelger'))return;
-  const d=document.createElement('div');
-  d.id='brukerVelger';
-  d.style.cssText='position:fixed;inset:0;background:#1a3a5c;z-index:9998;display:flex;align-items:center;justify-content:center;font-family:-apple-system,sans-serif';
-  d.innerHTML=`
-    <div style="background:#fff;padding:40px 50px;border-radius:14px;max-width:420px;width:90%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3)">
-      <div style="font-size:42px;margin-bottom:8px">👋</div>
-      <h2 style="color:#1a3a5c;font-size:22px;margin-bottom:6px">Hvem er du?</h2>
-      <p style="color:#667085;font-size:14px;margin-bottom:20px">Velg navn for å spore hvem som gjorde hva</p>
-      <div style="display:grid;gap:10px">
-        <button class="btn" onclick="velgBruker('Eivind')" style="width:100%">Eivind</button>
-        <button class="btn" onclick="velgBruker('Eirik')" style="width:100%">Eirik</button>
-        <button class="btn" onclick="velgBruker('Stephen')" style="width:100%">Stephen</button>
-      </div>
-    </div>`;
-  document.body.appendChild(d);
-}
-function velgBruker(navn){
-  sessionStorage.setItem('kb_bruker',navn);
-  const v=document.getElementById('brukerVelger');
-  if(v)v.remove();
-  hentAlt();
-}
+function visBrukerVelger(){ /* Identity comes from verified Google sign-in. */ }
+function velgBruker(){ /* Identity comes from verified Google sign-in. */ }
 
 // ============================================
 // SKY-SYNC
@@ -312,7 +231,7 @@ function byggSignaturListe(){
     el.innerHTML='<div style="background:#f5f7fa;padding:12px;border-radius:8px;color:var(--muted);font-size:13px;text-align:center">Legg til deltakere over først</div>';
     return;
   }
-  const innloggetBruker=(sessionStorage.getItem('kb_bruker')||'').toLowerCase();
+  const innloggetBruker=(window.KBAuth.employee?.name||'').toLowerCase();
   const kbAnsatte=['stephen','eirik','eivind'];
   el.innerHTML=deltakere.map(navn=>{
     const sig=sjaSignaturer.find(s=>s.navn.toLowerCase()===navn.toLowerCase());
@@ -449,7 +368,7 @@ function godkjennSignatur(navn){
   if(!signaturHarTegning){alert('Tegn signaturen din først.');return;}
   const canvas=document.getElementById('signaturCanvas');
   const signaturBilde=canvas.toDataURL('image/png');
-  const innloggetBruker=sessionStorage.getItem('kb_bruker')||'Ukjent';
+  const innloggetBruker=window.KBAuth.employee?.name||'Ukjent';
   const erSegSelv=navn.toLowerCase()===innloggetBruker.toLowerCase();
   sjaSignaturer=sjaSignaturer.filter(s=>s.navn.toLowerCase()!==navn.toLowerCase());
   sjaSignaturer.push({
@@ -1069,7 +988,7 @@ function formaterDato(d){if(!d)return '-';try{return new Date(d).toLocaleDateStr
 // ============================================
 // INIT
 // ============================================
-if(sessionStorage.getItem('kb_auth')==='1'){
+if((window.KBAuth.employee ? '1' : null)==='1'){
   visApp();
 } else {
   setTimeout(()=>document.getElementById('pwd-input').focus(),100);
@@ -1412,12 +1331,12 @@ function pdfVernerunde(id){
   }
 
   function erStephen(){
-    return sessionStorage.getItem('kb_bruker')==='Stephen';
+    return window.KBAuth.employee?.name==='Stephen';
   }
 
   function settInnBoble(){
     if(document.getElementById('tilbakemeldingBoble'))return;
-    if(sessionStorage.getItem('kb_auth')!=='1')return;
+    if((window.KBAuth.employee ? '1' : null)!=='1')return;
 
     const b=document.createElement('div');
     b.id='tilbakemeldingBoble';
@@ -1469,7 +1388,7 @@ function pdfVernerunde(id){
       const {error}=await kbSb.from('tilbakemeldinger').insert({
         id:Date.now().toString(),
         melding:tekst,
-        fra:sessionStorage.getItem('kb_bruker')||'Ukjent',
+        fra:window.KBAuth.employee?.name||'Ukjent',
         side:hentSidenavn(),
         url:location.pathname,
         bruker_agent:navigator.userAgent.slice(0,200)
@@ -1599,7 +1518,7 @@ function pdfVernerunde(id){
 
   // Init: vises etter bruker-velger har valgt
   function vent(){
-    if(sessionStorage.getItem('kb_auth')==='1' && sessionStorage.getItem('kb_bruker')){
+    if((window.KBAuth.employee ? '1' : null)==='1' && window.KBAuth.employee?.name){
       settInnBoble();
     } else {
       setTimeout(vent,1000);
@@ -1613,14 +1532,7 @@ function pdfVernerunde(id){
 })();
 
 
-function loggUt(){
-  if(!confirm('Logg ut nå?'))return;
-  sessionStorage.removeItem('kb_auth');
-  sessionStorage.removeItem('kb_bruker');
-  sessionStorage.removeItem('kb_via_firmakode');
-  localStorage.removeItem('kb_last_activity');
-  location.reload();
-}
+async function loggUt(){ await window.KBAuth.logoutAndReturn(); }
 
 
 // =========================================
@@ -1695,40 +1607,4 @@ function aktiverAdresseSokHMS(){
 }
 
 // =========================================
-// AUTO-LOGOUT etter 30 min inaktivitet
-// =========================================
-(function(){
-  const TIMEOUT_MS = 30 * 60 * 1000;
-  const STORAGE_KEY = 'kb_last_activity';
-
-  function oppdaterAktivitet(){
-    if(sessionStorage.getItem('kb_auth') === '1'){
-      localStorage.setItem(STORAGE_KEY, Date.now().toString());
-    }
-  }
-
-  function sjekkTimeout(){
-    if(sessionStorage.getItem('kb_auth') !== '1') return;
-    const sist = parseInt(localStorage.getItem(STORAGE_KEY) || '0');
-    if(sist === 0){ oppdaterAktivitet(); return; }
-    if(Date.now() - sist > TIMEOUT_MS){
-      sessionStorage.removeItem('kb_auth');
-      sessionStorage.removeItem('kb_bruker');
-      localStorage.removeItem(STORAGE_KEY);
-      alert('Du er logget ut på grunn av inaktivitet (30 min). Skriv inn koden igjen.');
-      location.reload();
-    }
-  }
-
-  ['click','keydown','scroll','touchstart'].forEach(e=>{
-    document.addEventListener(e, oppdaterAktivitet, {passive: true});
-  });
-
-  setInterval(sjekkTimeout, 30000);
-
-  if(sessionStorage.getItem('kb_auth') === '1'){
-    sjekkTimeout();
-    oppdaterAktivitet();
-  }
-})();
-
+// Session expiry and inactivity handled by kb-gate.js.
