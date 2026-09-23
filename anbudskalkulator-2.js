@@ -2722,7 +2722,7 @@ function setProsjektTab(tab){
     el.innerHTML=liste.map(p=>{
       const dato=new Date(p.sist_endret||p.dato).toLocaleDateString('nb-NO');
       const aktiv=p.id===aktivProsjektId?'aktiv':'';
-      return `<div class="prosjekt-card ${aktiv}" onclick="lastInnProsjekt('${p.id}')"><div><h4>${escapeHtml(p.navn)}${aktiv?' <small style="color:var(--primary);font-weight:600">· ÅPEN NÅ</small>':''}</h4><div class="meta">${p.kunde?escapeHtml(p.kunde)+' · ':''}Sist endret ${dato}${p.endret_av?' av '+escapeHtml(p.endret_av):''}</div><div style="margin-top:6px"><span class="prosjekt-status status-${p.status||'utkast'}">${statusLbl[p.status||'utkast']}</span></div></div><div style="text-align:right"><div class="sum">kr ${(p.total||0).toLocaleString('nb-NO')}</div><div style="margin-top:6px;display:flex;gap:4px;justify-content:flex-end">${(p.state?.bilder&&p.state.bilder.length>0)?`<span style="background:#fff;color:#92400e;border:1px solid #f0d68a;padding:4px 8px;border-radius:4px;font-size:11px" title="${p.state.bilder.length} bilder">📷 ${p.state.bilder.length}</span>`:''}${p.status==='akseptert'?`<button onclick="event.stopPropagation();startProsjekt('${p.id}')" title="Start prosjekt - opprett kalender-hendelse" style="background:#16a34a;color:#fff;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;font-size:11px;font-weight:600">▶</button>`:''}${(p.kunde)?`<button onclick="event.stopPropagation();visKundeHistorikk('${escapeAttr(p.kunde)}')" title="Se alle prosjekter for ${escapeAttr(p.kunde)}" style="background:#fff;color:var(--primary);border:1px solid var(--border);padding:4px 8px;border-radius:4px;cursor:pointer;font-size:11px">👤</button>`:''}<button onclick="event.stopPropagation();lagreSomMal('${p.id}')" title="Lagre som mal" style="background:#fff;color:#92400e;border:1px solid #f0d68a;padding:4px 8px;border-radius:4px;cursor:pointer;font-size:11px">⭐</button><button onclick="event.stopPropagation();dupliserProsjekt('${p.id}')" title="Dupliser" style="background:#fff;color:var(--primary);border:1px solid var(--border);padding:4px 8px;border-radius:4px;cursor:pointer;font-size:11px">📋</button><button onclick="event.stopPropagation();slettProsjekt('${p.id}')" title="Slett" style="background:#fff;color:#dc2626;border:1px solid #fca5a5;padding:4px 8px;border-radius:4px;cursor:pointer;font-size:11px">🗑️</button></div></div></div>`;
+      return `<div class="prosjekt-card ${aktiv}" onclick="lastInnProsjekt('${p.id}')"><div><h4>${escapeHtml(p.navn)}${aktiv?' <small style="color:var(--primary);font-weight:600">· ÅPEN NÅ</small>':''}</h4><div class="meta">${p.kunde?escapeHtml(p.kunde)+' · ':''}Sist endret ${dato}${p.endret_av?' av '+escapeHtml(p.endret_av):''}</div><div style="margin-top:6px"><span class="prosjekt-status status-${p.status||'utkast'}">${statusLbl[p.status||'utkast']}</span></div></div><div style="text-align:right"><div class="sum">kr ${(p.total||0).toLocaleString('nb-NO')}</div><div style="margin-top:6px;display:flex;gap:4px;justify-content:flex-end">${(p.state?.bilder&&p.state.bilder.length>0)?`<span style="background:#fff;color:#92400e;border:1px solid #f0d68a;padding:4px 8px;border-radius:4px;font-size:11px" title="${p.state.bilder.length} bilder">📷 ${p.state.bilder.length}</span>`:''}<button onclick="event.stopPropagation();startProsjekt('${p.id}')" title="Planlegg arbeid i kalender" style="padding:4px 8px;cursor:pointer">Planlegg arbeid</button>${(p.kunde)?`<button onclick="event.stopPropagation();visKundeHistorikk('${escapeAttr(p.kunde)}')" title="Se alle prosjekter for ${escapeAttr(p.kunde)}" style="background:#fff;color:var(--primary);border:1px solid var(--border);padding:4px 8px;border-radius:4px;cursor:pointer;font-size:11px">👤</button>`:''}<button onclick="event.stopPropagation();lagreSomMal('${p.id}')" title="Lagre som mal" style="background:#fff;color:#92400e;border:1px solid #f0d68a;padding:4px 8px;border-radius:4px;cursor:pointer;font-size:11px">⭐</button><button onclick="event.stopPropagation();dupliserProsjekt('${p.id}')" title="Dupliser" style="background:#fff;color:var(--primary);border:1px solid var(--border);padding:4px 8px;border-radius:4px;cursor:pointer;font-size:11px">📋</button><button onclick="event.stopPropagation();slettProsjekt('${p.id}')" title="Slett" style="background:#fff;color:#dc2626;border:1px solid #fca5a5;padding:4px 8px;border-radius:4px;cursor:pointer;font-size:11px">🗑️</button></div></div></div>`;
     }).join('');
   } else if(tab==='statistikk'){
     document.getElementById('prosjektFilterChips').style.display='none';
@@ -2800,13 +2800,16 @@ function visSkyStatus(tekst,farge){
   if(!ind)return;
   ind.textContent=tekst;
   ind.style.color=farge||'#667085';
-  if(tekst.includes('Synket'))setTimeout(()=>{if(ind.textContent===tekst)ind.textContent='';},2500);
+  ind.setAttribute('role','status');
+  const visible=document.getElementById('kb-save-status');if(visible)visible.textContent=tekst;
 }
 
 async function syncFraSky(){
+  if(projectSaveQueue.hasPending()&&!await projectSaveQueue.drain())return false;
   if(!sb){visSkyStatus('⚠ Sky utilgjengelig','#dc2626');return false;}
   try{
     visSkyStatus('Henter fra sky...','#667085');
+    const requestedRevision=projectSaveQueue.revision();
     const {data,error}=await sb.from('prosjekter').select('*').order('sist_endret',{ascending:false});
     if(error)throw error;
     const liste=data.map(p=>({
@@ -2815,6 +2818,7 @@ async function syncFraSky(){
       total:p.total||0, state:p.state,
       opprettet_av:p.opprettet_av, endret_av:p.endret_av
     }));
+    if(projectSaveQueue.hasPending()||requestedRevision!==projectSaveQueue.revision()){visSkyStatus('Nye endringer venter på lagring','#b45309');return false;}
     localStorage.setItem('kb_prosjekter_v1',JSON.stringify(liste));
     visSkyStatus('✓ Synket fra sky','#16a34a');
     if(typeof renderProsjektListe==='function')renderProsjektListe();
@@ -2826,40 +2830,29 @@ async function syncFraSky(){
   }
 }
 
-async function syncTilSky(liste){
-  if(!sb)return false;
-  try{
-    const bruker=hentBruker();
-    const rows=liste.map(p=>({
-      id:p.id, navn:p.navn, kunde:p.kunde||'', dato:p.dato||new Date().toISOString(),
-      sist_endret:p.sist_endret||new Date().toISOString(),
-      status:p.status||'utkast', total:p.total||0, state:p.state,
-      opprettet_av:p.opprettet_av||bruker, endret_av:bruker
-    }));
-    const {error}=await sb.from('prosjekter').upsert(rows);
-    if(error)throw error;
-    return true;
-  }catch(e){
-    console.error('Sync til sky feilet:',e);
-    return false;
-  }
-}
-
-async function slettISky(id){
-  if(!sb)return;
-  try{ await sb.from('prosjekter').delete().eq('id',id); }
-  catch(e){console.error('Slett i sky feilet:',e);}
-}
-
-// Override lagreProsjekterListe slik at den også synker til sky
-const _orig_lagreProsjekterListe=lagreProsjekterListe;
+const savePanel=document.createElement('div');
+savePanel.style.cssText='position:fixed;left:12px;bottom:68px;z-index:999;background:white;border:1px solid #ccd5df;border-radius:8px;padding:10px;max-width:min(440px,calc(100vw - 24px));font:13px system-ui;box-shadow:0 2px 10px #0001';
+const saveText=document.createElement('span');saveText.id='kb-save-status';saveText.setAttribute('role','status');saveText.textContent='Ingen nye endringer';
+const retrySave=document.createElement('button');retrySave.textContent='Prøv lagring igjen';retrySave.hidden=true;retrySave.style.marginLeft='8px';
+savePanel.append(saveText,retrySave);document.body.append(savePanel);
+const projectSaveQueue=KBSaveQueue.create({storage:localStorage,key:'kb_pending_projects_v1_'+KBAuth.employee.id,
+ status:(message,state)=>{visSkyStatus(message,state==='error'?'#b45309':state==='saved'?'#15803d':'#667085');saveText.textContent=message;retrySave.hidden=state!=='error';},
+ write:async(id,operation)=>{if(!sb)throw Error('Ingen forbindelse');const result=operation.kind==='delete'?await sb.from('prosjekter').delete().eq('id',id):await sb.from('prosjekter').upsert(operation.row);if(result.error)throw result.error;}
+});
+retrySave.onclick=()=>projectSaveQueue.drain();
+window.addEventListener('online',()=>{if(projectSaveQueue.hasPending())projectSaveQueue.drain();});
+window.addEventListener('beforeunload',event=>{if(projectSaveQueue.hasPending()){event.preventDefault();event.returnValue='';}});
+function projectRow(p){const bruker=hentBruker();return {id:p.id,navn:p.navn,kunde:p.kunde||'',dato:p.dato||new Date().toISOString(),sist_endret:p.sist_endret||new Date().toISOString(),status:p.status||'utkast',total:p.total||0,state:p.state,opprettet_av:p.opprettet_av||bruker,endret_av:bruker};}
+async function syncTilSky(liste){for(const p of liste)projectSaveQueue.enqueue(p.id,{kind:'save',row:projectRow(p)});return projectSaveQueue.drain();}
+async function slettISky(id){projectSaveQueue.enqueue(id,{kind:'delete'});return projectSaveQueue.drain();}
 lagreProsjekterListe=function(liste){
-  _orig_lagreProsjekterListe(liste);
-  if(typeof oppdaterPaAnbudBadge==='function')oppdaterPaAnbudBadge();
-  syncTilSky(liste).then(ok=>{
-    if(ok)visSkyStatus('✓ Synket','#16a34a');
-    else visSkyStatus('⚠ Sync feilet','#dc2626');
-  });
+ const previous=new Map(lasteProsjekter().map(p=>[String(p.id),JSON.stringify(p)]));
+ const changed=liste.filter(p=>previous.get(String(p.id))!==JSON.stringify(p));
+ // Queue first so a failed/reloaded browser cannot silently replace an unsent edit from the cloud.
+ for(const p of changed)projectSaveQueue.enqueue(p.id,{kind:'save',row:projectRow(p)});
+ try{localStorage.setItem('kb_prosjekter_v1',JSON.stringify(liste));}catch{saveText.textContent='Lokal lagring feilet. Hold siden åpen til skylagringen er bekreftet.';}
+ if(typeof oppdaterPaAnbudBadge==='function')oppdaterPaAnbudBadge();
+ if(changed.length)projectSaveQueue.drain();
 };
 
 async function importerLokaleProsjekter(){
@@ -2882,15 +2875,6 @@ function visBrukerVelger(){ /* Identity comes from verified Google sign-in. */ }
 function velgBruker(){ /* Identity comes from verified Google sign-in. */ }
 
 function visSettPersonligPassord(){ alert('Innlogging og passord administreres av Google.'); }
-
-function erGjest(){
-  return window.KBAuth.employee?.name==='Gjest';
-}
-
-function oppdaterTilgangsRettigheter(){
-  const btn=document.getElementById('engangskoderBtn');
-  if(btn)btn.style.display=erGjest()?'none':'inline-block';
-}
 
 // Init etter at alt er klart
 window.addEventListener('DOMContentLoaded',()=>{
@@ -3951,18 +3935,12 @@ function escapeAttr(s){if(!s)return '';return String(s).replace(/'/g,'&#39;').re
 // START PROSJEKT (kalender-hendelse)
 // =========================================
 function startProsjekt(id){
-  const p=lasteProsjekter().find(x=>x.id===id);
-  if(!p)return;
-  const startDato=prompt('Startdato for prosjektet (YYYY-MM-DD):',new Date().toISOString().slice(0,10));
-  if(!startDato)return;
-  const sluttDato=prompt('Sluttdato (YYYY-MM-DD):',startDato);
-  if(!sluttDato)return;
-  // Bygg Google Calendar URL
-  const tittel=encodeURIComponent(p.navn+' - '+(p.kunde||''));
-  const detaljer=encodeURIComponent(`Prosjekt fra Komplett Byggdrift\n\nKunde: ${p.kunde||'-'}\nStatus: Akseptert\nTotal: kr ${(p.total||0).toLocaleString('nb-NO')} eks. mva.`);
-  const start=startDato.replace(/-/g,'')+'/'+sluttDato.replace(/-/g,'');
-  const url=`https://calendar.google.com/calendar/u/0/r/eventedit?text=${tittel}&details=${detaljer}&dates=${start}`;
-  window.open(url,'_blank','noopener');
+  if(id===aktivProsjektId)autoSaveProsjekt();
+  const p=lasteProsjekter().find(x=>x.id===id);if(!p)return;
+  const t=p.state?.tilbud||{};
+  try{sessionStorage.setItem('kb_work_plan_draft',JSON.stringify({employee:KBAuth.employee.id,created:Date.now(),title:p.navn||'',address:t.sted||'',notes:t.punkter||'',responsible:hentBruker()}));}
+  catch{alert('Kunne ikke overføre prosjektet. Åpne kalenderen og fyll inn oppdraget der.');return;}
+  location.href='/kalender.html';
 }
 
 // =========================================

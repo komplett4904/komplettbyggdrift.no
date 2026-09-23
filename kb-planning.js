@@ -17,6 +17,14 @@
   const now=new Date(),today=new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Oslo',year:'numeric',month:'2-digit',day:'2-digit'}).format(now);
   el('date').value=today;el('end-date').value=today;
   el('date').addEventListener('change',()=>{if(el('end-date').value<el('date').value)el('end-date').value=el('date').value;});
+  try{
+    const draft=JSON.parse(sessionStorage.getItem('kb_work_plan_draft')||'null');sessionStorage.removeItem('kb_work_plan_draft');
+    if(draft&&draft.employee===employee.id&&Date.now()-draft.created<30*60*1000){
+      el('title').value=String(draft.title||'').slice(0,160);el('address').value=String(draft.address||'').slice(0,200);
+      el('notes').value=('Ansvarlig: '+employee.name+'\n'+String(draft.notes||'')).slice(0,1800);
+      el('status').textContent='Prosjektet er hentet inn. Velg dato og klokkeslett for arbeidet.';
+    }
+  }catch{}
   const form=document.getElementById('work-plan');
   form.addEventListener('input',()=>{el('draft').hidden=true;el('map').hidden=true;el('status').textContent='';});
   form.addEventListener('submit',event=>{
