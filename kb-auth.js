@@ -35,7 +35,7 @@
     return currentEmployee;
   }
   async function signIn() {
-    const allowedPages = ['/tilganger.html','/okonomi.html','/innlogging.html', '/anbudskalkulator.html', '/hms.html', '/kalender.html'];
+    const allowedPages = ['/tilbud.html','/tilganger.html','/okonomi.html','/innlogging.html', '/anbudskalkulator.html', '/hms.html', '/kalender.html'];
     if(allowedPages.includes(window.location.pathname) && window.location.pathname !== '/innlogging.html') window.sessionStorage.setItem('kb_return_to',window.location.pathname);
     // Fixed production origin prevents untrusted redirect query parameters from being reused.
     const { error } = await client().auth.signInWithOAuth({

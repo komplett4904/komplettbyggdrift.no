@@ -12,7 +12,7 @@
   try {
     const employee=await window.KBAuth.getEmployee();
     if(!employee){status.textContent='';button.hidden=false;return;}
-    const pageModules={'/anbudskalkulator.html':'projects','/hms.html':'hms','/kalender.html':'calendar','/okonomi.html':'finance'};
+    const pageModules={'/tilbud.html':'projects','/anbudskalkulator.html':'projects','/hms.html':'hms','/kalender.html':'calendar','/okonomi.html':'finance'};
     const required=pageModules[location.pathname];
     if((required&&!KBAuth.can(required))||(location.pathname==='/tilganger.html'&&!employee.isAdmin)){
       status.textContent='Du har ikke tilgang til dette verktøyet. Kontakt Stephen eller Eirik.';
