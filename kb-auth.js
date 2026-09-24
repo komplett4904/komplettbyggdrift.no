@@ -23,16 +23,19 @@
     if (error || !data.user) throw accessError('Innloggingen kunne ikke bekreftes. Logg inn på nytt.', 'verification_error');
     const user = data.user;
     const email = (user.email || '').trim().toLowerCase();
-    if (!user.id || !user.email_confirmed_at || !employees.has(email)) {
+    if (!user.id || !user.email_confirmed_at || !email.endsWith('@komplettbyggdrift.no')) {
       throw accessError('Denne Google-kontoen har ikke tilgang. Bruk firmaadressen din.', 'forbidden');
     }
     const { data: allowed, error: permissionError } = await client().rpc('kb_employee_access');
     if(permissionError || allowed !== true) throw accessError('Kontotilgangen kunne ikke bekreftes. Prøv igjen eller kontakt Stephen.', 'forbidden');
-    currentEmployee = Object.freeze({ id: user.id, email, name: employees.get(email) });
+    const {data: access,error: accessFailure}=await client().from('kb_access').select('name,modules,active').eq('email',email).single();
+    const {data: admin,error: adminFailure}=await client().rpc('kb_is_admin');
+    if(accessFailure||adminFailure||!access?.active)throw accessError('Tilgangen kunne ikke bekreftes.','forbidden');
+    currentEmployee = Object.freeze({id:user.id,email,name:access.name,isAdmin:admin===true,modules:Object.freeze(access.modules||[])});
     return currentEmployee;
   }
   async function signIn() {
-    const allowedPages = ['/innlogging.html', '/anbudskalkulator.html', '/hms.html', '/kalender.html'];
+    const allowedPages = ['/tilganger.html','/okonomi.html','/innlogging.html', '/anbudskalkulator.html', '/hms.html', '/kalender.html'];
     if(allowedPages.includes(window.location.pathname) && window.location.pathname !== '/innlogging.html') window.sessionStorage.setItem('kb_return_to',window.location.pathname);
     // Fixed production origin prevents untrusted redirect query parameters from being reused.
     const { error } = await client().auth.signInWithOAuth({
@@ -53,5 +56,6 @@
     try { await signOut(); }
     finally { window.location.replace('/innlogging.html'); }
   }
-  window.KBAuth = Object.freeze({ getEmployee, signIn, signOut, logoutAndReturn, get employee(){return currentEmployee;} });
+  function can(moduleName){return !!currentEmployee&&(currentEmployee.isAdmin||currentEmployee.modules.includes(moduleName));}
+  window.KBAuth = Object.freeze({ can, getEmployee, signIn, signOut, logoutAndReturn, get employee(){return currentEmployee;} });
 })();

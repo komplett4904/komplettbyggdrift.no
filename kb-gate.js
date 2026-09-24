@@ -12,10 +12,17 @@
   try {
     const employee=await window.KBAuth.getEmployee();
     if(!employee){status.textContent='';button.hidden=false;return;}
+    const pageModules={'/anbudskalkulator.html':'projects','/hms.html':'hms','/kalender.html':'calendar','/okonomi.html':'finance'};
+    const required=pageModules[location.pathname];
+    if((required&&!KBAuth.can(required))||(location.pathname==='/tilganger.html'&&!employee.isAdmin)){
+      status.textContent='Du har ikke tilgang til dette verktøyet. Kontakt Stephen eller Eirik.';
+      const back=document.createElement('a');back.href='/innlogging.html';back.textContent='Til mine verktøy';status.after(back);return;
+    }
     // The legacy flags are not accepted for authentication. Only the verified identity is used below.
     for(const key of ['kb_auth','kb_bruker','kb_via_firmakode'])sessionStorage.removeItem(key);
     window.KBMedia.start();
     for(const placeholder of document.querySelectorAll('script[data-kb-script]')){
+      if(placeholder.dataset.kbScript==='/kb-feedback.js'&&!KBAuth.can('feedback'))continue;
       await new Promise((resolve,reject)=>{const script=document.createElement('script');script.src=placeholder.dataset.kbScript;script.onload=resolve;script.onerror=()=>reject(Error('Verktøyet kunne ikke lastes. Last siden på nytt.'));document.body.append(script);});
     }
     for(const id of ['passordSperre','pwd-screen']){const old=document.getElementById(id);if(old)old.remove();}
@@ -28,7 +35,13 @@
     const who=document.createElement('span');who.textContent=employee.name;
     const demos=document.createElement('a');demos.href='/demokoder.html';demos.textContent='Lag demokode';
     const logout=document.createElement('button');logout.textContent='Logg ut';logout.addEventListener('click',()=>window.KBAuth.logoutAndReturn());
-    tools.append(who,demos,logout);document.body.append(tools);
+    tools.append(who);if(KBAuth.can('demo'))tools.append(demos);
+    if(employee.isAdmin){const settings=document.createElement('a');settings.href='/tilganger.html';settings.textContent='Tilganger';tools.append(settings);}
+    if(KBAuth.can('finance')){const finance=document.createElement('a');finance.href='/okonomi.html';finance.textContent='Økonomi';tools.append(finance);}
+    tools.append(logout);
+    for(const a of document.querySelectorAll('a[href]')){const m=pageModules[new URL(a.href,location.href).pathname];if(m&&!KBAuth.can(m))a.hidden=true;}
+    if(!KBAuth.can('demo')){const b=document.getElementById('engangskoderBtn');if(b)b.style.display='none';}
+    setInterval(async()=>{try{const fresh=await KBAuth.getEmployee();if(!fresh||(required&&!KBAuth.can(required))||(location.pathname==='/tilganger.html'&&!fresh.isAdmin))location.replace('/innlogging.html');}catch{location.replace('/innlogging.html');}},60000);document.body.append(tools);
     window.KBDatabase.getClient().auth.onAuthStateChange(event=>{if(event==='SIGNED_OUT'){document.body.style.visibility='hidden';location.replace('/innlogging.html');}});
     let lastActivity=Date.now();
     for(const event of ['pointerdown','keydown','touchstart'])document.addEventListener(event,()=>{lastActivity=Date.now();},{passive:true});

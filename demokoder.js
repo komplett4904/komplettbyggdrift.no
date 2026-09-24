@@ -1,7 +1,7 @@
 'use strict';
 const statusEl=document.getElementById('status'),generate=document.getElementById('generate');let latestHash=null;
 async function digest(value){return Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(value))),b=>b.toString(16).padStart(2,'0')).join('');}
-(async()=>{try{const user=await KBAuth.getEmployee();if(!user){sessionStorage.setItem('kb_return_to','/demokoder.html');location.replace('/innlogging.html');return;}statusEl.textContent='Hei, '+user.name+'. Du kan lage demokoder her.';generate.hidden=false;}catch(e){statusEl.textContent=e.message;}})();
+(async()=>{try{const user=await KBAuth.getEmployee();if(!user){sessionStorage.setItem('kb_return_to','/demokoder.html');location.replace('/innlogging.html');return;}if(!KBAuth.can('demo'))throw Error('Du har ikke tilgang til demokoder. Kontakt Stephen eller Eirik.');statusEl.textContent='Hei, '+user.name+'. Du kan lage demokoder her.';generate.hidden=false;}catch(e){statusEl.textContent=e.message;}})();
 generate.addEventListener('click',async()=>{generate.disabled=true;try{
  if(!await KBAuth.getEmployee())throw Error('Logg inn på nytt.');
  const code=Array.from(crypto.getRandomValues(new Uint8Array(24)),b=>b.toString(16).padStart(2,'0')).join('');
