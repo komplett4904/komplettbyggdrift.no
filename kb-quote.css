@@ -1,0 +1,13 @@
+/* Clean offer layout, shared by calculator preview and browser printing. */
+#tilbudContent{max-width:900px;margin:0 auto;background:#fff;padding:34px 44px;border-radius:12px}
+#tilbudContent .tilbud-page{font-family:system-ui,sans-serif;box-shadow:none;padding:0;margin:0;max-width:none}
+#tilbudContent .tilbud-page+.tilbud-page{margin-top:20px}
+#tilbudContent .tilbud-runningheader{display:none!important}
+#tilbudContent .tilbud-logo{width:110px;margin:0 0 16px}
+#tilbudContent .tilbud-title{font-family:system-ui,sans-serif;color:#17324d;font-weight:700;font-size:30px}
+#tilbudContent .tilbud-type{color:#526e87;font-size:12px}
+#tilbudContent .tilbud-section{margin-bottom:18px}
+#tilbudContent .tilbud-signature{margin-top:24px}
+#quote-pdf-status{font:13px system-ui;color:#17324d}
+@media(max-width:600px){#tilbudContent{padding:22px 16px}#tilbudContent .tilbud-table{font-size:11px}.tilbud-actions{flex-wrap:wrap}}
+@media print{body.tilbud-open> :not(#tilbudOverlay){display:none!important}body.tilbud-open{overflow:visible!important;background:white}body.tilbud-open #tilbudOverlay{position:static!important;overflow:visible!important;padding:0!important}#tilbudContent{padding:0;margin:0;max-width:none;border-radius:0}#tilbudContent .tilbud-page{page-break-after:auto!important;break-after:auto!important}#tilbudContent .tilbud-section{break-inside:auto}#tilbudContent h1,#tilbudContent h2,#tilbudContent h3{break-after:avoid}#tilbudContent tr,#tilbudContent .tilbud-signature{break-inside:avoid}#tilbudContent thead{display:table-header-group}.tilbud-actions,#quote-pdf-status{display:none!important}}

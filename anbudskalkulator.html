@@ -19,7 +19,7 @@
 <script src="/kb-gate.js" defer></script>
 <link rel="stylesheet" href="/kb-finance.css?v=20260924-queue">
 <link rel="stylesheet" href="/kb-home.css?v=20260924-home">
-</head>
+<link rel="stylesheet" href="/kb-quote.css?v=20260924"></head>
 <body>
 
 <!-- Passord-sperre -->
@@ -1131,7 +1131,7 @@ Generelt tverrfaglig samarbeid.</textarea>
 <div id="tilbudOverlay" class="tilbud-overlay" style="display:none">
   <div class="tilbud-actions">
     <button class="btn btn-secondary" onclick="closeTilbud()">Lukk</button>
-    <button class="btn btn-primary" onclick="window.print()">Skriv ut / lagre som PDF</button>
+    <button class="btn btn-primary" onclick="downloadCalculatorOffer(this)">Last ned tilbud som PDF</button><span id="quote-pdf-status" role="status"></span>
   </div>
   <div id="tilbudContent"></div>
 </div>
@@ -1294,7 +1294,7 @@ Generelt tverrfaglig samarbeid.</textarea>
 
 <link rel="stylesheet" href="/anbudskalkulator-4.css">
 
-<script type="text/plain" data-kb-script="/kb-save-queue.js"></script>
+<script type="text/plain" data-kb-script="/jspdf-4.2.1.umd.min.js"></script><script type="text/plain" data-kb-script="/kb-quote-pdf.js?v=20260924"></script><script type="text/plain" data-kb-script="/kb-quote-export.js?v=20260924"></script><script type="text/plain" data-kb-script="/kb-save-queue.js"></script>
 <script type="text/plain" data-kb-script="/anbudskalkulator-2.js"></script>
 <script type="text/plain" data-kb-script="/kb-attachments.js"></script>
 <script type="text/plain" data-kb-script="/kb-feedback.js"></script>
