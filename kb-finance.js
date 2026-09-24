@@ -1,5 +1,12 @@
 (function(){
 'use strict';
+// Share one request queue so dashboard sections do not create Tripletex sessions concurrently.
+window.KBFinanceRequest=window.KBFinanceRequest||function(body){
+ const run=()=>KBDatabase.getClient().functions.invoke('tripletex-overview',{body});
+ const next=(window.KBFinancePending||Promise.resolve()).then(run,run);
+ window.KBFinancePending=next.catch(()=>{});return next;
+};
+
 const host=document.getElementById('kb-finance');if(!host||!KBAuth.can('finance'))return;host.hidden=false;
 const status=document.getElementById('finance-status'),button=document.getElementById('finance-retry'),section=button.parentElement;
 const year=document.createElement('select'),label=document.createElement('label');label.textContent='Regnskapsår';year.setAttribute('aria-label','Regnskapsår');
@@ -45,7 +52,7 @@ const chartFrame=document.createElement('div');chartFrame.className='finance-cha
 results.replaceChildren(info,summary,chartFrame,legend,details,note);
 }
 async function load(){button.disabled=true;year.disabled=true;results.replaceChildren();status.textContent='Henter økonomitall fra Tripletex …';try{
-const {data,error}=await KBDatabase.getClient().functions.invoke('tripletex-overview',{body:{year:Number(year.value)}});
+const {data,error}=await KBFinanceRequest({year:Number(year.value)});
 if(error){let code='';try{code=(await error.context.json()).error||'';}catch{}const messages={ledger_access_failed:'Tripletex gir ikke integrasjonen tilgang til regnskapstallene ennå.',login_required:'Logg inn på nytt.',employee_required:'Du har ikke tilgang til økonomi.',tripletex_auth_failed:'Tripletex-nøkkelen kunne ikke bekreftes.'};throw Error(messages[code]||'Økonomitallene kunne ikke hentes'+(code?' ('+code+')':'')+'. Prøv igjen.');}
 if(!data?.connected)throw Error('Forbindelsen er ikke bekreftet.');render(data);status.textContent=data.company+' · Oppdatert '+new Date(data.checkedAt).toLocaleString('nb-NO');
 }catch(e){results.replaceChildren();status.textContent=e.message;}finally{button.disabled=false;year.disabled=false;}}

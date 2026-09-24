@@ -1,5 +1,12 @@
 (function(){
 'use strict';
+// Share one request queue so dashboard sections do not create Tripletex sessions concurrently.
+window.KBFinanceRequest=window.KBFinanceRequest||function(body){
+ const run=()=>KBDatabase.getClient().functions.invoke('tripletex-overview',{body});
+ const next=(window.KBFinancePending||Promise.resolve()).then(run,run);
+ window.KBFinancePending=next.catch(()=>{});return next;
+};
+
 if(!KBAuth.can('finance'))return;
 const client=KBDatabase.getClient(),status=document.getElementById('invoices-status'),results=document.getElementById('invoices-results'),refresh=document.getElementById('invoices-refresh');
 function el(tag,text,className){const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(className)n.className=className;return n;}
@@ -31,7 +38,7 @@ for(const item of g.items){const row=el('tr');const days=item.daysOverdue;const 
 results.replaceChildren(fragment);status.textContent='Status per '+date(data.asOf)+' · Hentet '+new Date(data.checkedAt).toLocaleString('nb-NO');
 }
 async function load(){refresh.disabled=true;results.replaceChildren();status.textContent='Henter fakturaoversikt fra Tripletex …';try{
-const {data,error}=await client.functions.invoke('tripletex-overview',{body:{view:'dashboard'}});
+const {data,error}=await KBFinanceRequest({view:'dashboard'});
 if(error){let code='';try{code=(await error.context.json()).error||'';}catch{}const messages={invoice_access_failed:'Fakturaoversikten er ikke tilgjengelig fra Tripletex med dagens tilgang.',invoices_changed_retry:'Fakturaene ble oppdatert mens vi hentet dem. Trykk Oppdater fakturaer.',employee_required:'Du har ikke tilgang til økonomi.',login_required:'Logg inn på nytt.'};throw Error(messages[code]||'Fakturaoversikten kunne ikke hentes'+(code?' ('+code+')':'')+'. Prøv igjen.');}render(data);
 }catch(e){results.replaceChildren();status.textContent=e.message;}finally{refresh.disabled=false;}}
 refresh.addEventListener('click',load);load();
