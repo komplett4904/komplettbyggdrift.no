@@ -9,6 +9,7 @@ const nok=n=>new Intl.NumberFormat('nb-NO',{maximumFractionDigits:0}).format(n)+
 const svgNS='http://www.w3.org/2000/svg';
 function svgEl(tag,attrs,text){const n=document.createElementNS(svgNS,tag);for(const [k,v] of Object.entries(attrs))n.setAttribute(k,v);if(text!==undefined)n.textContent=text;return n;}
 function render(data){
+const report=section.querySelector('a');report.textContent='Se detaljert rapport i Tripletex →';report.href='https://tripletex.no/execute/report/view?period.endDate='+data.year+'-12-31&period.periodType=1&period.startDate='+data.year+'-01-01&reportId=16834&contextId=24707790';
 if(!Array.isArray(data.months)||data.months.length!==12||data.basis!=='operating_accounts_3000_7999')throw Error('Tallgrunnlaget kunne ikke bekreftes.');
 let accumulated=0,income=0,cost=0;
 const rows=data.months.map((m,i)=>{if(m.month!==i+1||!(m.income===null&&m.cost===null)&&(!Number.isFinite(m.income)||!Number.isFinite(m.cost)))throw Error('Ugyldig tallgrunnlag.');if(m.income===null)return {...m,accumulated:null};income+=m.income;cost+=m.cost;accumulated+=m.income-m.cost;return {...m,accumulated};});
