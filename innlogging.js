@@ -5,7 +5,7 @@ const logoutButton = document.getElementById('logout');
 async function showIdentity() {
   try {
     const employee = await window.KBAuth.getEmployee();
-    statusElement.textContent = employee ? `Innlogging bekreftet. Hei, ${employee.name}! Du bruker ${employee.email}.` : 'Du er ikke innlogget.';
+    statusElement.textContent = employee ? `Innlogging bekreftet. Hei, ${employee.name}! Du bruker ${employee.email}.` : '';
     loginButton.hidden = !!employee;
     logoutButton.hidden = !employee;
     document.getElementById('tools').hidden = !employee;

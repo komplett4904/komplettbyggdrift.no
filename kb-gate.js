@@ -3,13 +3,15 @@
   const screen = document.createElement('section');
   screen.id='kb-secure-gate';
   screen.style.cssText='position:fixed;inset:0;z-index:2147483647;background:#f1f5f8;display:grid;place-items:center;padding:24px;font-family:system-ui,sans-serif;color:#17324d';
-  screen.innerHTML='<div style="background:white;padding:36px;border-radius:16px;max-width:440px;width:100%"><p>KOMPLETT BYGGDRIFT</p><h1>Logg inn</h1><p id="kb-gate-status" role="status">Kontrollerer innlogging …</p><button id="kb-google" hidden style="padding:14px;width:100%;background:#17324d;color:white;border:0;border-radius:8px;font:inherit">Logg på med Google</button><p><a href="/demo.html">Har du en gjestekode? Åpne demo</a></p><a href="/">Til forsiden</a></div>';
+  screen.className='kb-login-page';
+  const stylesheet=document.createElement('link');stylesheet.rel='stylesheet';stylesheet.href='/kb-login.css';document.head.append(stylesheet);
+  screen.innerHTML="<div class=\"kb-login-card\"><div class=\"kb-login-brand\"><span class=\"kb-login-mark\" aria-hidden=\"true\">KB</span><span>Komplett Byggdrift<span class=\"kb-login-caption\">Arbeidsplassen din, samlet.</span></span></div><h1>Velkommen tilbake</h1><p class=\"kb-login-intro\">Logg inn for å åpne verktøyene dine.</p><p id=\"kb-gate-status\" class=\"kb-login-status\" role=\"status\" aria-live=\"polite\">Kontrollerer innlogging …</p><button id=\"kb-google\" class=\"kb-google-button\" hidden><img src=\"/google-g.png\" width=\"20\" height=\"20\" alt=\"\" aria-hidden=\"true\"><span>Logg på med Google</span></button><p class=\"kb-login-hint\">Bruk Google-kontoen med firmaadressen din.</p><div class=\"kb-login-footer\"><span>Har du en gjestekode?</span><a href=\"/demo.html\">Åpne demo <span aria-hidden=\"true\">→</span></a></div><a class=\"kb-login-back\" href=\"/\">← Til forsiden</a></div>";
   document.body.append(screen);
   const button=screen.querySelector('button'),status=screen.querySelector('[role=status]');
   button.addEventListener('click',async()=>{button.disabled=true;try{await window.KBAuth.signIn();}catch(e){status.textContent=e.message;button.disabled=false;}});
   try {
     const employee=await window.KBAuth.getEmployee();
-    if(!employee){status.textContent='Bruk Google-kontoen med firmaadressen din.';button.hidden=false;return;}
+    if(!employee){status.textContent='';button.hidden=false;return;}
     // The legacy flags are not accepted for authentication. Only the verified identity is used below.
     for(const key of ['kb_auth','kb_bruker','kb_via_firmakode'])sessionStorage.removeItem(key);
     window.KBMedia.start();
