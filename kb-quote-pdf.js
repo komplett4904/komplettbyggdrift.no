@@ -1,9 +1,9 @@
 (function(root){
 'use strict';
-function create(blocks,PDF,title){
+function create(blocks,PDF,title,kind='TILBUD'){
 const doc=new PDF({unit:'mm',format:'a4'}),left=18,width=174,bottom=273;let y=35;
 const clean=s=>String(s??'').replace(/[\u00a0\u202f]/g,' ').replace(/✓/g,'-').replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g,'');
-function header(){doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(23,50,77);doc.text('KOMPLETT BYGGDRIFT AS',left,17);doc.setFont('helvetica','normal');doc.setFontSize(9);doc.text('TILBUD',192,17,{align:'right'});doc.setDrawColor(190,204,215);doc.line(left,23,192,23);}
+function header(){doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(23,50,77);doc.text('KOMPLETT BYGGDRIFT AS',left,17);doc.setFont('helvetica','normal');doc.setFontSize(9);doc.text(kind,192,17,{align:'right'});doc.setDrawColor(190,204,215);doc.line(left,23,192,23);}
 function page(){doc.addPage();header();y=34;}
 function need(h){if(y+h>bottom)page();}
 function font(size,bold){doc.setFont('helvetica',bold?'bold':'normal');doc.setFontSize(size);doc.setTextColor(23,50,77);}

@@ -19,6 +19,6 @@ window.downloadCalculatorOffer=async function(button){
  if(!content||!content.children.length){status.textContent='Åpne tilbudsbrevet før du laster ned PDF.';return;}
  Array.from(content.children).forEach(walk);
  button.disabled=true;status.textContent='Lager PDF …';
- try{const title=content.querySelector('h1')?.textContent.trim()||'Tilbud';const pdf=KBQuotePDF.create(blocks,jspdf.jsPDF,title);await pdf.save(('Tilbud-'+title).replace(/[^a-zA-Z0-9ÆØÅæøå_-]/g,'-').slice(0,100)+'.pdf',{returnPromise:true});status.textContent='PDF-en er klar for nedlasting.';}catch{status.textContent='PDF-en kunne ikke lages. Prøv igjen.';}finally{button.disabled=false;}
+ try{const title=content.querySelector('h1')?.textContent.trim()||'Tilbud';const type=content.querySelector('.tilbud-type')?.textContent||'';const kind=/INTERN/i.test(type)?'INTERN – IKKE TIL KUNDE':/PLUKKLISTE/i.test(type)?'PLUKKLISTE':'TILBUD';const prefix=/INTERN/i.test(type)?'Intern':/PLUKKLISTE/i.test(type)?'Plukkliste':'Tilbud';const pdf=KBQuotePDF.create(blocks,jspdf.jsPDF,title,kind);await pdf.save((prefix+'-'+title).replace(/[^a-zA-Z0-9ÆØÅæøå_-]/g,'-').slice(0,100)+'.pdf',{returnPromise:true});status.textContent='PDF-en er klar for nedlasting.';}catch{status.textContent='PDF-en kunne ikke lages. Prøv igjen.';}finally{button.disabled=false;}
 };
 })();
