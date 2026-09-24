@@ -2876,6 +2876,15 @@ function velgBruker(){ /* Identity comes from verified Google sign-in. */ }
 
 function visSettPersonligPassord(){ alert('Innlogging og passord administreres av Google.'); }
 
+function erGjest(){
+  return window.KBAuth.employee?.name==='Gjest';
+}
+
+function oppdaterTilgangsRettigheter(){
+  const btn=document.getElementById('engangskoderBtn');
+  if(btn)btn.style.display=erGjest()?'none':'inline-block';
+}
+
 // Init etter at alt er klart
 window.addEventListener('DOMContentLoaded',()=>{
   if((window.KBAuth.employee ? '1' : null)==='1'){
@@ -4077,3 +4086,4 @@ function aktiverAdresseSok(){
 
 // =========================================
 // Session expiry and inactivity handled by kb-gate.js.
+
