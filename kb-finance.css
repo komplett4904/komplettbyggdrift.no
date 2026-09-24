@@ -46,3 +46,15 @@
  #kb-finance .finance-summary strong{font-size:20px}
  #kb-finance select{width:120px}
 }
+#kb-finance .finance-help{overflow:visible;margin:18px 0 0;border:0}
+#kb-finance .finance-help>summary{display:list-item;list-style:none;width:fit-content;max-width:100%;min-height:44px;padding:10px 14px;border:1px solid #c9d9e7;border-radius:8px;background:#edf4fa;color:#244d71;font-weight:600;font-size:14px}
+#kb-finance .finance-help>summary::-webkit-details-marker{display:none}
+#kb-finance .finance-help>summary:hover{background:#e0ecf6}
+#kb-finance .finance-help>summary:focus-visible{outline:3px solid #e8a317;outline-offset:3px}
+#kb-finance .finance-help[open]>summary{margin-bottom:16px}
+#kb-finance .finance-help-content{background:#f5f8fb;border:1px solid #dce5ec;border-radius:12px;padding:clamp(16px,3vw,28px);max-width:780px;font-size:15px;line-height:1.7}
+#kb-finance .finance-help-content h3{font-size:21px;margin:0 0 10px}
+#kb-finance .finance-help-content h4{font-size:16px;margin:22px 0 6px;color:#193750}
+#kb-finance .finance-help-content p{margin:0 0 12px}
+#kb-finance .finance-help-example{padding:16px;background:#fff;border-left:4px solid #718dff;border-radius:6px;margin:20px 0}
+#kb-finance .finance-help-example p:last-child{font-size:13px;color:#566979;margin:0}
