@@ -16,7 +16,13 @@ async function showIdentity() {
       for(const a of nav.querySelectorAll('a')){const p=new URL(a.href).pathname;a.parentElement.hidden=p==='/tilganger.html'?!employee.isAdmin:!KBAuth.can(modules[p]);}
 
       const next=sessionStorage.getItem('kb_return_to');sessionStorage.removeItem('kb_return_to');
-      if(next&&((modules[next]&&KBAuth.can(modules[next]))||(next==='/tilganger.html'&&employee.isAdmin)))location.replace(next);
+      const allowedNext=next&&((modules[next]&&KBAuth.can(modules[next]))||(next==='/tilganger.html'&&employee.isAdmin));
+      const destination=allowedNext?next:(KBAuth.can('projects')?'/anbudskalkulator.html':Object.keys(modules).find(path=>KBAuth.can(modules[path])));
+      if(destination){
+        statusElement.textContent='Innlogging bekreftet. Åpner arbeidsplassen din …';
+        nav.hidden=true;
+        location.replace(destination);
+      }else statusElement.textContent='Du er innlogget, men har ingen verktøy tilgjengelig ennå. Kontakt Stephen eller Eirik.';
     }
   } catch (error) {
     statusElement.textContent = error.message || 'Innloggingen kunne ikke kontrolleres.';
