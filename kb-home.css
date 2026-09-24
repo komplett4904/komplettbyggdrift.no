@@ -1,0 +1,29 @@
+#hovedmenyTittel{scroll-margin-top:24px}
+#hovedmeny .hovedmeny-grid{grid-template-columns:minmax(0,1fr) minmax(260px,360px)!important}
+#hovedmeny .start-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+#hovedmeny .start-card{min-width:0}
+nav[aria-label="Din konto"]{flex-wrap:wrap;max-width:calc(100vw - 24px);align-items:center}
+nav[aria-label="Din konto"] a,nav[aria-label="Din konto"] button{min-height:40px;display:inline-flex;align-items:center}
+@media(max-width:900px){
+ #hovedmeny .hovedmeny-grid{grid-template-columns:1fr!important}
+ header .container.logo{flex-wrap:wrap}
+ header .header-knapper{position:static!important;transform:none!important;order:3;width:100%;justify-content:flex-start!important;margin-top:8px}
+ header .header-knapper .hdr-btn{min-width:44px;min-height:44px}
+}
+@media(max-width:600px){
+ header .logo h1{font-size:17px}
+ header .logo p{font-size:11px}
+ header .logo>img{height:48px!important;width:auto!important;max-width:70px;object-fit:contain}
+ #hovedmeny .start-grid{grid-template-columns:1fr!important;gap:12px}
+ #hovedmeny .start-card{min-height:150px!important;padding:20px}
+ #hovedmeny .start-card .icon{width:44px;height:44px;font-size:24px;margin-bottom:12px}
+ #hovedmeny .start-card h3{font-size:19px}
+ #hovedmeny .start-card p{font-size:14px}
+ #hovedmeny .hovedmeny-grid aside{padding:20px!important}
+ nav[aria-label="Din konto"]{position:static!important;margin:20px 12px!important;max-width:none!important;box-shadow:none!important;justify-content:center}
+ main{padding-bottom:20px}
+}
+@media(max-width:600px){
+ body>nav:not([aria-label])>div{padding:0 10px!important}
+ body>nav:not([aria-label]) a{padding:12px 14px!important;font-size:13px!important}
+}

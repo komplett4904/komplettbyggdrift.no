@@ -17,6 +17,8 @@
 <script src="/kb-auth.js"></script>
 <script src="/kb-media.js"></script>
 <script src="/kb-gate.js" defer></script>
+<link rel="stylesheet" href="/kb-finance.css?v=20260924-home">
+<link rel="stylesheet" href="/kb-home.css?v=20260924-home">
 </head>
 <body>
 
@@ -66,6 +68,11 @@
   <!-- ============ STARTSIDE ============ -->
   <div id="panel-start">
     <div id="hovedmeny">
+<section id="kb-finance" class="kb-finance-home" hidden aria-labelledby="finance-heading">
+<div class="finance-heading"><div><p class="finance-eyebrow">TRIPLETEX · ØKONOMIOVERSIKT</p><h2 id="finance-heading">Slik går det med driften</h2></div><a class="finance-more" href="/okonomi.html">Åpne egen økonomiside →</a></div>
+<div class="finance-content"><p id="finance-status" role="status" aria-live="polite">Henter økonomitall …</p><button id="finance-retry" type="button">Oppdater tall</button><p class="finance-report"><a href="https://tripletex.no/page/dashboard?contextId=24707790" target="_blank" rel="noopener noreferrer">Åpne Tripletex →</a></p></div>
+<a class="finance-scroll" href="#hovedmenyTittel">Verktøy og snarveier nedenfor ↓</a>
+</section>
       <h2 class="page-title" id="hovedmenyTittel">Hva vil du gjøre?</h2>
       <p class="page-sub">Velg verktøy.</p>
       <div id="fagPrefIndikator" style="display:none;background:#eef4fb;border:1px solid #bbd5ee;color:#1e40af;padding:8px 14px;border-radius:8px;margin-bottom:14px;font-size:13px;max-width:fit-content"></div>
@@ -1290,5 +1297,6 @@ Generelt tverrfaglig samarbeid.</textarea>
 <script type="text/plain" data-kb-script="/anbudskalkulator-2.js"></script>
 <script type="text/plain" data-kb-script="/kb-attachments.js"></script>
 <script type="text/plain" data-kb-script="/kb-feedback.js"></script>
+<script type="text/plain" data-kb-script="/kb-finance.js?v=20260924-home"></script>
 </body>
 </html>

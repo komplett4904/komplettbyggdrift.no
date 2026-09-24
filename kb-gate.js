@@ -31,7 +31,7 @@
     for(const button of document.querySelectorAll('[onclick*="Passord"],[onclick*="passord"]'))button.hidden=true;
     screen.remove();
     const tools=document.createElement('nav');tools.setAttribute('aria-label','Din konto');
-    tools.style.cssText='position:fixed;bottom:12px;right:12px;z-index:1000;display:flex;gap:12px;padding:10px 14px;background:white;border:1px solid #dbe3ea;border-radius:8px;box-shadow:0 3px 12px #0001;font:13px system-ui';
+    tools.style.cssText='position:fixed;bottom:12px;right:12px;z-index:1000;display:flex;flex-wrap:wrap;max-width:calc(100vw - 24px);align-items:center;gap:12px;padding:10px 14px;background:white;border:1px solid #dbe3ea;border-radius:8px;box-shadow:0 3px 12px #0001;font:13px system-ui';
     const who=document.createElement('span');who.textContent=employee.name;
     const demos=document.createElement('a');demos.href='/demokoder.html';demos.textContent='Lag demokode';
     const logout=document.createElement('button');logout.textContent='Logg ut';logout.addEventListener('click',()=>window.KBAuth.logoutAndReturn());
