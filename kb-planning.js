@@ -2,6 +2,8 @@
   'use strict';
   const employee=KBAuth.employee;
   if(!employee)return;
+  const planningPanel=document.getElementById('planning-panel');
+  if(planningPanel)planningPanel.open=window.matchMedia('(min-width:769px)').matches;
   const mine=employee.email.split('@')[0];
   function filter(mode){
     for(const key of Object.keys(aktiveBrukere))aktiveBrukere[key]=mode==='all'||(mode==='mine'&&key===mine)||(mode==='team'&&key==='felles');
@@ -20,6 +22,7 @@
   try{
     const draft=JSON.parse(sessionStorage.getItem('kb_work_plan_draft')||'null');sessionStorage.removeItem('kb_work_plan_draft');
     if(draft&&draft.employee===employee.id&&Date.now()-draft.created<30*60*1000){
+      if(planningPanel)planningPanel.open=true;
       el('title').value=String(draft.title||'').slice(0,160);el('address').value=String(draft.address||'').slice(0,200);
       el('notes').value=('Ansvarlig: '+employee.name+'\n'+String(draft.notes||'')).slice(0,1800);
       el('status').textContent='Prosjektet er hentet inn. Velg dato og klokkeslett for arbeidet.';

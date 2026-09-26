@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Kalender – Komplett Byggdrift AS</title>
 <meta name="robots" content="noindex, nofollow">
-<link rel="stylesheet" href="/kalender-1.css">
+<link rel="stylesheet" href="/kalender-1.css?v=20260926-collapse">
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#1a3a5c">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -79,8 +79,8 @@
     </button>
   </div>
 
-  <section class="planning-card" aria-labelledby="plan-heading">
-  <h2 id="plan-heading">Planlegg et oppdrag</h2>
+  <details class="planning-card" id="planning-panel">
+  <summary id="plan-heading">Planlegg et oppdrag <span>Åpne / lukk skjema</span></summary>
   <p>Fyll inn arbeidet og åpne et utkast i Google Kalender. Kontroller kalender, deltakere og varsling før du trykker Lagre der.</p>
   <form id="work-plan">
     <div class="planning-grid">
@@ -97,7 +97,7 @@
     <div class="btn-row"><button class="btn btn-accent" type="submit">Klargjør i Google Kalender</button><a id="plan-draft" class="btn btn-outline" target="_blank" rel="noopener noreferrer" hidden>Åpne kalenderutkast</a><a id="plan-map" class="btn btn-outline" target="_blank" rel="noopener noreferrer" hidden>Se arbeidssted i Maps</a></div>
     <p id="plan-status" role="status"></p>
   </form>
-</section>
+</details>
 <div class="btn-row"><button class="btn btn-outline" id="show-all">Alle kalendere</button><button class="btn btn-outline" id="show-mine">Bare meg</button><button class="btn btn-outline" id="show-team">Felles arbeidsplan</button></div>
 <p id="calendar-empty" role="status" hidden>Velg minst én kalender for å vise avtaler.</p>
 <div class="view-switcher">
@@ -124,7 +124,7 @@
 </div>
 
 <script type="text/plain" data-kb-script="/kalender-1.js"></script>
-<script type="text/plain" data-kb-script="/kb-planning.js"></script>
+<script type="text/plain" data-kb-script="/kb-planning.js?v=20260926-collapse"></script>
 <script type="text/plain" data-kb-script="/kb-attachments.js"></script>
 <script type="text/plain" data-kb-script="/kb-feedback.js"></script>
 </body>
