@@ -43,6 +43,7 @@
       </div>`;
     document.body.appendChild(b);
     window.KBAttachments.mount();
+    makeBubbleMovable();
 
     document.getElementById('tmKnapp').onclick=()=>{
       const s=document.getElementById('tmSkjema');
@@ -51,6 +52,30 @@
     };
 
     if(erStephen()) sjekkUlesteTilbakemeldinger();
+  }
+
+  function makeBubbleMovable(){
+    const button=document.getElementById('tmKnapp'),badge=document.getElementById('tmBadge'),panel=document.getElementById('tmSkjema');
+    const key='kb-feedback-position-v1';let position={x:1,y:1},drag=null,suppress=false,custom=false;
+    try{const saved=JSON.parse(localStorage.getItem(key));if(saved&&Number.isFinite(saved.x)&&Number.isFinite(saved.y)){position={x:Math.max(0,Math.min(1,saved.x)),y:Math.max(0,Math.min(1,saved.y))};custom=true;}}catch{}
+    button.style.touchAction='none';button.style.userSelect='none';button.style.cursor='grab';
+    button.setAttribute('aria-label','Tilbakemelding. Kan flyttes ved å dra eller med piltastene.');
+    function bounds(){const v=window.visualViewport;return {left:(v?.offsetLeft||0)+12,top:(v?.offsetTop||0)+12,width:Math.max(1,(v?.width||innerWidth)-78),height:Math.max(1,(v?.height||innerHeight)-90)};}
+    function place(){if(!custom)position={x:innerWidth<=700?1:0,y:1};const b=bounds(),x=b.left+position.x*b.width,y=b.top+position.y*b.height;
+      Object.assign(button.style,{left:x+'px',top:y+'px',bottom:'auto',right:'auto'});
+      Object.assign(badge.style,{left:(x+38)+'px',top:(y-5)+'px',bottom:'auto'});
+      // Keep the open form within the visible viewport, independently of the button.
+      panel.style.left=Math.max(b.left,Math.min(x,b.left+b.width+54-Math.min(340,b.width+54)))+'px';
+      panel.style.bottom='auto';panel.style.top=b.top+'px';panel.style.maxHeight=(b.height+54)+'px';
+    }
+    function save(){try{localStorage.setItem(key,JSON.stringify(position));}catch{}}
+    button.addEventListener('pointerdown',e=>{if(e.button!==0)return;drag={id:e.pointerId,x:e.clientX,y:e.clientY,start:{...position},moved:false};button.setPointerCapture(e.pointerId);});
+    button.addEventListener('pointermove',e=>{if(!drag||e.pointerId!==drag.id)return;const dx=e.clientX-drag.x,dy=e.clientY-drag.y;if(Math.hypot(dx,dy)<7&&!drag.moved)return;drag.moved=true;custom=true;const b=bounds();position={x:Math.max(0,Math.min(1,drag.start.x+dx/b.width)),y:Math.max(0,Math.min(1,drag.start.y+dy/b.height))};button.style.cursor='grabbing';place();});
+    function finish(e){if(!drag||e.pointerId!==drag.id)return;const moved=drag.moved;drag=null;button.style.cursor='grab';if(moved){suppress=true;save();setTimeout(()=>{suppress=false;},350);}if(button.hasPointerCapture(e.pointerId))button.releasePointerCapture(e.pointerId);}
+    button.addEventListener('pointerup',finish);button.addEventListener('pointercancel',finish);
+    button.addEventListener('click',e=>{if(suppress){e.preventDefault();e.stopImmediatePropagation();}},true);
+    button.addEventListener('keydown',e=>{const moves={ArrowLeft:[-20,0],ArrowRight:[20,0],ArrowUp:[0,-20],ArrowDown:[0,20]};const delta=moves[e.key];if(!delta)return;e.preventDefault();custom=true;const b=bounds();position={x:Math.max(0,Math.min(1,position.x+delta[0]/b.width)),y:Math.max(0,Math.min(1,position.y+delta[1]/b.height))};place();save();});
+    window.addEventListener('resize',place);window.visualViewport?.addEventListener('resize',place);window.visualViewport?.addEventListener('scroll',place);place();
   }
 
   let tmSending=false, tmDraftId=null;

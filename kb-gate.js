@@ -30,6 +30,11 @@
     document.dispatchEvent(new Event('DOMContentLoaded',{bubbles:true}));
     for(const button of document.querySelectorAll('[onclick*="Passord"],[onclick*="passord"]'))button.hidden=true;
     screen.remove();
+    const floatingStyle=document.createElement('style');floatingStyle.textContent=`
+      body{padding-bottom:100px!important}
+      @media(max-width:700px){nav[aria-label="Din konto"]{position:static!important;inset:auto!important;display:flex!important;max-width:none!important;margin:24px 12px 12px!important;gap:8px 16px!important;padding:12px!important;box-sizing:border-box}nav[aria-label="Din konto"] a,nav[aria-label="Din konto"] button{min-height:44px;display:inline-flex;align-items:center}nav[aria-label="Din konto"] button{padding:8px 12px}}
+      @media print{nav[aria-label="Din konto"],#tilbakemeldingBoble{display:none!important}body{padding-bottom:0!important}}
+    `;document.head.append(floatingStyle);
     const tools=document.createElement('nav');tools.setAttribute('aria-label','Din konto');
     tools.style.cssText='position:fixed;bottom:12px;right:12px;z-index:1000;display:flex;flex-wrap:wrap;max-width:calc(100vw - 24px);align-items:center;gap:12px;padding:10px 14px;background:white;border:1px solid #dbe3ea;border-radius:8px;box-shadow:0 3px 12px #0001;font:13px system-ui';
     const who=document.createElement('span');who.textContent=employee.name;
