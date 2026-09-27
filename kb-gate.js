@@ -37,20 +37,16 @@
     `;document.head.append(floatingStyle);
     const tools=document.createElement('nav');tools.setAttribute('aria-label','Din konto');
     tools.style.cssText='position:fixed;bottom:12px;right:12px;z-index:1000;display:flex;flex-wrap:wrap;max-width:calc(100vw - 24px);align-items:center;gap:12px;padding:10px 14px;background:white;border:1px solid #dbe3ea;border-radius:8px;box-shadow:0 3px 12px #0001;font:13px system-ui';
-    const who=document.createElement('span');who.textContent=employee.name;
-    const demos=document.createElement('a');demos.href='/demokoder.html';demos.textContent='Lag demokode';
-    const logout=document.createElement('button');logout.textContent='Logg ut';logout.addEventListener('click',()=>window.KBAuth.logoutAndReturn());
-    tools.append(who);if(KBAuth.can('demo'))tools.append(demos);
-    if(employee.isAdmin){const settings=document.createElement('a');settings.href='/tilganger.html';settings.textContent='Tilganger';tools.append(settings);}
-    if(KBAuth.can('finance')){const finance=document.createElement('a');finance.href='/okonomi.html';finance.textContent='Økonomi';tools.append(finance);}
-    tools.append(logout);
+    const settingsButton=document.createElement('button');settingsButton.textContent='⚙ Innstillinger';settingsButton.type='button';settingsButton.id='kb-settings-button';
+    tools.append(settingsButton);
+    const settingsScript=document.createElement('script');settingsScript.src='/kb-settings.js?v=20260927';document.body.append(settingsScript);
     for(const a of document.querySelectorAll('a[href]')){const m=pageModules[new URL(a.href,location.href).pathname];if(m&&!KBAuth.can(m))a.hidden=true;}
     if(!KBAuth.can('demo')){const b=document.getElementById('engangskoderBtn');if(b)b.style.display='none';}
     setInterval(async()=>{try{const fresh=await KBAuth.getEmployee();if(!fresh||(required&&!KBAuth.can(required))||(location.pathname==='/tilganger.html'&&!fresh.isAdmin))location.replace('/innlogging.html');}catch{location.replace('/innlogging.html');}},60000);document.body.append(tools);
     window.KBDatabase.getClient().auth.onAuthStateChange(event=>{if(event==='SIGNED_OUT'){document.body.style.visibility='hidden';location.replace('/innlogging.html');}});
     let lastActivity=Date.now();
     for(const event of ['pointerdown','keydown','touchstart'])document.addEventListener(event,()=>{lastActivity=Date.now();},{passive:true});
-    setInterval(()=>{if(Date.now()-lastActivity>30*60*1000)window.KBAuth.logoutAndReturn();},30000);
+    setInterval(()=>{if(window.parent===window&&Date.now()-lastActivity>30*60*1000)window.KBAuth.logoutAndReturn();},30000);
     if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js').catch(()=>{});
   }catch(error){status.textContent=error.message||'Innloggingen kunne ikke bekreftes.';button.hidden=false;}
 })();
