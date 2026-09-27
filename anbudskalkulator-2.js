@@ -924,7 +924,9 @@ function renderWalls(){
 }
 
 // ===== CALCULATION =====
+let kbLastCalculation=null;
 function recalc(){
+  kbLastCalculation=null;
   const matList=document.getElementById('materialList');
   let html='',total=0;
 
@@ -1041,16 +1043,15 @@ function recalc(){
     });
     let subtotal=0;
     Object.entries(bySec).forEach(([sec,v])=>{
-      html+=`<li class="material-row" style="background:#f9fafc;padding:8px 6px"><span class="name" style="font-weight:700;color:var(--primary-dark)">${sec}</span><span class="price" style="font-weight:700">kr ${Math.round(v.sum).toLocaleString('nb-NO')}</span></li>`;
+      html+=row(sec,'',v.sum);
       subtotal+=v.sum;
     });
     const risikoBel=subtotal*risiko;
     const paslagBel=(subtotal+risikoBel)*paslag;
     total=subtotal+risikoBel+paslagBel;
 
-    html+=`<li class="material-row" style="padding-top:14px"><span class="name">Subtotal</span><span class="price">kr ${Math.round(subtotal).toLocaleString('nb-NO')}</span></li>`;
-    if(risikoBel>0)html+=`<li class="material-row"><span class="name">Risikopåslag (${Math.round(risiko*100)}%)</span><span class="price">kr ${Math.round(risikoBel).toLocaleString('nb-NO')}</span></li>`;
-    if(paslagBel>0)html+=`<li class="material-row"><span class="name">Påslag/DB (${Math.round(paslag*100)}%)</span><span class="price">kr ${Math.round(paslagBel).toLocaleString('nb-NO')}</span></li>`;
+    if(risikoBel>0)html+=row('Risikopåslag anbud','',risikoBel);
+    if(paslagBel>0)html+=row('Påslag anbud','',paslagBel);
 
     setSummary(total, html);
     return;
@@ -1335,16 +1336,16 @@ function applyGlobalBuffer(total, html){
   const risiko=getRisikoPaslag();
 
   // Parse rader for kategorisering med per-gruppe påslag
-  const matches=[...html.matchAll(/<li class="material-row"><span class="name">([^<]+)<\/span><span class="qty">[^<]*<\/span><span class="price">kr ([\d\s ]+)<\/span><\/li>/g)];
+  const matches=[...html.matchAll(/<li class="material-row"><span class="name">([^<]+)<\/span><span class="qty">[^<]*<\/span><span class="price">kr ([\d\s.,-]+)<\/span><\/li>/g)];
   let sumMatSelvkost=0,sumMatPaslag=0,sumArb=0,sumLog=0;
   matches.forEach(m=>{
     const navn=m[1];
-    const kr=parseFloat(m[2].replace(/[\s ]/g,''))||0;
+    const kr=parseFloat(m[2].replace(/\s/g,'').replace(',','.'))||0;
     const grp=gruppeFor(navn);
     if(grp==='arbeid'){sumArb+=kr;return;}
     if(grp==='logistikk'){sumLog+=kr;return;}
     // Materiell - bruk per-gruppe påslag
-    const pct=(GRUPPE_PASLAG[grp]??GRUPPE_PASLAG.default??fallbackPaslag*100)/100;
+    const pct=currentTab==='anbud'?0:(GRUPPE_PASLAG[grp]??GRUPPE_PASLAG.default??fallbackPaslag*100)/100;
     sumMatSelvkost+=kr;
     sumMatPaslag+=kr*pct;
   });
@@ -1360,9 +1361,13 @@ function applyGlobalBuffer(total, html){
   if(salgspris>0 && salgspris<minPris)salgspris=minPris;
 
   let outHtml=html;
+  if(sumMatPaslag>0)outHtml+=row('Materiellpåslag','',sumMatPaslag);
   if(bufferBelop>0)outHtml+=row('Usikkerhet / buffer',Math.round(buffer*100)+'%',Math.round(bufferBelop));
   if(risikoBelop>0)outHtml+=row('Risikopåslag',Math.round(risiko.pct*100)+'%',Math.round(risikoBelop));
 
+  if(dekningBelop>0)outHtml+=row('Tillegg / dekning','',dekningBelop);
+  const minimumTillegg=salgspris-(subtotalMedBuffer+risikoBelop+dekningBelop);
+  if(minimumTillegg>0)outHtml+=row('Tillegg til minstepris','',minimumTillegg);
   const fortjeneste=salgspris-selvkostTot;
   const fortjenestePct=selvkostTot>0?(fortjeneste/salgspris*100):0;
   const gjPaslag=sumMatSelvkost>0?(sumMatPaslag/sumMatSelvkost*100):0;
@@ -1417,11 +1422,14 @@ function sjekkArbeidAdvarsel(total){
 
 function setSummary(total, html){
   const adjusted=applyGlobalBuffer(total, html);
+  kbLastCalculation={total,html,adjusted};
   if(visMode==='tilbud' && adjusted.subtotal>0){
     let tilbudHtml='';
-    if(adjusted.sumMat>0)tilbudHtml+=row('Materialer','',Math.round(adjusted.sumMat));
+    if(adjusted.sumMat>0)tilbudHtml+=row(currentTab==='anbud'?'Anbudsposter':'Materialer','',Math.round(adjusted.sumMat));
     if(adjusted.sumArb>0)tilbudHtml+=row('Arbeid og montering','',Math.round(adjusted.sumArb));
     if(adjusted.sumLog>0)tilbudHtml+=row('Logistikk og avfall','',Math.round(adjusted.sumLog));
+    const extra=adjusted.total-adjusted.subtotal;
+    if(extra>0)tilbudHtml+=row('Buffer, risiko og øvrige tillegg','',extra);
     document.getElementById('materialList').innerHTML=tilbudHtml;
   } else {
     document.getElementById('materialList').innerHTML=adjusted.html;
@@ -1429,8 +1437,8 @@ function setSummary(total, html){
   document.getElementById('totalPrice').textContent='kr '+Math.round(adjusted.total).toLocaleString('nb-NO');
   const _mvaEl=document.getElementById('totalMva');
   const _inklEl=document.getElementById('totalInkl');
-  if(_mvaEl){const _mva=Math.round(adjusted.total*0.25);_mvaEl.textContent='kr '+_mva.toLocaleString('nb-NO');}
-  if(_inklEl){const _inkl=Math.round(adjusted.total*1.25);_inklEl.textContent='kr '+_inkl.toLocaleString('nb-NO');}
+  if(_mvaEl){const _mva=Math.round(Math.round(adjusted.total)*0.25);_mvaEl.textContent='kr '+_mva.toLocaleString('nb-NO');}
+  if(_inklEl){const _inkl=Math.round(adjusted.total)+Math.round(Math.round(adjusted.total)*0.25);_inklEl.textContent='kr '+_inkl.toLocaleString('nb-NO');}
   // Advarsel hvis arbeid mangler
   sjekkArbeidAdvarsel(adjusted.total);
 }
@@ -1698,7 +1706,7 @@ function previewTilbud(){
     matRows.forEach(r=>{
       const name=r.querySelector('.name').textContent;
       const priceText=r.querySelector('.price').textContent;
-      const kr=parseFloat(priceText.replace(/[^\d]/g,''))||0;
+      const kr=parseFloat(priceText.replace(/[^\d,-]/g,'').replace(',','.'))||0;
       const kat=typeof kategoriser==='function'?kategoriser(name):'materiell';
       grupper[kat]+=kr;
     });
@@ -1914,7 +1922,8 @@ function genererPlukkliste(){
   const tittel=document.getElementById('t-tittel').value||'Plukkliste';
   const sted=document.getElementById('t-sted').value||'';
   const dato=new Date().toLocaleDateString('nb-NO');
-  const matRows=Array.from(document.querySelectorAll('#materialList .material-row'));
+  const raw=document.createElement('div');raw.innerHTML=kbLastCalculation?.html||'';
+  const matRows=Array.from(raw.querySelectorAll('.material-row'));
   if(matRows.length===0){alert('Ingen poster å eksportere. Legg til mål først.');return;}
 
   // Grupper poster etter kategori
@@ -1966,7 +1975,8 @@ function genererInternOversikt(){
   const sted=document.getElementById('t-sted').value||'';
   const kunde=document.getElementById('t-kunde').value||'';
   const dato=new Date().toLocaleDateString('nb-NO');
-  const matRows=Array.from(document.querySelectorAll('#materialList .material-row'));
+  const raw=document.createElement('div');raw.innerHTML=kbLastCalculation?.html||'';
+  const matRows=Array.from(raw.querySelectorAll('.material-row'));
   if(matRows.length===0){alert('Ingen poster. Legg til mål først.');return;}
 
   // Parse rader og kategoriser
@@ -1976,9 +1986,9 @@ function genererInternOversikt(){
     const navn=r.querySelector('.name').textContent;
     const qty=r.querySelector('.qty')?.textContent||'';
     const priceText=r.querySelector('.price').textContent;
-    const kr=parseFloat(priceText.replace(/[^\d-]/g,''))||0;
+    const kr=parseFloat(priceText.replace(/[^\d,-]/g,'').replace(',','.'))||0;
     const grp=gruppeFor(navn);
-    const pct=(GRUPPE_PASLAG[grp]??GRUPPE_PASLAG.default??20)/100;
+    const pct=currentTab==='anbud'?0:(GRUPPE_PASLAG[grp]??GRUPPE_PASLAG.default??20)/100;
     if(grp==='arbeid'){sumArb+=kr;rader.push({navn,qty,kat:'Arbeid',selvkost:kr,paslagPct:0,paslag:0,sum:kr,grp});}
     else if(grp==='logistikk'){sumLog+=kr;rader.push({navn,qty,kat:'Logistikk',selvkost:kr,paslagPct:0,paslag:0,sum:kr,grp});}
     else {
@@ -1996,7 +2006,7 @@ function genererInternOversikt(){
   const subtotalMedBuffer=subtotal+bufferBelop;
   const risikoBelop=subtotalMedBuffer*risiko.pct;
   const dekningBelop=(subtotalMedBuffer+risikoBelop)*dekning;
-  const salgspris=subtotalMedBuffer+risikoBelop+dekningBelop;
+  const salgspris=kbLastCalculation?.adjusted.total??(subtotalMedBuffer+risikoBelop+dekningBelop);
   const selvkostTot=sumMatSelvkost+sumArb+sumLog;
   const fortjeneste=salgspris-selvkostTot;
   const fortjPct=salgspris>0?(fortjeneste/salgspris*100):0;
@@ -2062,6 +2072,8 @@ const GRUPPE_PASLAG={
 // Kategoriser hver linje basert på navn (for selvkost-beregning)
 function gruppeFor(navn){
   const n=navn.toLowerCase();
+  if(/arbeid|montering|riving/.test(n))return 'arbeid';
+  if(/stillas|container|frakt|transport|oppmøte|lift|avfall/.test(n))return 'logistikk';
   if(/takstein|dobbelkrum|teglstein|stålpanne|shingel|takdekke/.test(n))return 'takstein';
   if(/møne|moneskruer|monebraket|stormklips|valmbånd/.test(n))return 'mone';
   if(/pipebeslag|pipeisol|takhatt|takluke|velux|værhane|solcelle/.test(n))return 'pipe';
@@ -3876,4 +3888,3 @@ function aktiverAdresseSok(){
 
 // =========================================
 // Session expiry and inactivity handled by kb-gate.js.
-
