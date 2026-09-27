@@ -19,4 +19,24 @@ $('preview').addEventListener('click',()=>{if(!valid())return;render(data());pre
 $('edit').addEventListener('click',()=>{preview.hidden=true;form.scrollIntoView({behavior:'smooth'});});
 $('pdf').addEventListener('click',async()=>{if(!valid())return;const button=$('pdf');button.disabled=true;try{const d=data();const pdf=KBOfferPDF.create(d,jspdf.jsPDF);const filename=('Tilbud-'+d.reference).replace(/[^a-zA-Z0-9ÆØÅæøå_-]/g,'-').slice(0,100)+'.pdf';await pdf.save(filename,{returnPromise:true});dirty=false;status.textContent='PDF-en er klargjort for nedlasting. Legg den ved e-posten du sender til kunden.';}catch{status.textContent='PDF-en kunne ikke lages. Prøv igjen eller last siden på nytt etter at du har kopiert teksten din.';}finally{button.disabled=false;}});
 window.addEventListener('beforeunload',e=>{if(dirty){e.preventDefault();e.returnValue='';}});totals();
+// Three-step flow preserves the existing fields, validation and PDF generator.
+const steps=document.createElement('nav');steps.className='offer-steps';steps.setAttribute('aria-label','Steg i tilbudet');
+const layout=document.querySelector('.layout');layout.before(steps);
+const first=document.createElement('section'),second=document.createElement('section');
+first.setAttribute('aria-label','Kunde og prosjekt');second.setAttribute('aria-label','Arbeid og pris');
+let part=first;for(const child of Array.from(form.children)){if(child.tagName==='H2')part=second;part.append(child);}form.append(first,second);
+let currentStep=1;const stepButtons=[];
+for(const [i,label] of ['Kunde og prosjekt','Arbeid og pris','Kontroller og lag PDF'].entries()){const b=node('button',(i+1)+'. '+label);b.type='button';b.onclick=()=>go(i+1);steps.append(b);stepButtons.push(b);}
+const controls=document.createElement('div');controls.className='offer-step-controls';const back=node('button','← Tilbake'),next=node('button','Neste →');back.type=next.type='button';controls.append(back,next);form.after(controls);
+const draftStatus=node('p','Utkastet er bare åpent på denne siden. Last ned PDF når du er ferdig.');draftStatus.className='note';draftStatus.setAttribute('role','status');steps.after(draftStatus);draftStatus.after(status);
+form.addEventListener('input',()=>{draftStatus.textContent='Ulagrede endringer – last ned en ny PDF når du er ferdig.';});
+function firstValid(){for(const input of first.querySelectorAll('input,select,textarea'))if(!input.checkValidity()){showStep(1);input.reportValidity();return false;}return true;}
+function showStep(n){currentStep=n;first.hidden=n!==1;second.hidden=n!==2;form.hidden=n===3;document.querySelector('.actions').hidden=n!==3;back.hidden=n===1;next.hidden=n===3;preview.hidden=n!==3;stepButtons.forEach((b,i)=>b.setAttribute('aria-current',i+1===n?'step':'false'));next.textContent=n===2?'Kontroller tilbudet →':'Neste →';}
+function go(n){if(n>1&&!firstValid())return;if(n===3){showStep(2);if(!valid())return;render(data());}showStep(n);steps.scrollIntoView({behavior:'smooth',block:'start'});}
+back.onclick=()=>go(currentStep-1);next.onclick=()=>go(currentStep+1);
+form.addEventListener('invalid',e=>{showStep(first.contains(e.target)?1:2);},true);
+$('edit').addEventListener('click',()=>go(2));
+new MutationObserver(()=>{if(!dirty&&status.textContent.includes('klargjort'))draftStatus.textContent='PDF klargjort. Selve utkastet lagres ikke på nettsiden.';}).observe(status,{childList:true});
+showStep(1);
+
 })();

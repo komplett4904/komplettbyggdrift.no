@@ -33,7 +33,7 @@ const TIDSSONE = 'Europe/Oslo';
 // ============================================
 let aktiveBrukere = {felles:true, stephen:true, eirik:true, eivind:true};
 let aktivVisning = matchMedia('(max-width: 650px)').matches ? 'AGENDA' : 'WEEK';
-const calendarPreferenceKey='kb_calendar_view_v2_'+KBAuth.employee.id;
+const calendarPreferenceKey='kb_calendar_view_v3_'+(matchMedia('(max-width:650px)').matches?'mobile_':'desktop_')+KBAuth.employee.id;
 try{const saved=JSON.parse(localStorage.getItem(calendarPreferenceKey));if(saved){if(['WEEK','MONTH','AGENDA'].includes(saved.view))aktivVisning=saved.view;for(const key of Object.keys(aktiveBrukere))if(typeof saved.users?.[key]==='boolean')aktiveBrukere[key]=saved.users[key];}}catch{}
 function saveCalendarPreferences(){try{localStorage.setItem(calendarPreferenceKey,JSON.stringify({view:aktivVisning,users:aktiveBrukere}));}catch{}}
 

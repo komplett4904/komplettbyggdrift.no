@@ -2710,12 +2710,14 @@ function setProsjektTab(tab){
   const el=document.getElementById('prosjekterInnhold');
   if(tab==='liste'){
     let liste=lasteProsjekter();
+    const query=(document.getElementById('kb-project-search')?.value||'').toLocaleLowerCase('nb').trim();
+    if(query)liste=liste.filter(p=>JSON.stringify([p.navn,p.kunde,p.state?.tilbud?.sted,p.state?.tilbud?.kunde]).toLocaleLowerCase('nb').includes(query));
     if(aktivtProsjektFilter && aktivtProsjektFilter!=='alle'){
       liste=liste.filter(p=>(p.status||'utkast')===aktivtProsjektFilter);
     }
     document.getElementById('prosjektFilterChips').style.display='flex';
     if(liste.length===0){
-      const tom=aktivtProsjektFilter==='sendt'?'Ingen tilbud sendt for tiden.':aktivtProsjektFilter==='akseptert'?'Ingen aksepterte tilbud ennå.':aktivtProsjektFilter==='avvist'?'Ingen avviste tilbud.':'Ingen lagrede prosjekter ennå. Klikk <strong>+ Nytt tomt prosjekt</strong> eller velg en mal.';
+      const tom=query?'Ingen prosjekter passer til søket.':aktivtProsjektFilter==='sendt'?'Ingen tilbud sendt for tiden.':aktivtProsjektFilter==='akseptert'?'Ingen aksepterte tilbud ennå.':aktivtProsjektFilter==='avvist'?'Ingen avviste tilbud.':'Ingen lagrede prosjekter ennå. Klikk <strong>+ Nytt tomt prosjekt</strong> eller velg en mal.';
       el.innerHTML='<p style="text-align:center;color:var(--muted);padding:30px">'+tom+'</p>';return;
     }
     const statusLbl={utkast:'Utkast',sendt:'Sendt',akseptert:'Akseptert',avvist:'Avvist'};
