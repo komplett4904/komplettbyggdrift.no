@@ -42,7 +42,6 @@
   <div class="container logo" style="position:relative;cursor:pointer" onclick="if(typeof visHovedmeny==='function')visHovedmeny()" title="Tilbake til hovedmeny">
     <div class="header-knapper" style="position:absolute;right:0;top:50%;transform:translateY(-50%);display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end">
       <button onclick="event.stopPropagation();openProsjekter()" class="hdr-btn" title="Lagrede prosjekter"><span class="hdr-ikon">📂</span><span class="hdr-tekst">Prosjekter</span></button>
-      <button id="engangskoderBtn" onclick="event.stopPropagation();openEngangskoder()" class="hdr-btn" style="display:none" title="Lag gjestekoder til demovisningen"><span class="hdr-ikon">🔑</span><span class="hdr-tekst">Demokoder</span></button>
       <button onclick="event.stopPropagation();openInfo()" class="hdr-btn" title="Hvordan bruke kalkulatoren"><span class="hdr-ikon">ℹ</span><span class="hdr-tekst">Hjelp</span></button>
       <button onclick="event.stopPropagation();openPrisInnstillinger()" class="hdr-btn" title="Innstillinger"><span class="hdr-ikon">⚙</span><span class="hdr-tekst">Innstillinger</span></button>
       <button onclick="event.stopPropagation();loggUt()" class="hdr-btn hdr-btn-red" title="Logg ut"><span class="hdr-ikon">🚪</span><span class="hdr-tekst">Logg ut</span></button>
@@ -1212,48 +1211,34 @@ Generelt tverrfaglig samarbeid.</textarea>
       <button onclick="closeInfo()" style="background:#fff;color:var(--primary);border:none;padding:6px 14px;border-radius:6px;cursor:pointer;font-weight:600">Lukk</button>
     </div>
     <div style="max-height:75vh;overflow-y:auto;padding:24px 28px;line-height:1.55">
-      <h3 style="color:var(--primary-dark);margin-top:0">Slik kommer du i gang</h3>
-      <ol style="padding-left:22px;font-size:14px">
-        <li><strong>Logg inn</strong> med firmakoden, velg navnet ditt (Eivind/Eirik/Stephen).</li>
-        <li><strong>Hovedmeny</strong>: Velg "Anbudskalkulator" for å lage tilbud, eller "Kalender" for felles oversikt.</li>
-        <li><strong>Velg fag</strong>: Tømrer eller Rørlegger.</li>
-        <li><strong>Velg arbeidstype</strong>: tak, kledning, vindu, dør, bad, service eller anbud.</li>
-        <li><strong>Fyll inn mål og byggeår</strong>. Du ser areal og pris-estimat med en gang i blå boks.</li>
-        <li><strong>Klikk "Legg til"</strong> – materiallisten oppdateres til høyre.</li>
-        <li><strong>Sjekk høyre side</strong>: Husk-liste, TEK17-sjekkliste og risikofaktorer. Huk av det som gjelder.</li>
-        <li><strong>Generer tilbud</strong> nederst – fyll inn kundeinfo og klikk knappen. PDF kan skrives ut eller lagres.</li>
+      <h3 style="color:var(--primary-dark);margin-top:0">Kom i gang</h3>
+      <p>Logg inn med Google-kontoen din fra Komplett Byggdrift. Du ser verktøyene du har tilgang til. Kontakt Stephen eller Eirik hvis noe mangler.</p>
+      <h3>Lag et tilbud</h3>
+      <ol style="padding-left:22px">
+        <li>Velg <strong>Anbudskalkulator</strong>, fag og arbeidstype.</li>
+        <li>Fyll inn mål, materialer og arbeid. Kontroller mengder og priser, og legg til postene som skal med.</li>
+        <li>Gå gjennom sjekklistene og ta med relevante forbehold. Sjekklistene er støtte til arbeidet og må vurderes for det enkelte prosjektet.</li>
+        <li>Kontroller kundeopplysninger, pris, MVA og hva som er inkludert før du genererer tilbudet.</li>
+        <li>Velg <strong>Last ned PDF</strong>. Åpne PDF-en og se gjennom den før du legger den ved en e-post til kunden.</li>
       </ol>
-
-      <h3 style="color:var(--primary-dark)">Merverdiavgift (MVA)</h3>
-      <p style="font-size:14px">Alle priser i kalkulatoren er <strong>eks. mva</strong>. MVA (25%) legges på til slutt i tilbudet til kunden. Selvkost, påslag og fortjeneste regnes alltid eks. mva. I PDF-tilbudet vises både eks. og inkl. mva tydelig.</p>
-
-      <h3 style="color:var(--primary-dark)">Intern kalkyle vs Kundetilbud</h3>
-      <p style="font-size:14px">Øverst i Oversikt kan du veksle mellom <strong>Intern kalkyle</strong> (selvkost, påslag, fortjeneste) og <strong>Kundetilbud</strong> (kun gruppesummer kunden ser). <strong>Vis aldri intern kalkyle til kunde.</strong></p>
-
-      <h3 style="color:var(--primary-dark)">Sjekklister på høyre side</h3>
-      <ul style="padding-left:22px;font-size:14px">
-        <li><strong>✓ Har du husket alt?</strong> – alle materialer og tilbehør for jobben. Anbefalinger basert på byggeår er merket oransje.</li>
-        <li><strong>📋 TEK17-sjekkliste</strong> – forskriftskrav. Vises i tilbudet som dokumentasjon.</li>
-        <li><strong>⚠ Risiko og spesielle forhold</strong> – råte, asbest, vanskelig adkomst osv. Legger automatisk på risikopåslag og standard forbehold i tilbudet.</li>
+      <p>Trenger du et enkelt tilbudsbrev uten kalkulering? Velg <strong>Send tilbud</strong> på forsiden. Fyll ut malen og last ned PDF-en. E-posten sendes av deg fra e-postprogrammet ditt.</p>
+      <h3>Priser og MVA</h3>
+      <p>Kontroller om beløpet er merket eks. eller inkl. MVA. Priser som legges inn eks. MVA får MVA lagt til i tilbudet. Kontroller totalsummen før sending.</p>
+      <p><strong>Intern kalkyle</strong> viser blant annet kostnader og påslag. Bruk kundetilbudet når du sender til kunden, og kontroller at PDF-en er riktig dokument.</p>
+      <h3>Prosjekter og lagring</h3>
+      <p>Bruk <strong>Prosjekter</strong> øverst for å finne lagrede prosjekter. Følg med på lagrings- og synkroniseringsstatus. Ved feil: behold siden åpen, kontroller nettilkoblingen og kontakt Stephen før du laster inn på nytt.</p>
+      <h3>Alt samlet i Innstillinger</h3>
+      <ul style="padding-left:22px">
+        <li><strong>Min konto:</strong> se hvem du er logget inn som.</li>
+        <li><strong>Priser og påslag:</strong> juster prislisten og importer eller eksporter priser. Prisene lagres i nettleseren du bruker.</li>
+        <li><strong>Demokoder:</strong> vis frem verktøyene med eksempeldata. Demovisningen gir ikke tilgang til ekte prosjekt- eller økonomidata.</li>
+        <li><strong>Ansatte og tilganger:</strong> Stephen og Eirik administrerer hvem som har tilgang til de ulike verktøyene.</li>
+        <li><strong>Logg ut:</strong> avslutt innloggingen når du er ferdig, særlig på en delt enhet.</li>
       </ul>
-
-      <h3 style="color:var(--primary-dark)">Lagring av prosjekter</h3>
-      <p style="font-size:14px">Prosjekter lagres automatisk i skyen mens du jobber. Alle ansatte ser samme prosjekter etter <strong>⟳ Last fra sky</strong>. Du trenger ikke trykke "Lagre" - det skjer av seg selv. Status-indikator "✓ Synket" viser nederst i prosjekter-menyen når det fungerer.</p>
-
-      <h3 style="color:var(--primary-dark)">Innstillinger og priser</h3>
-      <p style="font-size:14px">Klikk <strong>⚙ Innstillinger / priser</strong> for å justere alle priser på ett sted. Egen fane for per-kategori påslag (takstein 20%, lekter 15% osv.) og global påslag som overstyrer alt. Prislisten lagres lokalt i nettleseren - bruk <strong>📤 Eksporter prisliste</strong> for å dele master-prisene med kollegaer.</p>
-
-      <h3 style="color:var(--primary-dark)">Tips</h3>
-      <ul style="padding-left:22px;font-size:14px">
-        <li>Test med ulike byggeår og se hvordan anbefalingene endrer seg.</li>
-        <li>Bruk "Overstyr takflate"-feltet hvis du har målt taket eksakt.</li>
-        <li>For komplekse tak (valm/pyramide) legges arbeid og svinn automatisk på.</li>
-        <li>Sett "Buffer / usikkerhet" til 5-10% for å fange opp små feil.</li>
-        <li>Pass på å velge riktig U-verdi på vindu/dør basert på alder på huset.</li>
-      </ul>
-
-      <h3 style="color:var(--primary-dark)">Hvis noe ikke fungerer</h3>
-      <p style="font-size:14px">Kontakt Stephen. Prisene resettes ved å klikke "Tilbakestill standard" i innstillinger. Hvis sky-sync feiler, sjekk internett og trykk <strong>⟳ Last fra sky</strong>. Prosjekter er trygt lagret både lokalt og i Supabase.</p>
+      <p>Du ser bare menyvalgene du har tilgang til. «Tilbakestill standard» under priser erstatter egne prisendringer med standardprisene – bruk det bare når du ønsker å nullstille dem.</p>
+      <h3>Kalender og hjelp</h3>
+      <p>I kalenderen åpner du <strong>Planlegg et oppdrag</strong> når du skal legge inn arbeid. «Klargjør i Google Kalender» lager et utkast; du må kontrollere og lagre avtalen i Google Kalender.</p>
+      <p>Bruk chatboblen for å sende en tilbakemelding eller melde en feil. Beskriv hva du gjorde og hva som skjedde, gjerne med skjermbilde. På mobil kan du dra boblen til et sted der den ikke er i veien.</p>
     </div>
   </div>
 </div>
