@@ -2501,6 +2501,7 @@ let autoSaveTimer=null;
 function captureProsjektState(){
   return {
     currentTab, currentFag,
+    accessories:Object.fromEntries(Array.from(document.querySelectorAll(".toggle-row[data-key] input[type=checkbox]")).map(c=>[c.id,c.checked])),
     roofs:JSON.parse(JSON.stringify(roofs)),
     walls:JSON.parse(JSON.stringify(walls)),
     vinduer:JSON.parse(JSON.stringify(vinduer)),
@@ -2538,6 +2539,8 @@ function captureProsjektState(){
 
 function restoreProsjektState(s){
   if(!s)return;
+  const legacyChecked=["r-moner","r-moneskruer","r-monebraket","r-moneband","r-stormklips","r-fuglesperre","r-takrenne","r-bordtaks","r-rennekrok","r-renneskjot","r-tilslutning","r-endebunn","r-nedlopsror","r-skjotestykke","r-nedlopsbend","r-utkast","r-rorklemme","v-karmskruer","v-skims","v-drev","v-tetting","v-tyvek","v-utvendig-list","v-innvendig-list","v-smyg","v-vannbrett","v-riving","v-arbeid","v-frakt","v-transport","v-avfall","d-karmskruer","d-skims","d-drev","d-tetting","d-tyvek","d-utvendig-list","d-innvendig-list","d-smyg","d-terskel","d-las","d-riving","d-arbeid","d-frakt","d-transport","d-avfall"];
+  document.querySelectorAll(".toggle-row[data-key] input[type=checkbox]").forEach(c=>{c.checked=s.accessories ? s.accessories[c.id]===true : legacyChecked.includes(c.id);});
   roofs=s.roofs||[];walls=s.walls||[];vinduer=s.vinduer||[];dorer=s.dorer||[];
   serviceVVS=s.serviceVVS||[];serviceTom=s.serviceTom||[];anbudItems=s.anbudItems||[];
   const setVal=(id,v)=>{const el=document.getElementById(id);if(el)el.value=v||'';};
@@ -2587,6 +2590,7 @@ function trigAutoSave(){
 function nyttProsjekt(){
   const navn=prompt('Navn på prosjekt:','Nytt prosjekt');
   if(!navn)return;
+  document.querySelectorAll('.toggle-row[data-key] input[type=checkbox]').forEach(c=>c.checked=c.defaultChecked);
   aktivProsjektId=Date.now().toString();
   const liste=lasteProsjekter();
   liste.unshift({id:aktivProsjektId,navn,kunde:'',dato:new Date().toISOString(),sist_endret:new Date().toISOString(),status:'utkast',total:0,state:null});
@@ -2683,6 +2687,7 @@ function lastEgenMal(id){
   if(!confirm(`Last mal "${m.navn}"? Dette overskriver gjeldende arbeid.`))return;
   const navn=prompt('Navn på nytt prosjekt:',m.navn);
   if(!navn)return;
+  document.querySelectorAll('.toggle-row[data-key] input[type=checkbox]').forEach(c=>c.checked=c.defaultChecked);
   aktivProsjektId=Date.now().toString();
   const liste=lasteProsjekter();
   liste.unshift({id:aktivProsjektId,navn,kunde:'',dato:new Date().toISOString(),sist_endret:new Date().toISOString(),status:'utkast',total:0,state:m.state});
@@ -2789,6 +2794,7 @@ function lastMal(id){
   roofs=[];walls=[];vinduer=[];dorer=[];serviceVVS=[];serviceTom=[];anbudItems=[];
   const navn=prompt('Navn på dette prosjektet:',m.navn);
   if(!navn)return;
+  document.querySelectorAll('.toggle-row[data-key] input[type=checkbox]').forEach(c=>c.checked=c.defaultChecked);
   aktivProsjektId=Date.now().toString();
   m.apply();
   setTimeout(()=>{

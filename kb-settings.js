@@ -21,7 +21,7 @@
  dialog.innerHTML='<header class="kbs-header"><h2 id="kb-settings-title">Innstillinger</h2><button type="button" class="kbs-close" aria-label="Lukk innstillinger">✕</button></header><div class="kbs-layout"><aside><label class="kbs-search-label">Søk i innstillinger<input type="search" placeholder="Søk …" aria-label="Søk i innstillinger"></label><nav aria-label="Innstillingskategorier"></nav><button type="button" class="kbs-logout">Logg ut</button></aside><section class="kbs-content" aria-live="polite"></section></div>';
  document.body.append(dialog);
  const content=dialog.querySelector('.kbs-content'),nav=dialog.querySelector('nav');let selected='account';
- const categories=[{id:'account',name:'Min konto',hint:'Navn, e-post og innlogging'}];
+ const categories=[{id:'account',name:'Min konto',hint:'Navn, e-post og innlogging'},{id:'appearance',name:'Utseende',hint:'Lyst eller mørkt tema'}];
  if(KBAuth.can('projects'))categories.push({id:'prices',name:'Priser og påslag',hint:'Prisliste, import og eksport'});
  if(KBAuth.can('demo'))categories.push({id:'demo',name:'Demokoder',hint:'Vis frem med eksempeldata'});
  if(employee.isAdmin)categories.push({id:'access',name:'Ansatte og tilganger',hint:'Administrer ansatte og verktøy'});
@@ -35,7 +35,10 @@
      if(id==='account'){
        pane.innerHTML='<h3>Min konto</h3><p class="kbs-muted">Du bruker firmakontoen din fra Google.</p><div class="kbs-card"><h4></h4><p></p><span></span></div><p class="kbs-muted">Kontakt Stephen eller Eirik hvis du trenger tilgang til flere verktøy.</p>';
        pane.querySelector('h4').textContent=employee.name;pane.querySelector('.kbs-card p').textContent=employee.email;pane.querySelector('.kbs-card span').textContent=employee.isAdmin?'Administrator':'Ansatt';
-     }else if(id==='tools'){
+     }else if(id==='appearance'){
+ pane.innerHTML='<h3>Utseende</h3><div class="kbs-card"><label for="kb-theme-choice">Tema</label><p class="kbs-muted">Valget huskes i denne nettleseren. Utskrift og tilbud forblir lyse.</p><select id="kb-theme-choice"><option value="light">Lyst</option><option value="dark">Mørkt</option><option value="system">Følg enheten</option></select></div>';
+ const select=pane.querySelector('select');select.value=window.KBTheme?.get()||'light';select.onchange=()=>window.KBTheme?.set(select.value);
+ }else if(id==='tools'){
        pane.innerHTML='<h3>Verktøy og integrasjoner</h3><p class="kbs-muted">Åpne verktøyene du har tilgang til.</p>';
        for(const [module,label,url] of [['projects','Prosjekter og kalkulator','/anbudskalkulator.html'],['hms','HMS og stoffkartotek','/hms.html'],['calendar','Google Kalender / arbeidsplan','/kalender.html'],['finance','Økonomi / Tripletex','/okonomi.html']])if(KBAuth.can(module)){const a=document.createElement('a');a.className='kbs-tool';a.href=url;a.textContent=label+' →';pane.append(a);}
      }else if(id==='prices'&&document.getElementById('prisModal')){

@@ -1,0 +1,30 @@
+/* Screen-only: customer documents retain their print colours. */
+@media screen {
+html[data-kb-theme=dark]{color-scheme:dark;--bg:#101820;--card:#1b2733;--text:#e5edf5;--muted:#aebfce;--border:#3b4e60;--primary:#81b8ea;--primary-dark:#d4e8fa}
+html[data-kb-theme=dark] body{background:#101820!important;color:#e5edf5!important}
+html[data-kb-theme=dark] :is(.card,.start-card,.item-card,.modal-content,.kbs-card,.kbs-tool,.kb-login-card,dialog,nav[aria-label="Din konto"],#kb-settings,#kb-settings .kbs-content){background:#1b2733!important;color:#e5edf5!important;border-color:#3b4e60!important}
+html[data-kb-theme=dark] :is(header,#kb-settings .kbs-header,#kb-settings aside){background:#162330!important;color:#e5edf5!important;border-color:#3b4e60!important}
+html[data-kb-theme=dark] :is(input,select,textarea){background:#111d28!important;color:#e5edf5!important;border-color:#526b80!important}
+html[data-kb-theme=dark] :is(a,h1,h2,h3,h4,label,.kbs-muted,.page-title,.price-tag){color:#c7e3fa!important}
+html[data-kb-theme=dark] :is(button,.btn){color:#edf6ff;background-color:#284863;border-color:#526b80}
+html[data-kb-theme=dark] #kb-settings nav button{color:#e5edf5!important}
+html[data-kb-theme=dark] #kb-settings nav button[aria-current=page]{background:#33526d!important}
+html[data-kb-theme=dark] #kb-settings :is(small,.kbs-search-label){color:#b8ccdd!important}
+html[data-kb-theme=dark] :is([style*="background:#fff"],[style*="background: #fff"],[style*="background:white"],[style*="background: white"],[style*="background:#f"],[style*="background: #f"],#kb-settings .kbs-inline-prices){background:#1b2733!important;color:#e5edf5!important;border-color:#3b4e60!important}
+html[data-kb-theme=dark] :is([style*="color:#"],[style*="color: #"]){color:#c7d9e8!important}
+html[data-kb-theme=dark] :is(.hint,.muted,.page-sub,.kb-login-status){color:#b8ccdd!important}
+html[data-kb-theme=dark] :is(.finance-card,.finance-chart,.finance-summary,.finance-panel,.finance-kpi,#kb-finance){color:#e5edf5!important}
+html[data-kb-theme=dark] :is(.finance-card,.finance-chart,.finance-summary,.finance-panel,.finance-kpi){background:#1b2733!important;border-color:#3b4e60!important}
+html[data-kb-theme=dark] :is(.tilbud-page,.tilbud-page *){color:#17324d!important}
+html[data-kb-theme=dark] .tilbud-page{background:white!important}
+html[data-kb-theme=dark] :focus-visible{outline:3px solid #f3ba4d!important;outline-offset:3px}
+html[data-kb-theme=dark] :is(#kb-finance .finance-content,#kb-finance .finance-help-content,#kb-finance .finance-help-example,#kb-finance .finance-help>summary,.invoice-metric,.invoice-credit,.liste-rad,.empty-state,.summary,.type-card,.option-card,.link-card,.sub-tab,.tab,.pris-tab){background:#1b2733!important;color:#e5edf5!important;border-color:#3b4e60!important}
+html[data-kb-theme=dark] :is(#kb-finance .finance-note,#kb-finance #finance-status,.economy-intro,.economy-note,.economy-actions span){color:#b8ccdd!important}
+html[data-kb-theme=dark] .finance-chart text{fill:#c7d9e8!important}
+html[data-kb-theme=dark] :is(.tab.active,.sub-tab.active,.pris-tab.active){background:#33526d!important;color:#fff!important;border-bottom-color:#e8a317!important}
+html[data-kb-theme=dark] #kb-settings :is(.kbs-close,.kbs-logout){background:#284863!important;color:#edf6ff!important}
+html[data-kb-theme=dark] :is(.husk-card,.toggle-row.recommended,.price-editor,.lenke-kort,footer,.tilbud-actions,.planning-card,.view-switcher,.calendar-wrapper,.info-banner,.user-chip,.btn-secondary,.btn-outline){background:#1b2733!important;color:#e5edf5!important;border-color:#526b80!important}
+html[data-kb-theme=dark] .btn-danger{background:#582d37!important;color:#ffd8df!important}
+html[data-kb-theme=dark] :is(.type-card.selected,.user-chip.active,.view-btn.active){background:#33526d!important;color:#fff!important;border-color:#81b8ea!important}
+}
+#kb-theme-choice{font:inherit;min-height:44px;padding:8px 12px;border-radius:8px;min-width:180px}
