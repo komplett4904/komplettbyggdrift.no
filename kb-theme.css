@@ -1,6 +1,6 @@
 /* Screen-only: customer documents retain their print colours. */
 @media screen {
-html[data-kb-theme=dark]{color-scheme:dark;--bg:#101820;--card:#1b2733;--text:#e5edf5;--muted:#aebfce;--border:#3b4e60;--primary:#81b8ea;--primary-dark:#d4e8fa}
+html[data-kb-theme=dark]{background:#101820;color:#e5edf5;color-scheme:dark;--bg:#101820;--card:#1b2733;--text:#e5edf5;--muted:#aebfce;--border:#3b4e60;--primary:#284863;--primary-dark:#162e43}
 html[data-kb-theme=dark] body{background:#101820!important;color:#e5edf5!important}
 html[data-kb-theme=dark] :is(.card,.start-card,.item-card,.modal-content,.kbs-card,.kbs-tool,.kb-login-card,dialog,nav[aria-label="Din konto"],#kb-settings,#kb-settings .kbs-content){background:#1b2733!important;color:#e5edf5!important;border-color:#3b4e60!important}
 html[data-kb-theme=dark] :is(header,#kb-settings .kbs-header,#kb-settings aside){background:#162330!important;color:#e5edf5!important;border-color:#3b4e60!important}
@@ -26,5 +26,34 @@ html[data-kb-theme=dark] #kb-settings :is(.kbs-close,.kbs-logout){background:#28
 html[data-kb-theme=dark] :is(.husk-card,.toggle-row.recommended,.price-editor,.lenke-kort,footer,.tilbud-actions,.planning-card,.view-switcher,.calendar-wrapper,.info-banner,.user-chip,.btn-secondary,.btn-outline){background:#1b2733!important;color:#e5edf5!important;border-color:#526b80!important}
 html[data-kb-theme=dark] .btn-danger{background:#582d37!important;color:#ffd8df!important}
 html[data-kb-theme=dark] :is(.type-card.selected,.user-chip.active,.view-btn.active){background:#33526d!important;color:#fff!important;border-color:#81b8ea!important}
+/* Components with fixed light backgrounds and foregrounds. */
+html[data-kb-theme=dark] :is(summary,.item-card-info strong,.age-banner strong,.start-card .arrow,.back-btn,.liste-rad-tittel,.prosjekt-card .sum,[style*="color:var(--primary"]){color:#c7e3fa!important}
+html[data-kb-theme=dark] :is(.letter,.actions,.totals,.field-examples,.prosjekt-card,.mal-card,.fare-rad,.pwd-box,.kb-login-status,main>section:not(#offer-preview),#access-list>section){background:#1b2733!important;color:#e5edf5!important;border-color:#526b80!important}
+html[data-kb-theme=dark] :is(.field-examples strong,.field-examples p,.note,.company,.branded-heading span,.economy-kicker,small,#offer-status){color:#b8ccdd!important}
+html[data-kb-theme=dark] :is(.nav-tabs,.summary-total){background:#162e43!important;color:#edf6ff!important}
+html[data-kb-theme=dark] :is(.nav-tab,.view-btn,.prosjekt-tab,.pris-tab){color:#c7d9e8!important}
+html[data-kb-theme=dark] :is(.nav-tab.active,.pris-tab-active,.prosjekt-tab-active,.offer-steps button[aria-current=step]){background:#33526d!important;color:#fff!important;box-shadow:inset 0 -3px #f3ba4d}
+html[data-kb-theme=dark] .offer-steps button:not([aria-current=step]){background:#1b2733!important;color:#b8ccdd!important;box-shadow:inset 0 0 0 1px #526b80}
+html[data-kb-theme=dark] :is(button,.btn):hover{background-color:#33526d;color:#fff}
+html[data-kb-theme=dark] :is(input,textarea)::placeholder{color:#a7b9c9;opacity:1}
+html[data-kb-theme=dark] .btn-accent{background:#e8a317!important;color:#142330!important}
+html[data-kb-theme=dark] :is(.tag-utkast,.tag-middels,.status-utkast){background:#513d18!important;color:#ffe1a1!important}
+html[data-kb-theme=dark] :is(.tag-godkjent,.tag-lukket,.tag-lav,.status-akseptert){background:#173e32!important;color:#a5ebc8!important}
+html[data-kb-theme=dark] :is(.tag-apen,.tag-pagar,.tag-hoy,.status-avvist){background:#582d37!important;color:#ffd8df!important}
+html[data-kb-theme=dark] :is(.tag-behandling,.status-sendt){background:#284863!important;color:#d8eaff!important}
+html[data-kb-theme=dark].kb-settings-embedded main{background:#1b2733!important;color:#e5edf5!important}
+html[data-kb-theme=dark] :is(#status,.kb-settings-prices #prisModal){background:#1b2733!important;color:#e5edf5!important}
+html[data-kb-theme=dark] #kb-finance .finance-eyebrow{color:#b8ccdd!important}
+/* Preview the customer document as paper, independent of the application theme. */
+html[data-kb-theme=dark] .kb-home{background:#1b2733!important;color:#c7e3fa!important}
+html[data-kb-theme=dark] :is(.kb-quick,.kb-quick button){background:#1b2733!important;color:#e5edf5!important;border-color:#526b80!important}
+html[data-kb-theme=dark] .kb-quick small{color:#b8ccdd!important}
+html[data-kb-theme=dark] :is(#invoices-status,#kb-finance .finance-help-example p:last-child){color:#b8ccdd!important}
+html[data-kb-theme=dark] .invoice-row-late td:nth-child(4){color:#ffb7bc!important}
+html[data-kb-theme=dark] :is(#app-content,body) :is(.sub-tab.active,.tab.active,.pris-tab-active,.prosjekt-tab-active){background:#33526d!important;color:#fff!important;box-shadow:inset 0 -3px #f3ba4d}
+html[data-kb-theme=dark] :is(#print-letter,.tilbud-page){color-scheme:light;background:#fff!important;color:#17324d!important}
+html[data-kb-theme=dark] :is(#print-letter,.tilbud-page) *{color:#17324d!important;background-color:transparent!important}
+html[data-kb-theme=dark] #print-letter table tr:last-child{background:#17324d!important}
+html[data-kb-theme=dark] #print-letter table tr:last-child *{color:#fff!important}
 }
 #kb-theme-choice{font:inherit;min-height:44px;padding:8px 12px;border-radius:8px;min-width:180px}

@@ -1,6 +1,6 @@
 (async function(){
   'use strict';
-  const themeScript=document.createElement('script');themeScript.src='/kb-theme.js?v=20260928';document.head.append(themeScript);
+  const themeScript=document.createElement('script');themeScript.src='/kb-theme.js?v=20260928-fix';document.head.append(themeScript);
   const screen = document.createElement('section');
   screen.id='kb-secure-gate';
   screen.style.cssText='position:fixed;inset:0;z-index:2147483647;background:#f1f5f8;display:grid;place-items:center;padding:24px;font-family:system-ui,sans-serif;color:#17324d';
@@ -41,7 +41,7 @@
     tools.style.cssText='position:fixed;bottom:12px;right:12px;z-index:1000;display:flex;flex-wrap:wrap;max-width:calc(100vw - 24px);align-items:center;gap:12px;padding:10px 14px;background:white;border:1px solid #dbe3ea;border-radius:8px;box-shadow:0 3px 12px #0001;font:13px system-ui';
     const settingsButton=document.createElement('button');settingsButton.textContent='⚙ Innstillinger';settingsButton.type='button';settingsButton.id='kb-settings-button';
     tools.append(settingsButton);
-    const settingsScript=document.createElement('script');settingsScript.src='/kb-settings.js?v=20260928';document.body.append(settingsScript);
+    const settingsScript=document.createElement('script');settingsScript.src='/kb-settings.js?v=20260928-fix';document.body.append(settingsScript);
     for(const a of document.querySelectorAll('a[href]')){const m=pageModules[new URL(a.href,location.href).pathname];if(m&&!KBAuth.can(m))a.hidden=true;}
     if(!KBAuth.can('demo')){const b=document.getElementById('engangskoderBtn');if(b)b.style.display='none';}
     setInterval(async()=>{try{const fresh=await KBAuth.getEmployee();if(!fresh||(required&&!KBAuth.can(required))||(location.pathname==='/tilganger.html'&&!fresh.isAdmin))location.replace('/innlogging.html');}catch{location.replace('/innlogging.html');}},60000);document.body.append(tools);
