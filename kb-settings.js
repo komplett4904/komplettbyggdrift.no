@@ -46,7 +46,7 @@
      }else{
        const frame=document.createElement('iframe');frame.title=categories.find(c=>c.id===id).name;
        frame.src=({prices:'/anbudskalkulator.html',demo:'/demokoder.html',access:'/tilganger.html'})[id]+'?kbSettingsEmbed=1';pane.append(frame);
-       frame.addEventListener('load',()=>{try{const doc=frame.contentDocument;if(!doc)return;for(const event of ['pointerdown','keydown','touchstart'])doc.addEventListener(event,()=>document.dispatchEvent(new Event('pointerdown')),{passive:true});doc.documentElement.classList.add('kb-settings-embedded');if(!frame.contentWindow.KBTheme){const theme=doc.createElement('script');theme.src='/kb-theme.js?v=20260928-fix';doc.head.append(theme);}const link=doc.createElement('link');link.rel='stylesheet';link.href='/kb-settings.css?v=20260927';doc.head.append(link);}catch{}});
+       frame.addEventListener('load',()=>{try{const doc=frame.contentDocument;if(!doc)return;for(const event of ['pointerdown','keydown','touchstart'])doc.addEventListener(event,()=>document.dispatchEvent(new Event('pointerdown')),{passive:true});doc.documentElement.classList.add('kb-settings-embedded');if(!frame.contentWindow.KBTheme){const theme=doc.createElement('script');theme.src='/kb-theme.js?v=20260928-default-dark';doc.head.append(theme);}const link=doc.createElement('link');link.rel='stylesheet';link.href='/kb-settings.css?v=20260927';doc.head.append(link);}catch{}});
      }
    }
    pane.hidden=false;
