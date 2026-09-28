@@ -106,10 +106,11 @@
     <button class="view-btn" data-view="AGENDA" onclick="settVisning('AGENDA')">Liste</button>
   </div>
 
-  <div class="user-filter" id="user-filter">
+  <div class="user-filter" id="user-filter" aria-describedby="calendar-filter-help">
     <span class="user-filter-label">Vis:</span>
   </div>
 
+  <p id="calendar-filter-help" class="page-sub">Trykk på navnene for å vise eller skjule kalenderne. Mørk knapp betyr at kalenderen vises.</p>
   <div class="calendar-wrapper">
     <iframe class="calendar-frame" id="calendar-frame" src="about:blank" title="Komplett Byggdrift kalender"></iframe>
   </div>

@@ -50,6 +50,12 @@ for(const r of rows){const tr=document.createElement('tr');for(const v of [names
 const note=document.createElement('p');note.className='finance-note';note.textContent='Bokførte bevegelser på konto 3000–3999 (inntekter) og 4000–7999 (kostnader), i NOK. Finansposter og skatt er ikke med. Tallene kan endres ved årsoppgjøret. Pågående måned er foreløpig. Fremtidige måneder vises uten tall.';
 const chartFrame=document.createElement('div');chartFrame.className='finance-chart-frame';chartFrame.tabIndex=0;chartFrame.setAttribute('aria-label','Økonomigraf. Sveip sidelengs på små skjermer.');chartFrame.append(svg);
 results.replaceChildren(info,summary,chartFrame,legend,details,note);
+const top=document.createElement('section'),heading=document.createElement('h3'),explain=document.createElement('p'),list=document.createElement('ol');heading.textContent='Våre tre største kunder · '+data.year;explain.className='finance-note';explain.textContent='Henter fakturert omsetning …';top.append(heading,explain,list);results.append(top);
+KBFinanceRequest({view:'topCustomers',year:data.year}).then(({data:ranking,error})=>{
+ if(error||!ranking?.ok||ranking.basis!=='invoiced_ex_vat_nok_credit_notes_net'||!Array.isArray(ranking.customers))throw Error('Kundeoversikten kunne ikke hentes. Trykk «Oppdater tall» for å prøve igjen.');
+ explain.textContent='Fakturert omsetning uten MVA i valgt år, i NOK. Kreditnotaer er trukket fra. Dette viser salg, ikke fortjeneste eller innbetalinger.';
+ for(const customer of ranking.customers){if(!Number.isSafeInteger(customer.cents))throw Error('Kundebeløpene kunne ikke bekreftes.');const item=document.createElement('li');item.textContent=customer.name+' — '+nok(customer.cents/100);item.style.padding='8px 0';list.append(item);}if(!ranking.customers.length)list.append(document.createTextNode('Ingen kunder med positiv fakturert omsetning i perioden.'));
+}).catch(e=>{list.replaceChildren();explain.textContent=e.message;});
 }
 async function load(){button.disabled=true;year.disabled=true;results.replaceChildren();status.textContent='Henter økonomitall fra Tripletex …';try{
 const {data,error}=await KBFinanceRequest({year:Number(year.value)});

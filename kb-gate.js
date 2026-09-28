@@ -13,7 +13,7 @@
   try {
     const employee=await window.KBAuth.getEmployee();
     if(!employee){status.textContent='';button.hidden=false;return;}
-    const pageModules={'/tilbud.html':'projects','/anbudskalkulator.html':'projects','/hms.html':'hms','/kalender.html':'calendar','/okonomi.html':'finance'};
+    const pageModules={'/timer.html':'projects','/tilbud.html':'projects','/anbudskalkulator.html':'projects','/hms.html':'hms','/kalender.html':'calendar','/okonomi.html':'finance'};
     const required=pageModules[location.pathname];
     if((required&&!KBAuth.can(required))||(location.pathname==='/tilganger.html'&&!employee.isAdmin)){
       status.textContent='Du har ikke tilgang til dette verktøyet. Kontakt Stephen eller Eirik.';
@@ -31,7 +31,7 @@
     document.dispatchEvent(new Event('DOMContentLoaded',{bubbles:true}));
     for(const button of document.querySelectorAll('[onclick*="Passord"],[onclick*="passord"]'))button.hidden=true;
     screen.remove();
-    const uxScript=document.createElement('script');uxScript.src='/kb-ux.js?v=20260927';document.body.append(uxScript);
+    const uxScript=document.createElement('script');uxScript.src='/kb-ux.js?v=20260928-time';document.body.append(uxScript);
     const floatingStyle=document.createElement('style');floatingStyle.textContent=`
       body{padding-bottom:100px!important}
       @media(max-width:700px){nav[aria-label="Din konto"]{position:static!important;inset:auto!important;display:flex!important;max-width:none!important;margin:24px 12px 12px!important;gap:8px 16px!important;padding:12px!important;box-sizing:border-box}nav[aria-label="Din konto"] a,nav[aria-label="Din konto"] button{min-height:44px;display:inline-flex;align-items:center}nav[aria-label="Din konto"] button{padding:8px 12px}}
@@ -41,7 +41,7 @@
     tools.style.cssText='position:fixed;bottom:12px;right:12px;z-index:1000;display:flex;flex-wrap:wrap;max-width:calc(100vw - 24px);align-items:center;gap:12px;padding:10px 14px;background:white;border:1px solid #dbe3ea;border-radius:8px;box-shadow:0 3px 12px #0001;font:13px system-ui';
     const settingsButton=document.createElement('button');settingsButton.textContent='⚙ Innstillinger';settingsButton.type='button';settingsButton.id='kb-settings-button';
     tools.append(settingsButton);
-    const settingsScript=document.createElement('script');settingsScript.src='/kb-settings.js?v=20260928-fix';document.body.append(settingsScript);
+    const settingsScript=document.createElement('script');settingsScript.src='/kb-settings.js?v=20260928-time';document.body.append(settingsScript);
     for(const a of document.querySelectorAll('a[href]')){const m=pageModules[new URL(a.href,location.href).pathname];if(m&&!KBAuth.can(m))a.hidden=true;}
     if(!KBAuth.can('demo')){const b=document.getElementById('engangskoderBtn');if(b)b.style.display='none';}
     setInterval(async()=>{try{const fresh=await KBAuth.getEmployee();if(!fresh||(required&&!KBAuth.can(required))||(location.pathname==='/tilganger.html'&&!fresh.isAdmin))location.replace('/innlogging.html');}catch{location.replace('/innlogging.html');}},60000);document.body.append(tools);

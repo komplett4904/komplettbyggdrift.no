@@ -40,7 +40,7 @@
  const select=pane.querySelector('select');select.value=window.KBTheme?.get()||'light';select.onchange=()=>window.KBTheme?.set(select.value);
  }else if(id==='tools'){
        pane.innerHTML='<h3>Verktøy og integrasjoner</h3><p class="kbs-muted">Åpne verktøyene du har tilgang til.</p>';
-       for(const [module,label,url] of [['projects','Prosjekter og kalkulator','/anbudskalkulator.html'],['hms','HMS og stoffkartotek','/hms.html'],['calendar','Google Kalender / arbeidsplan','/kalender.html'],['finance','Økonomi / Tripletex','/okonomi.html']])if(KBAuth.can(module)){const a=document.createElement('a');a.className='kbs-tool';a.href=url;a.textContent=label+' →';pane.append(a);}
+       for(const [module,label,url] of [['projects','Min timeassistent','/timer.html'],['projects','Prosjekter og kalkulator','/anbudskalkulator.html'],['hms','HMS og stoffkartotek','/hms.html'],['calendar','Google Kalender / arbeidsplan','/kalender.html'],['finance','Økonomi / Tripletex','/okonomi.html']])if(KBAuth.can(module)){const a=document.createElement('a');a.className='kbs-tool';a.href=url;a.textContent=label+' →';pane.append(a);}
      }else if(id==='prices'&&document.getElementById('prisModal')){
        priceModal=document.getElementById('prisModal');pane.append(priceModal);priceModal.classList.add('kbs-inline-prices');openPrisInnstillinger();
      }else{
