@@ -31,7 +31,7 @@
     document.dispatchEvent(new Event('DOMContentLoaded',{bubbles:true}));
     for(const button of document.querySelectorAll('[onclick*="Passord"],[onclick*="passord"]'))button.hidden=true;
     screen.remove();
-    const uxScript=document.createElement('script');uxScript.src='/kb-ux.js?v=20260928-time';document.body.append(uxScript);
+    const uxScript=document.createElement('script');uxScript.src='/kb-ux.js?v=20260928-prominent';document.body.append(uxScript);
     const floatingStyle=document.createElement('style');floatingStyle.textContent=`
       body{padding-bottom:100px!important}
       @media(max-width:700px){nav[aria-label="Din konto"]{position:static!important;inset:auto!important;display:flex!important;max-width:none!important;margin:24px 12px 12px!important;gap:8px 16px!important;padding:12px!important;box-sizing:border-box}nav[aria-label="Din konto"] a,nav[aria-label="Din konto"] button{min-height:44px;display:inline-flex;align-items:center}nav[aria-label="Din konto"] button{padding:8px 12px}}
