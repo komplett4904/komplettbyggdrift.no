@@ -62,6 +62,10 @@ let dorer=[];
 let serviceVVS=[];
 let serviceTom=[];
 let currentTab='start';
+let lastWorkTab=null;
+function prosjektArbeidsTab(s){const tabs=['tak','kledning','vindu','dor','service-tom','anbud','service-vvs'];if(tabs.includes(s?.lastWorkTab))return s.lastWorkTab;if(tabs.includes(s?.currentTab))return s.currentTab;const candidates=[['tak','roofs'],['kledning','walls'],['vindu','vinduer'],['dor','dorer'],['service-vvs','serviceVVS'],['service-tom','serviceTom'],['anbud','anbudItems']].filter(([tab,key])=>s?.[key]?.length);return candidates.length===1?candidates[0][0]:null;}
+history.replaceState({...history.state,kbWorkspace:'home'},'');
+window.addEventListener('popstate',()=>visHovedmeny());
 let currentFag=null;
 
 // Tømrer-faner: tak, kledning, vindu, dor, service-tom
@@ -171,6 +175,11 @@ function oppdaterHilsen(){
 }
 
 function visHovedmeny(){
+  history.replaceState({...history.state,kbWorkspace:'home'},'');
+  if(typeof autoSaveProsjekt==='function')autoSaveProsjekt();
+  document.getElementById('panel-start').classList.remove('hidden');
+  document.getElementById('workArea').classList.add('hidden');
+  currentTab='start';
   const hm=document.getElementById('hovedmeny');
   if(hm)hm.classList.remove('hidden');
   oppdaterHilsen();
@@ -183,20 +192,12 @@ function visHovedmeny(){
 }
 
 function backToFag(){
-  // Gå tilbake til verktøyvalget for det faget man er i
-  document.getElementById('panel-start').classList.remove('hidden');
-  document.getElementById('workArea').classList.add('hidden');
-  if(currentFag==='tomrer'||currentFag==='rorlegger'){
-    velgFag(currentFag);
-  } else {
-    velgFag(null);
-  }
-  currentTab='start';
-  window.scrollTo({top:0,behavior:'smooth'});
+  if(history.state?.kbWorkspace==='work')history.back();else visHovedmeny();
 }
 
 // ===== TAB SWITCHING =====
 function switchTab(tab){
+  if(tab!=='start'){lastWorkTab=tab;if(history.state?.kbWorkspace!=='work')history.pushState({...history.state,kbWorkspace:'work'},'');}
   currentTab=tab;
   if(typeof byggPraktiskSjekkliste==='function')setTimeout(byggPraktiskSjekkliste,50);
   const isStart=tab==='start';
@@ -213,9 +214,7 @@ function switchTab(tab){
 
   // Oppdater "Tilbake"-knappen
   const backBtn=document.getElementById('backBtn');
-  if(currentFag==='tomrer')backBtn.textContent='← Tilbake til tømrer-valg';
-  else if(currentFag==='rorlegger')backBtn.textContent='← Tilbake til rørlegger-valg';
-  else backBtn.textContent='← Tilbake til start';
+  backBtn.textContent='← Tilbake til Mine verktøy';
 
   document.getElementById('panel-tak').classList.toggle('hidden',tab!=='tak');
   document.getElementById('panel-kledning').classList.toggle('hidden',tab!=='kledning');
@@ -1892,7 +1891,7 @@ function previewTilbud(){
       <div style="margin-top:40px;padding-top:18px;border-top:2px solid #1a3a5c;text-align:center;font-size:11px;color:#666;line-height:1.6">
         <strong style="color:#1a3a5c;font-size:13px">Komplett Byggdrift AS</strong><br>
         Tømrerarbeid · Rørleggertjenester · Drift og vedlikehold<br>
-        Tlf: 416 02 078 / 920 34 199 · E-post: post@komplettbyggdrift.no · komplettbyggdrift.no<br>
+        Tlf: 416 02 078 · E-post: post@komplettbyggdrift.no · komplettbyggdrift.no<br>
         Org.nr: 926 335 758 · MVA-registrert
       </div>
     </div>
@@ -2500,7 +2499,7 @@ let autoSaveTimer=null;
 
 function captureProsjektState(){
   return {
-    currentTab, currentFag,
+    currentTab, currentFag, lastWorkTab,
     accessories:Object.fromEntries(Array.from(document.querySelectorAll(".toggle-row[data-key] input[type=checkbox]")).map(c=>[c.id,c.checked])),
     roofs:JSON.parse(JSON.stringify(roofs)),
     walls:JSON.parse(JSON.stringify(walls)),
@@ -2556,7 +2555,8 @@ function restoreProsjektState(s){
   document.querySelectorAll('#tekCard input').forEach(c=>{c.checked=(s.tek||[]).includes(c.id);});
   renderRoofs();renderWalls();renderVinduer();renderDorer();
   renderServiceItems('vvs');renderServiceItems('tom');renderAnbud();
-  if(s.currentTab&&s.currentTab!=='start')switchTab(s.currentTab);
+  lastWorkTab=prosjektArbeidsTab(s);
+  if(lastWorkTab)switchTab(lastWorkTab);else switchTab('start');
   recalc();
   if(typeof oppdaterTekListe==='function')oppdaterTekListe();
   syncTilTilbud();
@@ -2591,6 +2591,7 @@ function nyttProsjekt(){
   const navn=prompt('Navn på prosjekt:','Nytt prosjekt');
   if(!navn)return;
   document.querySelectorAll('.toggle-row[data-key] input[type=checkbox]').forEach(c=>c.checked=c.defaultChecked);
+  lastWorkTab=null;
   aktivProsjektId=Date.now().toString();
   const liste=lasteProsjekter();
   liste.unshift({id:aktivProsjektId,navn,kunde:'',dato:new Date().toISOString(),sist_endret:new Date().toISOString(),status:'utkast',total:0,state:null});
@@ -2613,6 +2614,8 @@ function lastInnProsjekt(id){
   }
   const p=lasteProsjekter().find(x=>x.id===id);
   if(!p)return;
+  if(autoSaveTimer){clearTimeout(autoSaveTimer);autoSaveTimer=null;}
+  lastWorkTab=null;
   aktivProsjektId=id;
   if(p.state){
     restoreProsjektState(p.state);
@@ -2630,6 +2633,7 @@ function lastInnProsjekt(id){
     setVal('t-tittel',p.navn);
     setVal('t-kunde',p.kunde||'');
     setVal('t-status',p.status||'utkast');
+    switchTab('start');
     if(typeof recalc==='function')recalc();
   }
   closeProsjekter();
