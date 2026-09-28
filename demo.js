@@ -1,4 +1,21 @@
 'use strict';
+let tourOffered=false,tourIndex=0;
+const tourSteps=[
+ ['day','Velkommen! Her starter arbeidsdagen','Her får du en rask oversikt over dagens oppdrag, prosjekter og ting som må følges opp. Vi viser deg rundt med noen få steg. Du kan hoppe over når som helst.'],
+ ['finance','Her ser du økonomien','Se inntekter, kostnader og resultat samlet. I den ekte løsningen hentes tallene fra Tripletex. Administratorene bestemmer hvilke ansatte som får se økonomien. Her i demoen er alle beløp oppdiktet.'],
+ ['projects','Her samles prosjektene','Trykk på et prosjektkort for å åpne det. I denne demoen ser du eksempler på arbeidsbeskrivelse og fremdrift. Alt tilhører fiktive kunder.'],
+ ['calendar','Her ser du arbeidsplanen','Se hvem som skal gjøre hva, og når. I den ekte løsningen brukes Google Kalender. Denne planen er et eksempel og viser ingen private avtaler.'],
+ ['hours','Prøv å føre noen timer','Velg prosjekt, start, slutt og pause. Skriv kort hva som ble gjort, og trykk «Legg til demotimer». Deretter kan du prøve «Simuler godkjenning». Ingen timer sendes til Tripletex. Demoen viser en enklere prøve enn ansattes timeassistent.'],
+ ['hms','Her følger du opp HMS','Prøv å krysse av sjekklisten. Dette er en liten smakebit på HMS-verktøyene. Listen er bare et eksempel, ikke en fullstendig risikovurdering.'],
+ ['calculator','Prøv selv – du kan ikke ødelegge noe','Endre timer og materialkostnader for å se eksempelprisen. Denne enkle kalkylen er ikke et ekte tilbud. Bruk menyen for å utforske videre. «Vis omvisning» starter denne gjennomgangen på nytt.']
+];
+function tourStep(){const [view,title,text]=tourSteps[tourIndex];showView(view);document.getElementById('tour-title').textContent=title;document.getElementById('tour-text').textContent=text;document.getElementById('tour-step').textContent='Kort omvisning · '+(tourIndex+1)+' av '+tourSteps.length;document.getElementById('tour-back').disabled=tourIndex===0;document.getElementById('tour-next').textContent=tourIndex===tourSteps.length-1?'Ferdig – prøv selv':'Neste →';document.querySelector('[data-panel="'+view+'"]').scrollIntoView({block:'start'});document.getElementById('tour-title').focus({preventScroll:true});}
+function startTour(){if(demo.hidden)return;tourIndex=0;document.getElementById('demo-tour').showModal();tourStep();}
+document.getElementById('tour-open').onclick=startTour;
+for(const id of ['tour-close','tour-skip'])document.getElementById(id).onclick=()=>document.getElementById('demo-tour').close();
+document.getElementById('demo-tour').addEventListener('close',()=>{if(!demo.hidden)document.getElementById('tour-open').focus({preventScroll:true});});
+document.getElementById('tour-back').onclick=()=>{if(tourIndex>0){tourIndex--;tourStep();}};
+document.getElementById('tour-next').onclick=()=>{if(tourIndex<tourSteps.length-1){tourIndex++;tourStep();}else document.getElementById('demo-tour').close();};
 // This page never loads employee tools, their storage, or business tables.
 const form=document.getElementById('entry'),demo=document.getElementById('demo'),statusEl=document.getElementById('status');let activeCode='';
 async function verify(code){
@@ -8,7 +25,7 @@ async function verify(code){
  if(!response.ok)throw Error('Kunne ikke kontrollere koden. Prøv igjen når du har nett.');
  const rows=await response.json();return rows.length===1&&new Date(rows[0].expires_at).getTime()>Date.now();
 }
-async function open(code){try{if(!await verify(code))throw Error('Koden er ugyldig, utløpt eller deaktivert.');activeCode=code;demo.hidden=false;form.hidden=true;statusEl.textContent='';}catch(e){activeCode='';demo.hidden=true;form.hidden=false;statusEl.textContent=e.message;}}
+async function open(code){try{if(!await verify(code))throw Error('Koden er ugyldig, utløpt eller deaktivert.');activeCode=code;demo.hidden=false;form.hidden=true;statusEl.textContent='';if(!tourOffered){tourOffered=true;startTour();}}catch(e){activeCode='';document.getElementById('demo-tour').close();demo.hidden=true;form.hidden=false;statusEl.textContent=e.message;}}
 form.addEventListener('submit',event=>{event.preventDefault();open(document.getElementById('code').value.trim());});
 function calculate(){const hours=Math.max(0,Math.min(10000,Number(document.getElementById('hours').value)||0)),materials=Math.max(0,Math.min(10000000,Number(document.getElementById('materials').value)||0));document.getElementById('estimate').textContent=(hours*750+materials).toLocaleString('nb-NO')+' kr eks. mva.';}
 for(const id of ['hours','materials'])document.getElementById(id).addEventListener('input',calculate);calculate();
