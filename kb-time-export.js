@@ -1,0 +1,34 @@
+(function(){
+ 'use strict';
+ const db=KBDatabase.getClient(),$=id=>document.getElementById(id);
+ const section=document.createElement('section');section.innerHTML='<h2>Send dagen til Tripletex</h2><p>Avslutt jobben og godkjenn dagens utkast over. Deretter velger du riktig Tripletex-prosjekt og aktivitet. Henteturer er med i timene på samme jobb.</p><p>Timer som allerede er ført manuelt på samme prosjekt og aktivitet, blir ikke overskrevet. Når dagen er sendt, gjøres eventuelle rettelser i Tripletex.</p><button id="export-open">Klargjør valgt dag</button><p id="export-status" role="status" aria-live="polite"></p><div id="export-mappings"></div><button id="export-preview" hidden>Se hva som blir sendt</button><div id="export-summary"></div><button id="export-send" hidden>Godkjenn og send til Tripletex</button><p class="note">Timene overføres med to desimaler (for eksempel 1,50 timer = 1 time og 30 minutter). Dagen låses for nye endringer her når overføringen starter.</p>';
+ $('day-review').after(section);
+ const check=document.createElement('button');check.type='button';check.textContent='Kontroller Tripletex-tilkobling';section.querySelector('h2').after(check);
+ let busy=false,day=null,mappings={},fingerprint=null;
+ function el(tag,text){const n=document.createElement(tag);n.textContent=text;return n;}
+ async function api(action,extra={}){const {data,error}=await db.functions.invoke('tripletex-time',{body:{action,day,...extra}});if(error){let detail;try{detail=await error.context.json();}catch{}throw Error(detail?.error||'Kunne ikke kontakte Tripletex. Oppdater status før du prøver igjen.');}if(data?.error)throw Error(data.error);return data;}
+ function invalidate(){fingerprint=null;$('export-summary').replaceChildren();$('export-send').hidden=true;}
+ function showExport(record){invalidate();$('export-mappings').replaceChildren();$('export-preview').hidden=true;
+  $('export-status').textContent=record.state==='sent'?'✓ Dagens timer er mottatt og bekreftet i Tripletex.':record.state==='sending'?'Overføring pågår eller ble avbrutt. Kontroller status igjen. Ikke før de samme timene manuelt før du har sjekket Tripletex.':'Overføringen trenger kontroll i Tripletex. Enkelte timer kan være sendt. Ingenting sendes på nytt automatisk.';
+  for(const line of record.lines||[]){const p=el('p',`${line.projectName} · ${line.activityName} · ${line.payload.hours.toLocaleString('nb-NO')} timer — ${line.state==='sent'?'Sendt, referanse '+line.entryId:line.state==='not_attempted'?'Ikke forsøkt sendt':line.state==='rejected'?'Avvist av Tripletex':'Mottak må kontrolleres'}`);$('export-summary').append(p);}
+ }
+ async function run(job){if(busy)return;busy=true;for(const b of section.querySelectorAll('button'))b.disabled=true;try{await job();}catch(e){$('export-status').textContent=e.message;}finally{busy=false;for(const b of section.querySelectorAll('button'))b.disabled=false;}}
+ check.onclick=()=>run(async()=>{day=$('review-date').value;invalidate();$('export-status').textContent='Kontrollerer tilkobling …';const result=await api('options');if(result.export){showExport(result.export);return;}$('export-status').textContent='Koblet til Tripletex som '+result.employee+'. Fant '+result.projects.length+' åpne prosjekter. Ingen timer er sendt.';});
+ $('export-open').onclick=()=>run(async()=>{
+  day=$('review-date').value;invalidate();$('export-mappings').replaceChildren();$('export-preview').hidden=true;$('export-status').textContent='Kontrollerer valgt dag …';
+  const status=await api('status');if(status.export){showExport(status.export);return;}
+  const {data:rows,error}=await db.rpc('kb_time_day',{p_day:day});if(error)throw Error('Kunne ikke hente timeutkastene.');
+  if(!rows?.length||rows.some(r=>r.status!=='completed'||!r.reviewed_at))throw Error('Avslutt alle økter og trykk «Godkjenn dagens utkast» først.');
+  const options=await api('options');if(options.export){showExport(options.export);return;}mappings={};
+  const jobs=new Map(rows.map(r=>[r.corrected_project_id||r.project_id,r.corrected_project_name||r.project_name]));
+  for(const [localId,name] of jobs){const card=el('article','');card.className='time-entry';card.append(el('h3',name));const label=el('label','Prosjekt i Tripletex'),select=el('select',''),activityLabel=el('label','Aktivitet'),activity=el('select','');select.id='tt-project-'+localId;activity.id='tt-activity-'+localId;label.htmlFor=select.id;activityLabel.htmlFor=activity.id;
+   select.append(new Option('Velg riktig prosjekt …',''));for(const p of options.projects)select.append(new Option((p.number?p.number+' · ':'')+p.name,String(p.id)));activity.append(new Option('Velg prosjekt først',''));activity.disabled=true;card.append(label,select,activityLabel,activity);$('export-mappings').append(card);
+   select.onchange=()=>run(async()=>{invalidate();delete mappings[localId];activity.replaceChildren(new Option('Henter aktiviteter …',''));activity.disabled=true;const projectId=Number(select.value);if(!projectId)return;const result=await api('activities',{projectId});if(result.export){showExport(result.export);return;}activity.replaceChildren(new Option('Velg aktivitet …',''));for(const a of result.activities)activity.append(new Option(a.name,String(a.id)));activity.disabled=false;mappings[localId]={projectId,activityId:null};$('export-status').textContent='Velg aktivitet for jobben.';});
+   activity.onchange=()=>{invalidate();if(mappings[localId])mappings[localId].activityId=Number(activity.value);};
+  }
+  $('export-preview').hidden=false;$('export-status').textContent='Du fører timer for '+options.employee+'. Velg riktig prosjekt og aktivitet for hver jobb.';
+ });
+ $('export-preview').onclick=()=>run(async()=>{invalidate();if(day!==$('review-date').value)throw Error('Datoen er endret. Trykk «Klargjør valgt dag» på nytt.');$('export-status').textContent='Kontrollerer mot Tripletex …';const result=await api('preview',{mappings});if(result.export){showExport(result.export);return;}fingerprint=result.fingerprint;$('export-summary').append(el('h3','Dette sendes for '+day));for(const line of result.lines)$('export-summary').append(el('p',`${line.project} · ${line.activity}: ${line.hours.toLocaleString('nb-NO')} timer${line.description?' — '+line.description:''}`));$('export-send').hidden=false;$('export-status').textContent='Kontroller oppsummeringen. Ingenting er sendt ennå.';});
+ $('export-send').onclick=()=>run(async()=>{if(!fingerprint||day!==$('review-date').value)throw Error('Se forhåndsvisningen på nytt først.');const approved=fingerprint;invalidate();$('export-status').textContent='Sender … Ikke lukk siden.';const result=await api('send',{mappings,fingerprint:approved});showExport(result.export);});
+ $('review-date').addEventListener('change',()=>{invalidate();$('export-mappings').replaceChildren();$('export-preview').hidden=true;$('export-status').textContent='Trykk «Klargjør valgt dag» for denne datoen.';});
+})();
