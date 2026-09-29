@@ -8,16 +8,29 @@
  const duration=s=>[Math.floor(s/3600),Math.floor(s%3600/60),Math.floor(s%60)].map(n=>String(n).padStart(2,'0')).join(':');
  const when=s=>new Date(s).toLocaleString('nb-NO',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
  function element(tag,text){const e=document.createElement(tag);e.textContent=text;return e;}
+ let favorites=new Set(),favoriteBusy=false;
+ const searchLabel=element('label','Søk i prosjektene'),search=element('input','');search.type='search';search.id='project-search';search.placeholder='Søk på prosjektnavn eller nummer';searchLabel.htmlFor=search.id;
+ const favoriteButton=element('button','☆ Merk som favoritt'),projectStatus=element('p','Henter prosjekter fra Tripletex …');favoriteButton.type='button';favoriteButton.id='project-favorite';favoriteButton.setAttribute('aria-pressed','false');projectStatus.id='project-load-status';projectStatus.setAttribute('role','status');projectStatus.className='note';
+ $('time-project').before(searchLabel,search);$('time-project').after(favoriteButton,projectStatus);
+ function favoriteState(){const selected=$('time-project').value,starred=favorites.has(selected);favoriteButton.textContent=starred?'★ Fjern fra favoritter':'☆ Merk som favoritt';favoriteButton.setAttribute('aria-pressed',String(starred));favoriteButton.disabled=!selected||favoriteBusy||busy||!ready;}
+ function renderProjects(){const selected=$('time-project').value,q=search.value.trim().toLocaleLowerCase('nb-NO');const filtered=projects.filter(p=>p.active!==false&&(p.id===selected||p.navn.toLocaleLowerCase('nb-NO').includes(q))).sort((a,b)=>a.navn.localeCompare(b.navn,'nb-NO',{numeric:true}));
+  $('time-project').replaceChildren(new Option('Velg prosjekt …',''));
+  for(const [title,predicate] of [['★ Mine favoritter',p=>favorites.has(p.id)],['Prosjekter fra Tripletex',p=>!favorites.has(p.id)&&p.tripletex_id],['Lokale prosjekter',p=>!favorites.has(p.id)&&!p.tripletex_id]]){const group=element('optgroup','');group.label=title;for(const p of filtered.filter(predicate))group.append(new Option(p.navn,p.id));if(group.children.length)$('time-project').append(group);}
+  $('time-project').value=selected;favoriteState();
+ }
+ search.oninput=renderProjects;
+ favoriteButton.onclick=async()=>{const pid=$('time-project').value;if(!pid||favoriteBusy)return;favoriteBusy=true;favoriteState();try{const was=favorites.has(pid);const result=was?await db.from('kb_time_favorites').delete().eq('project_id',pid):await db.from('kb_time_favorites').insert({project_id:pid});if(result.error)throw result.error;if(was)favorites.delete(pid);else favorites.add(pid);renderProjects();projectStatus.textContent=was?'Stjernen er fjernet. Prosjektet er fortsatt tilgjengelig.':'Stjernemerket. Prosjektet ligger øverst i listen på kontoen din.';}catch(e){projectStatus.textContent='Kunne ikke lagre stjernen. Prøv igjen. '+(e.message||'');}finally{favoriteBusy=false;favoriteState();}};
  function controls(){
   const a=state.active,paused=a?.status==='paused';
   $('active-controls').hidden=!a;$('start').hidden=!!a;$('switch-open').hidden=!a;
   $('pause').hidden=paused;$('resume').hidden=!paused;$('errand').hidden=paused||a?.mode==='errand';$('return').hidden=paused||a?.mode!=='errand';
   $('clock-title').textContent=a?a.project_name:'Klar for jobb?';
-  $('clock-help').textContent=a?(paused?'Pauset. Trykk «Fortsett arbeidet» når du er klar.':a.mode==='errand'?'På hentetur. Klokken fortsetter på dette prosjektet.':'Klokken går, også når du lukker siden. Husk å avslutte jobben.'): 'Velg et lagret prosjekt og trykk «Start jobb».';
+  $('clock-help').textContent=a?(paused?'Pauset. Trykk «Fortsett arbeidet» når du er klar.':a.mode==='errand'?'På hentetur. Klokken fortsetter på dette prosjektet.':'Klokken går, også når du lukker siden. Husk å avslutte jobben.'): 'Velg prosjekt fra Tripletex og trykk «Start jobb». Bruk stjernen for jobbene du bruker ofte.';
   for(const b of document.querySelectorAll('main button'))b.disabled=busy||!ready;
   $('start').disabled=busy||!ready||!$('time-project').value;
   $('switch-open').disabled=busy||!ready||!$('time-project').value||$('time-project').value===a?.project_id;
   $('clock').textContent=a?duration(seconds(a)):'00:00:00';
+  favoriteState();
  }
  function render(){controls();$('time-history').replaceChildren();
   if(!state.recent.length)$('time-history').append(element('p','Ingen avsluttede timeutkast ennå.'));
@@ -66,6 +79,12 @@
   finally{$('locate').disabled=false;}
  };
  controls();
- try{const {data,error}=await db.from('prosjekter').select('id,navn,state,sist_endret').order('sist_endret',{ascending:false});if(error)throw error;projects=data||[];for(const p of projects){const o=element('option',p.navn||'Uten navn');o.value=p.id;$('time-project').append(o);}await action('status');}
+ try{
+  let syncProblem=false;try{const {data,error}=await db.functions.invoke('tripletex-time',{body:{action:'options',day:osloDay()}});if(error||data?.error)throw error||Error(data.error);}catch{syncProblem=true;}
+  const [{data,error},stars]=await Promise.all([db.from('kb_time_projects').select('id,navn,state,active,tripletex_id'),db.from('kb_time_favorites').select('project_id')]);if(error)throw error;
+  projects=data||[];favorites=new Set((stars.data||[]).map(p=>p.project_id));renderProjects();
+  projectStatus.textContent=syncProblem?'Tripletex kunne ikke oppdateres akkurat nå. Viser sist hentede prosjekter. Last siden på nytt for å prøve igjen.':`${projects.filter(p=>p.tripletex_id&&p.active).length} åpne Tripletex-prosjekter. Velg et prosjekt og trykk ☆ for å legge det øverst. Trykk ★ for å fjerne stjernen.`;
+  if(stars.error)projectStatus.textContent+=' Favorittene kunne ikke lastes.';await action('status');
+ }
  catch(e){$('time-status').textContent='Prosjektene kunne ikke lastes. Last siden på nytt. '+(e.message||'');}
 })();
