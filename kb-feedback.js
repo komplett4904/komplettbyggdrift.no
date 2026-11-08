@@ -56,12 +56,12 @@
 
   function makeBubbleMovable(){
     const button=document.getElementById('tmKnapp'),badge=document.getElementById('tmBadge'),panel=document.getElementById('tmSkjema');
-    const key='kb-feedback-position-v1';let position={x:1,y:1},drag=null,suppress=false,custom=false;
+    const key='kb-feedback-position-v2';let position={x:1,y:1},drag=null,suppress=false,custom=false;
     try{const saved=JSON.parse(localStorage.getItem(key));if(saved&&Number.isFinite(saved.x)&&Number.isFinite(saved.y)){position={x:Math.max(0,Math.min(1,saved.x)),y:Math.max(0,Math.min(1,saved.y))};custom=true;}}catch{}
     button.style.touchAction='none';button.style.userSelect='none';button.style.cursor='grab';
     button.setAttribute('aria-label','Tilbakemelding. Kan flyttes ved å dra eller med piltastene.');
-    function bounds(){const v=window.visualViewport;return {left:(v?.offsetLeft||0)+12,top:(v?.offsetTop||0)+12,width:Math.max(1,(v?.width||innerWidth)-78),height:Math.max(1,(v?.height||innerHeight)-90)};}
-    function place(){if(!custom)position={x:innerWidth<=700?1:0,y:1};const b=bounds(),x=b.left+position.x*b.width,y=b.top+position.y*b.height;
+    function bounds(){const v=window.visualViewport;return {left:(v?.offsetLeft||0)+12,top:(v?.offsetTop||0)+12,width:Math.max(1,(v?.width||innerWidth)-78),height:Math.max(1,(v?.height||innerHeight)-150)};}
+    function place(){if(!custom)position={x:1,y:1};const b=bounds(),x=b.left+position.x*b.width,y=b.top+position.y*b.height;
       Object.assign(button.style,{left:x+'px',top:y+'px',bottom:'auto',right:'auto'});
       Object.assign(badge.style,{left:(x+38)+'px',top:(y-5)+'px',bottom:'auto'});
       // Keep the open form within the visible viewport, independently of the button.

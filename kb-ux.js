@@ -4,6 +4,20 @@
  const css=document.createElement('style');css.textContent='.kb-quick{border:1px solid #dbe3ea;border-radius:12px;background:white;padding:18px;margin:20px 0}.kb-quick h3{margin:0 0 12px}.kb-quick button{padding:12px;border:1px solid #ccd8e3;border-radius:8px;background:#f4f7fa;color:#17324d;cursor:pointer;text-align:left;font:inherit}.kb-quick-list{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}.kb-quick-list button{flex:1 1 210px}.kb-quick small{display:block;margin-top:5px;color:#526779}.kb-search{display:block;width:100%;padding:12px;margin:12px 0;border:1px solid #ccd8e3;border-radius:8px;font:inherit}.kb-home{display:inline-flex;align-items:center;min-height:44px;padding:8px 12px;color:#17324d;background:#f1f5f9;border-radius:8px;text-decoration:none}.kb-save-inline{position:sticky!important;top:0;bottom:auto!important;left:auto!important;max-width:none!important;margin:10px 0!important;z-index:90!important}@media print{.kb-quick,.kb-home,.kb-save-inline{display:none!important}}';document.head.append(css);
  for(const a of document.querySelectorAll('a[href="anbudskalkulator.html"],a[href="/anbudskalkulator.html"]'))if(a.textContent.trim()==='Anbudskalkulator')a.textContent='Mine verktøy';
  if(!document.querySelector('nav a[href="anbudskalkulator.html"],nav a[href="/anbudskalkulator.html"]')&&KBAuth.can('projects')&&!document.querySelector('a[href="/anbudskalkulator.html"]')){const home=document.createElement('a');home.href='/anbudskalkulator.html';home.className='kb-home';home.textContent='← Mine verktøy';document.querySelector('main')?.prepend(home);}
+ // Shared tool navigation keeps the same destinations on each work page.
+ const toolLink=document.querySelector('nav a[href="anbudskalkulator.html"],nav a[href="/anbudskalkulator.html"]');
+ let toolNav=toolLink?.closest('nav');
+ if(!toolNav&&location.pathname==='/timer.html'){toolNav=document.createElement('nav');document.querySelector('main')?.before(toolNav);}
+ if(toolNav){
+  toolNav.id='kb-tool-nav';toolNav.setAttribute('aria-label','Mine verktøy');
+  const row=document.createElement('div');row.className='kb-tool-nav-row';
+  for(const [module,label,path] of [['projects','Mine verktøy','/anbudskalkulator.html'],['calendar','Kalender','/kalender.html'],['hms','HMS','/hms.html'],['projects','Timeføring','/timer.html']]){
+   if(!KBAuth.can(module))continue;
+   const a=document.createElement('a');a.href=path;a.textContent=label;if(location.pathname===path)a.setAttribute('aria-current','page');row.append(a);
+  }
+  toolNav.replaceChildren(row);
+  const navStyle=document.createElement('style');navStyle.textContent='#kb-tool-nav{background:#0f2640;padding:0;border:0;border-bottom:1px solid #3b4e60}#kb-tool-nav .kb-tool-nav-row{max-width:1200px;margin:auto;padding:12px 20px;display:flex;flex-wrap:wrap;gap:10px}#kb-tool-nav a{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 20px;border:1px solid #627d95;border-radius:9px;background:#284863;color:#edf6ff!important;text-decoration:none;font:600 14px system-ui;box-sizing:border-box}#kb-tool-nav a:hover{background:#335b7a}#kb-tool-nav a[aria-current=page]{background:#f3ba4d;color:#142330!important;border-color:#f3ba4d}#kb-tool-nav a:focus-visible{outline:3px solid #f3ba4d;outline-offset:3px}@media(max-width:500px){#kb-tool-nav .kb-tool-nav-row{padding:10px 12px;gap:8px}#kb-tool-nav a{flex:1 1 calc(50% - 8px);padding:10px 12px}}@media print{#kb-tool-nav{display:none}}';document.head.append(navStyle);
+ }
  const title=document.getElementById('hovedmenyTittel');
  if(KBAuth.can('projects')&&location.pathname==='/timer.html'){
   let checked=0;
