@@ -24,6 +24,7 @@
  day.append(date,heading,intro,actions,network);home.prepend(day);
  const recent=home.querySelector('.kb-quick:not(#kb-workday)');if(recent)day.after(recent);
  const finance=document.getElementById('kb-finance');if(finance){finance.classList.add('workday-finance');home.append(finance);finance.querySelector('.finance-scroll')?.remove();}
+ if(KBAuth.can('projects')){const options=document.createElement('details');options.className='kb-alternative-tools';options.innerHTML='<summary>Mine verktøy · flere alternativer</summary><p>Valgfrie verktøy ved behov.</p><a href="/timer.html">Timeføring – alternativ →</a>';home.append(options);}
  const title=document.getElementById('hovedmenyTittel');if(title){title.textContent='Kalkulator og flere verktøy';const sub=title.nextElementSibling;if(sub?.classList.contains('page-sub'))sub.textContent='Velg verktøyet du trenger til oppdraget.';}
  const dialog=document.createElement('dialog');dialog.id='kb-project-overview';dialog.setAttribute('aria-labelledby','project-overview-title');document.body.append(dialog);
  window.KBProjectOverview=function(id){

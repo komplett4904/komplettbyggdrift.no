@@ -1,6 +1,6 @@
 (async function(){
   'use strict';
-  const themeScript=document.createElement('script');themeScript.src='/kb-theme.js?v=20261108-customers';document.head.append(themeScript);
+  const themeScript=document.createElement('script');themeScript.src='/kb-theme.js?v=20261108-portal-2';document.head.append(themeScript);
   const screen = document.createElement('section');
   screen.id='kb-secure-gate';
   screen.style.cssText='position:fixed;inset:0;z-index:2147483647;background:#f1f5f8;display:grid;place-items:center;padding:24px;font-family:system-ui,sans-serif;color:#17324d';
@@ -24,7 +24,7 @@
     window.KBMedia.start();
     for(const placeholder of document.querySelectorAll('script[data-kb-script]')){
       if(placeholder.dataset.kbScript==='/kb-feedback.js'&&!KBAuth.can('feedback'))continue;
-      await new Promise((resolve,reject)=>{const script=document.createElement('script');script.src=placeholder.dataset.kbScript==='/kb-feedback.js'?'/kb-feedback.js?v=20261108-feedback-label':placeholder.dataset.kbScript;if(script.src.includes('/kb-finance.js'))script.src='/kb-finance.js?v=20261108-workday';script.onload=resolve;script.onerror=()=>reject(Error('Verktøyet kunne ikke lastes. Last siden på nytt.'));document.body.append(script);});
+      await new Promise((resolve,reject)=>{const script=document.createElement('script');script.src=placeholder.dataset.kbScript==='/kb-feedback.js'?'/kb-feedback.js?v=20261108-portal-2':placeholder.dataset.kbScript;if(script.src.includes('/kb-finance.js'))script.src='/kb-finance.js?v=20261108-workday';script.onload=resolve;script.onerror=()=>reject(Error('Verktøyet kunne ikke lastes. Last siden på nytt.'));document.body.append(script);});
     }
     for(const id of ['passordSperre','pwd-screen']){const old=document.getElementById(id);if(old)old.remove();}
     // Existing initialization listeners run after the verified scripts are loaded.
@@ -32,14 +32,14 @@
     for(const button of document.querySelectorAll('[onclick*="Passord"],[onclick*="passord"]'))button.hidden=true;
     screen.remove();
     const contextScript=document.createElement('script');contextScript.src='/kb-project-context.js?v=20261108';document.body.append(contextScript);
-    const uxScript=document.createElement('script');uxScript.src='/kb-ux.js?v=20261108-workday';uxScript.onload=()=>{const workday=document.createElement('script');workday.src='/kb-workday.js?v=20261108-final';document.body.append(workday);};document.body.append(uxScript);
+    const uxScript=document.createElement('script');uxScript.src='/kb-ux.js?v=20261108-portal-2';uxScript.onload=()=>{const workday=document.createElement('script');workday.src='/kb-workday.js?v=20261108-portal-2';document.body.append(workday);};document.body.append(uxScript);
     const floatingStyle=document.createElement('style');floatingStyle.textContent=`
       body{padding-bottom:100px!important}
       @media(max-width:700px){nav[aria-label="Din konto"]{position:static!important;inset:auto!important;display:flex!important;max-width:none!important;margin:24px 12px 12px!important;gap:8px 16px!important;padding:12px!important;box-sizing:border-box}nav[aria-label="Din konto"] a,nav[aria-label="Din konto"] button{min-height:44px;display:inline-flex;align-items:center}nav[aria-label="Din konto"] button{padding:8px 12px}}
-      @media print{nav[aria-label="Din konto"],#tilbakemeldingBoble{display:none!important}body{padding-bottom:0!important}}
+      @media print{nav[aria-label="Din konto"],.kb-feedback-dock,#tilbakemeldingBoble{display:none!important}body{padding-bottom:0!important}}
     `;document.head.append(floatingStyle);
     const tools=document.createElement('nav');tools.setAttribute('aria-label','Din konto');
-    tools.style.cssText='position:fixed;bottom:12px;right:12px;z-index:1000;display:flex;flex-wrap:wrap;max-width:calc(100vw - 24px);align-items:center;gap:12px;padding:10px 14px;background:white;border:1px solid #dbe3ea;border-radius:8px;box-shadow:0 3px 12px #0001;font:13px system-ui';
+    tools.style.cssText='position:static;margin:12px 20px;z-index:1000;display:flex;flex-wrap:wrap;max-width:calc(100vw - 24px);align-items:center;gap:12px;padding:10px 14px;background:white;border:1px solid #dbe3ea;border-radius:8px;box-shadow:0 3px 12px #0001;font:13px system-ui';
     const settingsButton=document.createElement('button');settingsButton.textContent='⚙ Innstillinger';settingsButton.type='button';settingsButton.id='kb-settings-button';
     tools.append(settingsButton);
     const settingsScript=document.createElement('script');settingsScript.src='/kb-settings.js?v=20261108-tools';document.body.append(settingsScript);

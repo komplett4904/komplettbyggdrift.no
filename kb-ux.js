@@ -11,7 +11,7 @@
  if(toolNav){
   toolNav.id='kb-tool-nav';toolNav.setAttribute('aria-label','Mine verktøy');
   const row=document.createElement('div');row.className='kb-tool-nav-row';
-  for(const [module,label,path] of [['projects','Mine verktøy','/anbudskalkulator.html'],['calendar','Kalender','/kalender.html'],['hms','HMS','/hms.html'],['projects','Timeføring','/timer.html']]){
+  for(const [module,label,path] of [['projects','Mine verktøy','/anbudskalkulator.html'],['finance','Økonomi','/okonomi.html'],['calendar','Kalender','/kalender.html'],['hms','HMS','/hms.html']]){
    if(!KBAuth.can(module))continue;
    const a=document.createElement('a');a.href=path;a.textContent=label;if(location.pathname===path)a.setAttribute('aria-current','page');row.append(a);
   }
