@@ -44,6 +44,7 @@ html[data-kb-theme=dark] :is(.tag-behandling,.status-sendt){background:#284863!i
 html[data-kb-theme=dark].kb-settings-embedded main{background:#1b2733!important;color:#e5edf5!important}
 html[data-kb-theme=dark] :is(#status,.kb-settings-prices #prisModal){background:#1b2733!important;color:#e5edf5!important}
 html[data-kb-theme=dark] #kb-finance .finance-eyebrow{color:#b8ccdd!important}
+html[data-kb-theme=dark] #kb-finance .finance-top-customers{background:#1b2733!important;color:#e5edf5!important;border-color:#526b80!important}
 /* Preview the customer document as paper, independent of the application theme. */
 html[data-kb-theme=dark] .kb-home{background:#1b2733!important;color:#c7e3fa!important}
 html[data-kb-theme=dark] :is(.kb-quick,.kb-quick button){background:#1b2733!important;color:#e5edf5!important;border-color:#526b80!important}

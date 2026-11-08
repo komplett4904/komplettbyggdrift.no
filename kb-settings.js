@@ -25,7 +25,7 @@
  if(KBAuth.can('projects'))categories.push({id:'prices',name:'Priser og påslag',hint:'Prisliste, import og eksport'});
  if(KBAuth.can('demo'))categories.push({id:'demo',name:'Demokoder',hint:'Vis frem med eksempeldata'});
  if(employee.isAdmin)categories.push({id:'access',name:'Ansatte og tilganger',hint:'Administrer ansatte og verktøy'});
- categories.push({id:'tools',name:'Verktøy og integrasjoner',hint:'Kalender, Google og økonomi'});
+ categories.push({id:'tools',name:'Mine verktøy',hint:'Kalender, økonomi og alternative verktøy'});
  let priceModal=null;
  function show(id){
    selected=id;nav.querySelectorAll('button').forEach(b=>b.setAttribute('aria-current',b.dataset.category===id?'page':'false'));
@@ -39,8 +39,9 @@
  pane.innerHTML='<h3>Utseende</h3><div class="kbs-card"><label for="kb-theme-choice">Tema</label><p class="kbs-muted">Valget huskes i denne nettleseren. Utskrift og tilbud forblir lyse.</p><select id="kb-theme-choice"><option value="light">Lyst</option><option value="dark">Mørkt</option><option value="system">Følg enheten</option></select></div>';
  const select=pane.querySelector('select');select.value=window.KBTheme?.get()||'light';select.onchange=()=>window.KBTheme?.set(select.value);
  }else if(id==='tools'){
-       pane.innerHTML='<h3>Verktøy og integrasjoner</h3><p class="kbs-muted">Åpne verktøyene du har tilgang til.</p>';
-       for(const [module,label,url] of [['projects','Min timeassistent','/timer.html'],['projects','Prosjekter og kalkulator','/anbudskalkulator.html'],['hms','HMS og stoffkartotek','/hms.html'],['calendar','Google Kalender / arbeidsplan','/kalender.html'],['finance','Økonomi / Tripletex','/okonomi.html']])if(KBAuth.can(module)){const a=document.createElement('a');a.className='kbs-tool';a.href=url;a.textContent=label+' →';pane.append(a);}
+       pane.innerHTML='<h3>Mine verktøy</h3><p class="kbs-muted">Åpne verktøyene du har tilgang til.</p>';
+       for(const [module,label,url] of [['projects','Prosjekter og kalkulator','/anbudskalkulator.html'],['hms','HMS og stoffkartotek','/hms.html'],['calendar','Google Kalender / arbeidsplan','/kalender.html'],['finance','Økonomi / Tripletex','/okonomi.html']])if(KBAuth.can(module)){const a=document.createElement('a');a.className='kbs-tool';a.href=url;a.textContent=label+' →';pane.append(a);}
+       if(KBAuth.can('projects')){const alternatives=document.createElement('details');alternatives.innerHTML='<summary>Alternative verktøy</summary><p class="kbs-muted">Timeføring i portalen er valgfritt. Bruk Tripletex til vanlig timeføring.</p><a class="kbs-tool" href="/timer.html">Timeføring – alternativ →</a>';pane.append(alternatives);}
      }else if(id==='prices'&&document.getElementById('prisModal')){
        priceModal=document.getElementById('prisModal');pane.append(priceModal);priceModal.classList.add('kbs-inline-prices');openPrisInnstillinger();
      }else{
