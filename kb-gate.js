@@ -24,14 +24,14 @@
     window.KBMedia.start();
     for(const placeholder of document.querySelectorAll('script[data-kb-script]')){
       if(placeholder.dataset.kbScript==='/kb-feedback.js'&&!KBAuth.can('feedback'))continue;
-      await new Promise((resolve,reject)=>{const script=document.createElement('script');script.src=placeholder.dataset.kbScript==='/kb-feedback.js'?'/kb-feedback.js?v=20261108-corner':placeholder.dataset.kbScript;script.onload=resolve;script.onerror=()=>reject(Error('Verktøyet kunne ikke lastes. Last siden på nytt.'));document.body.append(script);});
+      await new Promise((resolve,reject)=>{const script=document.createElement('script');script.src=placeholder.dataset.kbScript==='/kb-feedback.js'?'/kb-feedback.js?v=20261108-feedback-label':placeholder.dataset.kbScript;if(script.src.includes('/kb-finance.js'))script.src='/kb-finance.js?v=20261108-workday';script.onload=resolve;script.onerror=()=>reject(Error('Verktøyet kunne ikke lastes. Last siden på nytt.'));document.body.append(script);});
     }
     for(const id of ['passordSperre','pwd-screen']){const old=document.getElementById(id);if(old)old.remove();}
     // Existing initialization listeners run after the verified scripts are loaded.
     document.dispatchEvent(new Event('DOMContentLoaded',{bubbles:true}));
     for(const button of document.querySelectorAll('[onclick*="Passord"],[onclick*="passord"]'))button.hidden=true;
     screen.remove();
-    const uxScript=document.createElement('script');uxScript.src='/kb-ux.js?v=20261108-nav-buttons';document.body.append(uxScript);
+    const uxScript=document.createElement('script');uxScript.src='/kb-ux.js?v=20261108-workday';uxScript.onload=()=>{const workday=document.createElement('script');workday.src='/kb-workday.js?v=20261108';document.body.append(workday);};document.body.append(uxScript);
     const floatingStyle=document.createElement('style');floatingStyle.textContent=`
       body{padding-bottom:100px!important}
       @media(max-width:700px){nav[aria-label="Din konto"]{position:static!important;inset:auto!important;display:flex!important;max-width:none!important;margin:24px 12px 12px!important;gap:8px 16px!important;padding:12px!important;box-sizing:border-box}nav[aria-label="Din konto"] a,nav[aria-label="Din konto"] button{min-height:44px;display:inline-flex;align-items:center}nav[aria-label="Din konto"] button{padding:8px 12px}}

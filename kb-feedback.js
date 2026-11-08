@@ -22,7 +22,7 @@
     const b=document.createElement('div');
     b.id='tilbakemeldingBoble';
     b.innerHTML=`
-      <button id="tmKnapp" title="Send tilbakemelding eller rapporter feil" style="position:fixed;bottom:20px;left:20px;width:54px;height:54px;border-radius:50%;background:#1a3a5c;color:#fff;border:none;cursor:pointer;font-size:24px;box-shadow:0 4px 16px rgba(0,0,0,0.2);z-index:8000;display:flex;align-items:center;justify-content:center;transition:transform .15s">💬</button>
+      <button id="tmKnapp" title="Send tilbakemelding eller rapporter feil" style="position:fixed;bottom:20px;left:20px;width:150px;height:44px;border-radius:10px;background:#1a3a5c;color:#fff;border:none;cursor:pointer;font-size:14px;font-weight:600;box-shadow:0 4px 16px rgba(0,0,0,0.2);z-index:8000;display:flex;align-items:center;justify-content:center;transition:transform .15s">Tilbakemelding</button>
       <span id="tmBadge" style="display:none;position:fixed;bottom:60px;left:58px;background:#dc2626;color:#fff;border-radius:50%;width:22px;height:22px;font-size:11px;font-weight:700;align-items:center;justify-content:center;z-index:8001;border:2px solid #fff"></span>
       <div id="tmSkjema" style="display:none;position:fixed;bottom:90px;left:20px;width:340px;max-width:calc(100vw - 40px);max-height:calc(100vh - 110px);overflow:auto;background:#fff;border-radius:14px;box-shadow:0 12px 40px rgba(0,0,0,0.25);z-index:8000;padding:16px;border:1px solid #dde3ec">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
@@ -56,14 +56,14 @@
 
   function makeBubbleMovable(){
     const button=document.getElementById('tmKnapp'),badge=document.getElementById('tmBadge'),panel=document.getElementById('tmSkjema');
-    const key='kb-feedback-position-v2';let position={x:1,y:1},drag=null,suppress=false,custom=false;
+    const key='kb-feedback-position-v3';let position={x:1,y:1},drag=null,suppress=false,custom=false;
     try{const saved=JSON.parse(localStorage.getItem(key));if(saved&&Number.isFinite(saved.x)&&Number.isFinite(saved.y)){position={x:Math.max(0,Math.min(1,saved.x)),y:Math.max(0,Math.min(1,saved.y))};custom=true;}}catch{}
     button.style.touchAction='none';button.style.userSelect='none';button.style.cursor='grab';
     button.setAttribute('aria-label','Tilbakemelding. Kan flyttes ved å dra eller med piltastene.');
-    function bounds(){const v=window.visualViewport;return {left:(v?.offsetLeft||0)+12,top:(v?.offsetTop||0)+12,width:Math.max(1,(v?.width||innerWidth)-78),height:Math.max(1,(v?.height||innerHeight)-150)};}
+    function bounds(){const v=window.visualViewport;return {left:(v?.offsetLeft||0)+12,top:(v?.offsetTop||0)+12,width:Math.max(1,(v?.width||innerWidth)-174),height:Math.max(1,(v?.height||innerHeight)-150)};}
     function place(){if(!custom)position={x:1,y:1};const b=bounds(),x=b.left+position.x*b.width,y=b.top+position.y*b.height;
       Object.assign(button.style,{left:x+'px',top:y+'px',bottom:'auto',right:'auto'});
-      Object.assign(badge.style,{left:(x+38)+'px',top:(y-5)+'px',bottom:'auto'});
+      Object.assign(badge.style,{left:(x+130)+'px',top:(y-5)+'px',bottom:'auto'});
       // Keep the open form within the visible viewport, independently of the button.
       panel.style.left=Math.max(b.left,Math.min(x,b.left+b.width+54-Math.min(340,b.width+54)))+'px';
       panel.style.bottom='auto';panel.style.top=b.top+'px';panel.style.maxHeight=(b.height+54)+'px';
