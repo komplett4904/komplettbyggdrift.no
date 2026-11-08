@@ -432,6 +432,26 @@
       .footer { padding-bottom: 92px; }
     }
   .site-header{background:rgba(16,27,36,.96)}.hero{background:linear-gradient(135deg,#142635,#101b24 60%,#1b3042)}.eyebrow,.btn-light{background:#203747;color:#edf4fa;border-color:#496277}.btn-dark{background:#efbf5c;color:#142534}.btn-employee{background:#243f55;color:#f4f8fc;border:1px solid #648099}.faq details{background:#1b2d3b}.header-actions{flex-wrap:wrap}@media(max-width:980px){.header-inner{flex-wrap:wrap}.header-actions{display:flex;width:100%;gap:8px}.header-actions .btn{font-size:12px;padding:10px}.btn-employee{flex:1 1 100%;text-align:center}}
+
+    /* Visible employee entrance in the upper-right corner on every screen. */
+    .header-inner{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:18px}
+    .btn-employee{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:2px;min-height:48px;padding:10px 16px;border-radius:12px;background:#243f55;color:#f4f8fc;border:1px solid #648099;white-space:nowrap;text-decoration:none}
+    .btn-employee small{font-size:11px;line-height:1.3;font-weight:500;color:#c5d8e8}
+    .btn-employee:hover{background:#31546e;border-color:#efbf5c}
+    .btn-employee:focus-visible{outline:3px solid #efbf5c;outline-offset:4px}
+    @media(max-width:980px){
+      .header-inner{grid-template-columns:minmax(0,1fr) auto;gap:12px}
+      .header-inner>.brand{grid-column:1;grid-row:1}
+      .header-inner>.btn-employee{grid-column:2;grid-row:1;justify-self:end;flex:none;text-align:left}
+      .header-actions{grid-column:1/-1;grid-row:2;justify-content:flex-start;width:auto}
+    }
+    @media(max-width:600px){
+      .brand{gap:8px}.brand-mark{width:32px;height:30px}
+      .brand-title{font-size:15px;line-height:1.25}.brand-sub{display:none}
+      .header-inner>.btn-employee{font-size:13px;padding:8px 12px}
+      .header-actions .btn{min-height:44px;display:inline-flex;align-items:center;justify-content:center;flex:1 1 auto}
+    }
+
 </style>
   <script type="application/ld+json">
     {
@@ -458,10 +478,11 @@
         </div>
       </div>
 
-      <div class="header-actions"><a class="btn btn-employee" href="anbudskalkulator.html">Logg inn for ansatte →</a>
+      <div class="header-actions">
         <a class="btn btn-dark" href="tel:41602078">Ring 416 02 078</a>
         <a class="btn btn-light" href="mailto:eirik@komplettbyggdrift.no">Send e-post</a>
       </div>
+      <a class="btn btn-employee" href="anbudskalkulator.html" aria-label="For ansatte – logg inn i ansattportalen"><span>For ansatte <span aria-hidden="true">↗</span></span><small>Ansattportal</small></a>
     </div>
   </header>
 
