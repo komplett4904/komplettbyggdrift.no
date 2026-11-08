@@ -43,7 +43,7 @@
       </div>`;
     document.body.appendChild(b);
     window.KBAttachments.mount();
-    makeBubbleMovable();
+    placeFeedback();
 
     document.getElementById('tmKnapp').onclick=()=>{
       const s=document.getElementById('tmSkjema');
@@ -54,7 +54,7 @@
     if(erStephen()) sjekkUlesteTilbakemeldinger();
   }
 
-  function makeBubbleMovable(){
+  function placeFeedback(){
     const button=document.getElementById('tmKnapp'),badge=document.getElementById('tmBadge'),panel=document.getElementById('tmSkjema');
     // Keep the trigger in document flow, so it never covers work controls.
     const dock=document.createElement('div');dock.className='kb-feedback-dock';
@@ -62,6 +62,7 @@
     document.body.append(dock);dock.append(button,badge);
     Object.assign(button.style,{position:'static',width:'auto',minHeight:'44px',padding:'8px 14px',fontSize:'13px',boxShadow:'none'});
     Object.assign(badge.style,{position:'static',flexShrink:'0'});
+    document.addEventListener('keydown',event=>{if(event.key==='Escape'&&panel.style.display!=='none'&&!tmSending){window.tmLukk();button.focus();}});
     button.setAttribute('aria-label','Send tilbakemelding eller rapporter feil');
     function place(){const v=window.visualViewport;panel.style.left=((v?.offsetLeft||0)+12)+'px';panel.style.top=((v?.offsetTop||0)+12)+'px';panel.style.bottom='auto';panel.style.boxSizing='border-box';panel.style.maxWidth='calc(100vw - 24px)';panel.style.maxHeight=((v?.height||innerHeight)-24)+'px';}
     window.addEventListener('resize',place);window.visualViewport?.addEventListener('resize',place);place();

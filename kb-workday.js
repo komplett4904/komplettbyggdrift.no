@@ -3,7 +3,7 @@
  if(window.parent!==window)return;
  const home=document.getElementById('hovedmeny');if(!home)return;
  const employee=KBAuth.employee;
- const style=document.createElement('link');style.rel='stylesheet';style.href='/kb-workday.css?v=20261108-final';document.head.append(style);
+ const style=document.createElement('link');style.rel='stylesheet';style.href='/kb-workday.css?v=20261108-polish';document.head.append(style);
  const day=document.createElement('section');day.id='kb-workday';day.className='kb-quick';
  const date=document.createElement('p');date.className='workday-date';date.textContent=new Intl.DateTimeFormat('nb-NO',{timeZone:'Europe/Oslo',weekday:'long',day:'numeric',month:'long'}).format(new Date());
  const heading=document.createElement('h1');heading.textContent='Hei, '+(employee?.name||'kollega')+'!';
@@ -23,8 +23,10 @@
  window.addEventListener('online',connectivity);window.addEventListener('offline',connectivity);connectivity();
  day.append(date,heading,intro,actions,network);home.prepend(day);
  const recent=home.querySelector('.kb-quick:not(#kb-workday)');if(recent)day.after(recent);
- const finance=document.getElementById('kb-finance');if(finance){finance.classList.add('workday-finance');home.append(finance);finance.querySelector('.finance-scroll')?.remove();}
+ const finance=document.getElementById('kb-finance');if(finance){finance.classList.add('workday-finance');(recent||day).after(finance);finance.querySelector('.finance-scroll')?.remove();}
  if(KBAuth.can('projects')){const options=document.createElement('details');options.className='kb-alternative-tools';options.innerHTML='<summary>Mine verktøy · flere alternativer</summary><p>Valgfrie verktøy ved behov.</p><a href="/timer.html">Timeføring – alternativ →</a>';home.append(options);}
+ const links=[...home.querySelectorAll('h3')].find(h=>h.textContent.trim()==='Nyttige lenker')?.parentElement;
+ if(links){const drawer=document.createElement('details');drawer.className='kb-link-drawer';const toggle=document.createElement('summary');toggle.textContent='Nyttige lenker · leverandører og tjenester';links.before(drawer);drawer.append(toggle,links);links.style.marginTop='16px';}
  const title=document.getElementById('hovedmenyTittel');if(title){title.textContent='Kalkulator og flere verktøy';const sub=title.nextElementSibling;if(sub?.classList.contains('page-sub'))sub.textContent='Velg verktøyet du trenger til oppdraget.';}
  const dialog=document.createElement('dialog');dialog.id='kb-project-overview';dialog.setAttribute('aria-labelledby','project-overview-title');document.body.append(dialog);
  window.KBProjectOverview=function(id){
