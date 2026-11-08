@@ -27,3 +27,24 @@ nav[aria-label="Din konto"] a,nav[aria-label="Din konto"] button{min-height:40px
  body>nav:not([aria-label])>div{padding:0 10px!important}
  body>nav:not([aria-label]) a{padding:12px 14px!important;font-size:13px!important}
 }
+
+/* Compact portal cards; all destinations and actions are retained. */
+#hovedmeny .start-card{min-height:152px!important;padding:18px!important;border-radius:12px;text-align:left}
+#hovedmeny .start-card .icon{width:36px;height:36px;font-size:22px;margin-bottom:8px}
+#hovedmeny .start-card h3{font-size:17px;margin:0 0 6px}
+#hovedmeny .start-card p{font-size:13px;line-height:1.5;margin:0 0 8px}
+#hovedmeny .start-card .arrow{font-size:13px;margin-top:auto}
+#hovedmeny .kb-alternative-tools{margin:24px 0;padding:16px;border:1px solid #627d95;border-radius:10px}
+#hovedmeny .kb-alternative-tools summary{cursor:pointer;min-height:44px;display:flex;align-items:center;font-weight:600}
+#hovedmeny .kb-alternative-tools a{display:inline-flex;min-height:44px;align-items:center}
+@media(max-width:600px){#hovedmeny .start-card{min-height:112px!important;padding:16px!important}#hovedmeny .start-card .icon{float:left;margin-right:12px}#hovedmeny .start-grid{gap:10px!important}}
+
+/* Keep daily work ahead of optional reference links. */
+#hovedmeny .hovedmeny-grid{grid-template-columns:minmax(0,1fr)!important}
+#hovedmeny .start-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+#hovedmeny .kb-link-drawer{margin:24px 0;border:1px solid #627d95;border-radius:12px;padding:4px 18px}
+#hovedmeny .kb-link-drawer>summary{cursor:pointer;min-height:48px;align-content:center;font-weight:600;font-size:14px}
+#hovedmeny .kb-link-drawer .lenke-kort{min-width:0}
+#kb-tool-nav a{transition:background .15s ease}
+@media(max-width:900px){#hovedmeny .start-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+@media(max-width:600px){#hovedmeny .start-grid{grid-template-columns:1fr!important}#hovedmeny .start-card{display:grid!important;grid-template-columns:36px minmax(0,1fr);column-gap:12px;align-content:center;min-height:112px!important}#hovedmeny .start-card .icon{grid-column:1;grid-row:1/4;margin:0;float:none}#hovedmeny .start-card :is(h3,p,.arrow){grid-column:2}#kb-finance .finance-heading{align-items:flex-start;flex-direction:column;gap:8px}#kb-finance .finance-more{white-space:normal}#hovedmeny .kb-link-drawer{padding:4px 14px}}

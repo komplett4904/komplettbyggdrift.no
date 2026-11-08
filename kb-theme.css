@@ -58,3 +58,7 @@ html[data-kb-theme=dark] #print-letter table tr:last-child{background:#17324d!im
 html[data-kb-theme=dark] #print-letter table tr:last-child *{color:#fff!important}
 }
 #kb-theme-choice{font:inherit;min-height:44px;padding:8px 12px;border-radius:8px;min-width:180px}
+@media screen {
+#kb-finance .finance-top-customers{padding:18px;border:1px solid #dce5ec;border-radius:12px;margin-top:20px;background:#fff;color:#193750}
+html[data-kb-theme=dark] #kb-finance .finance-top-customers{background:#1b2733!important;color:#e5edf5!important;border-color:#526b80!important}
+}
