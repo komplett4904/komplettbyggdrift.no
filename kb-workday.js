@@ -3,7 +3,7 @@
  if(window.parent!==window)return;
  const home=document.getElementById('hovedmeny');if(!home)return;
  const employee=KBAuth.employee;
- const style=document.createElement('link');style.rel='stylesheet';style.href='/kb-workday.css?v=20261108';document.head.append(style);
+ const style=document.createElement('link');style.rel='stylesheet';style.href='/kb-workday.css?v=20261108-final';document.head.append(style);
  const day=document.createElement('section');day.id='kb-workday';day.className='kb-quick';
  const date=document.createElement('p');date.className='workday-date';date.textContent=new Intl.DateTimeFormat('nb-NO',{timeZone:'Europe/Oslo',weekday:'long',day:'numeric',month:'long'}).format(new Date());
  const heading=document.createElement('h1');heading.textContent='Hei, '+(employee?.name||'kollega')+'!';
@@ -39,7 +39,14 @@
   button('Åpne prosjekt og bilder',()=>{dialog.close();lastInnProsjekt(id);});
   if(KBAuth.can('calendar'))button('Planlegg arbeidet',()=>{dialog.close();startProsjekt(id);});
   if(address){const map=document.createElement('a');const url=new URL('https://www.google.com/maps/search/');url.searchParams.set('api','1');url.searchParams.set('query',address);map.href=url.href;map.target='_blank';map.rel='noopener noreferrer';map.textContent='Vis adresse i kart ↗';buttons.append(map);}
-  const note=document.createElement('p');note.className='project-note';note.textContent='Kundedetaljer, kalkyle og prosjektbilder finnes i prosjektet. Arbeidsplanen åpnes med prosjektnavn og adresse ferdig utfylt.';
+  function destination(label,path,kind){button(label,()=>{try{sessionStorage.setItem('kb-project-context',JSON.stringify({employee:employee.id,created:Date.now(),id:String(p.id),name:p.navn||'',address,kind}));location.href=path;}catch{const error=document.createElement('p');error.setAttribute('role','alert');error.textContent='Prosjektet kunne ikke overføres. Åpne verktøyet fra topplinjen og velg prosjekt manuelt.';buttons.after(error);}});}
+  if(KBAuth.can('hms')){destination('Ny SJA','/hms.html','sja');destination('Meld avvik','/hms.html','avvik');}
+  if(KBAuth.can('projects'))destination('Før timer','/timer.html','time');
+  function contact(label,url){const a=document.createElement('a');a.textContent=label;a.href=url;buttons.append(a);}
+  const phone=String(p.state?.telefon||'').replace(/[^+0-9]/g,'');if(phone.length>=5)contact('Ring kunden','tel:'+phone);
+  const email=String(p.state?.epost||'').trim();if(/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))contact('E-post til kunden','mailto:'+email);
+  try{const folder=new URL(p.state?.bildemappe||'');if(folder.protocol==='https:'&&!folder.username&&!folder.password){const a=document.createElement('a');a.href=folder.href;a.target='_blank';a.rel='noopener noreferrer';a.textContent='Dokumenter og bildemappe ↗';buttons.append(a);}}catch{}
+  const note=document.createElement('p');note.className='project-note';note.textContent='Kundedetaljer, kalkyle og bilder finnes i prosjektet. HMS-snarveiene fyller ut prosjektnavn og adresse i et nytt utkast. Kontroller opplysningene før lagring. Timer starter først når du selv trykker Start jobb.';
   dialog.append(close,h,customer,addressLine,buttons,note);dialog.showModal();
  };
 })();
