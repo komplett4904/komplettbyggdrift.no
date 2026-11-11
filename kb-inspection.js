@@ -72,6 +72,41 @@
       'Rusk og løse gjenstander er fjernet ved behov'
     ] }
   };
+  Object.assign(templates, {
+    lettvegg: { title: 'Lettvegg', sections: [
+      { heading: 'Før oppstart', points: [
+        { id: 0, label: 'Avklar at veggen er ikke-bærende, og vurder brann, lyd, dagslys, ventilasjon og eventuell søknadsplikt.' },
+        { id: 1, label: 'Kontroller plassering og avklar skjulte rør og kabler før innfesting.' }
+      ] },
+      { heading: 'Før lukking', points: [
+        { id: 2, label: 'Kontroller stenderverk, lodd og innfesting etter valgt veggsystem.' },
+        { id: 3, label: 'Kontroller spikerslag, isolasjon og relevante tettinger. Ta bilder før veggen lukkes.' }
+      ] },
+      { heading: 'Sluttkontroll', points: [{ id: 4, label: 'Kontroller overflater, skjøter, åpninger og dørfunksjon. Dokumenter avvik.' }] }
+    ] },
+    vindusbytte: { title: 'Vindusbytte', sections: [
+      { heading: 'Før montering', points: [
+        { id: 0, label: 'Kontroller mål, vindustype og åpning. Avklar eventuell fasadeendring og rømningsfunksjon.' },
+        { id: 1, label: 'Kontroller åpningen for fukt og skader. Avklar utbedring før montering.' }
+      ] },
+      { heading: 'Før listene monteres', points: [
+        { id: 2, label: 'Kontroller understøtting, innfesting, vater og lodd etter monteringsanvisningen.' },
+        { id: 3, label: 'Kontroller isolasjon, innvendig lufttetting, utvendig værbeskyttelse og vannavrenning. Ta bilder før tildekking.' }
+      ] },
+      { heading: 'Sluttkontroll', points: [{ id: 4, label: 'Test åpning, lukking og låsing. Kontroller beslag, finish og eventuell rømningsfunksjon.' }] }
+    ] },
+    parkett: { title: 'Parkett', sections: [
+      { heading: 'Før legging', points: [
+        { id: 0, label: 'Kontroller at undergulvet er rent, plant og tørt etter leverandørens krav. Noter målinger ved behov.' },
+        { id: 1, label: 'Kontroller klima, eventuell akklimatisering, underlag og krav ved gulvvarme.' }
+      ] },
+      { heading: 'Legging og sluttkontroll', points: [
+        { id: 2, label: 'Kontroller ekspansjonsfuger, skjøteforskyvning og overganger etter monteringsanvisningen.' },
+        { id: 3, label: 'Kontroller at flytende gulv ikke klemmes fast av lister eller innredning.' },
+        { id: 4, label: 'Sjekk skader, gliper, knirk og finish. Dokumenter avvik.' }
+      ] }
+    ] }
+  });
   const bucket = db.storage.from('kb-tak-vedlegg');
   const table = () => db.from('kb_tak_kontroller');
   let projects = [];
@@ -82,13 +117,13 @@
   root.innerHTML = "<style>\n*{box-sizing:border-box}.card{background:var(--card,#fff);border:1px solid var(--border,#dce4e9);border-radius:13px;padding:22px;margin:15px 0;box-shadow:0 2px 9px #122b3b09}h1{font-size:27px;margin:8px 0}h2{font-size:18px;margin:0 0 15px}.muted{color:var(--muted,#526779);font-size:13px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}label{font-size:13px;font-weight:650;display:block}input,textarea,select{font:inherit;display:block;width:100%;border:1px solid #b8cbd5;border-radius:7px;padding:10px;margin-top:5px;background:var(--field,#fff);color:var(--text,#183244)}textarea{min-height:80px}button{background:#16747a;color:white;border:0;border-radius:8px;padding:11px 17px;font:inherit;font-weight:650;cursor:pointer}button.alt{background:#e4eef1;color:#143644}button:disabled{opacity:.5;cursor:wait}.actions{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0}.line{display:grid;grid-template-columns:1fr 165px;gap:12px;align-items:center;border-bottom:1px solid #e7edf1;padding:10px 0}.line label{font-size:14px;font-weight:500}.photos{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.photo{border:1px solid #dae5ea;border-radius:9px;padding:8px;break-inside:avoid}.photo img{width:100%;height:145px;object-fit:contain}.photo p{font-size:12px;overflow-wrap:anywhere}.hidden{display:none!important}#notice{font-weight:650}.error{color:#b02c31}.ok{color:#147050}@media(max-width:650px){.grid{grid-template-columns:1fr}.line{grid-template-columns:1fr 135px}.photos{grid-template-columns:1fr 1fr}.card{padding:15px}}\n    article{padding:16px} .line{grid-template-columns:minmax(0,1fr) minmax(105px,26%)} [hidden]{display:none!important}\n    .requirement{display:block;margin-top:4px;color:var(--requirement,#a5242e);font-size:12px;font-weight:700}.requirement a{color:inherit}.check-group{margin:18px 0 0;font-size:15px}\n    @media(max-width:600px){\n      article{padding:12px 12px max(16px,env(safe-area-inset-bottom))}\n      .actions>*{flex:1 1 auto} button,input,select{min-height:44px;font-size:16px}\n      .line{grid-template-columns:1fr;gap:4px} .line select{margin-top:0}\n    }\n  #notice:empty{display:none}#notice:not(:empty){position:sticky;bottom:0;padding:10px;background:var(--card,#fff);border:1px solid var(--border,#dce4e9);border-radius:8px}</style><article><section id=\"checklist-picker\"><h1>Sjekklister</h1><section class=\"card\"><h2>Ny taksjekk</h2><div class=\"actions\"><button id=\"autumn\" type=\"button\">Høstsjekk</button><button id=\"spring\" type=\"button\">Vårsjekk</button></div><h2>Egenkontroll</h2><button id=\"rehab\" type=\"button\" class=\"alt\">Takrehabilitering</button></section></section><section id=\"checklist-form\" hidden><button type=\"button\" id=\"back-to-picker\" class=\"alt\">← Sjekklister</button><h1 id=\"report-title\" tabindex=\"-1\"></h1><section class=\"card no-print\"><h2>Åpne en lagret kontroll</h2><select id=\"template\" hidden aria-label=\"Sjekklistetype\"></select><label>Lagrede kontroller<select id=\"projects\"><option value=\"\">Velg kontroll</option></select></label></section><section class=\"card\"><h2>Informasjon om oppdraget</h2><label>Tilknyttet prosjekt<select id=\"linked-project\"><option value=\"\">Frittstående sjekkliste</option></select></label><div class=\"grid\"><label>Prosjektnavn / nummer<input id=\"project_name\"></label><label>Kunde / tiltakshaver<input id=\"customer\"></label><label>Adresse<input id=\"address\"></label><label>Kontrollør<input id=\"inspector\"></label><label>Arbeid startet<input type=\"date\" id=\"start_date\"></label><label>Arbeid ferdigstilt<input type=\"date\" id=\"end_date\"></label></div><label>Beskrivelse av utført arbeid<textarea id=\"description\"></textarea></label></section><section class=\"card\"><h2>Kontrollpunkter</h2><p class=\"muted no-print\">Velg OK, Avvik eller Ikke aktuelt. Punkter merket Ikke aktuelt blir utelatt fra PDF.</p><p class=\"muted\" id=\"rehab-guide\" hidden><strong>Rød stjerne = krav når relevant.</strong> Avklar hvilke regler som gjelder for jobben. Ved rent vedlikehold gjelder TEK17 normalt ikke. Bruk «Ikke aktuelt» for punkter utenfor omfanget. Se <a href=\"https://www.dibk.no/bygge-eller-endre/arbeid-pa-eksisterende-bygg/nar-gjelder-byggteknisk-forskrift-tek17/\" target=\"_blank\" rel=\"noopener\">DiBK om når TEK17 gjelder</a> og monteringsanvisningen for taksystemet.</p><div id=\"checks\"></div><div class=\"actions\"><button class=\"alt\" type=\"button\" id=\"add-point\">+ Legg til eget punkt</button></div><form id=\"custom-point-form\" hidden><label>Beskriv kontrollpunktet<input id=\"custom-point-text\" required maxlength=\"180\"></label><div class=\"actions\"><button type=\"submit\">Legg til punkt</button><button type=\"button\" class=\"alt\" id=\"cancel-point\">Avbryt</button></div></form></section><section class=\"card\"><h2>Avvik og avgrensninger</h2><label>Beskriv eventuelle avvik og tiltak<textarea id=\"deviations\"></textarea></label></section><section class=\"card\"><h2>Vedlegg og FDV</h2><p class=\"muted no-print\">Kontrollen lagres når du laster opp. Bilder blir med i PDF. FDV-PDF-er lastes ned separat fra vedleggslisten og legges ved i Boligmappa.</p><label class=\"no-print\">Velg flere bilder fra bildebiblioteket, eller legg ved FDV. Maks 15 MB per fil.<input type=\"file\" id=\"uploads\" accept=\"image/jpeg,image/png,image/webp,application/pdf\" multiple></label><div class=\"actions no-print\"><button id=\"upload\">Last opp vedlegg</button></div><div id=\"attachments\" class=\"photos\"></div><label>FDV og øvrige dokumenter (merknad)<textarea id=\"fdv_notes\"></textarea></label></section><section class=\"card\"><h2>Bekreftelse</h2><p>Kontrollpunkter merket OK er kontrollert. Avvik er beskrevet ovenfor.</p><div class=\"grid\"><label>Kontrollert av<input id=\"signed_by\"></label><label>Kontrolldato<input type=\"date\" id=\"signed_date\"></label></div></section><div class=\"actions\"><button id=\"save\" type=\"button\" class=\"alt\">Lagre kontroll</button><button id=\"print\" type=\"button\">Last ned PDF</button></div></section><p id=\"notice\" role=\"status\"></p></article>";
   const $ = id => root.getElementById(id);
   const fields = ['project_name','customer','address','inspector','start_date','end_date','description','deviations','fdv_notes'];
+  const builtInSections = template => template.sections ?? [{ points: template.points.map((label, id) => ({ id, label })) }];
   function sections() {
-    const template = templates[$('template').value];
-    const builtIn = template.sections ?? [{ points: template.points.map((label, id) => ({ id, label })) }];
+    const builtIn = builtInSections(templates[$('template').value]);
     return customPoints.length ? [...builtIn, { heading: 'Egne punkter', points: customPoints }] : builtIn;
   }
   const points = () => sections().flatMap(section => section.points);
-  const isRoofCheck = () => $('template').value !== 'tak-rehabilitering';
+  const isRoofCheck = () => ['tak-for-vinter', 'tak-etter-vinter'].includes($('template').value);
   const notice = (message, error = false) => {
     $('notice').textContent = message;
     $('notice').className = error ? 'error no-print' : 'ok no-print';
@@ -148,7 +183,7 @@
     for (const id of fields) $(id).value = record[id] ?? (id === 'inspector' ? window.KBAuth.employee?.name ?? '' : '');
     $('signed_by').value = record.checks?.signed_by ?? '';
     $('signed_date').value = record.checks?.signed_date ?? (isRoofCheck() ? new Date().toLocaleDateString('sv-SE') : '');
-    $('rehab-guide').hidden = isRoofCheck();
+    $('rehab-guide').hidden = $('template').value !== 'tak-rehabilitering';
     customPoints = (Array.isArray(record.checks?.custom_points) ? record.checks.custom_points : [])
       .filter(point => typeof point?.id === 'string' && /^extra-[a-f0-9-]{36}$/.test(point.id) && typeof point.label === 'string')
       .map(({ id, label }) => ({ id, label, custom: true }));
@@ -324,8 +359,68 @@
     await Promise.all([loadProjects().then(() => chooseProject(entryProjectId)), list()]);
   }
   $('linked-project').onchange = () => chooseProject($('linked-project').value);
-  for (const [id, type] of [['autumn', 'tak-for-vinter'], ['spring', 'tak-etter-vinter'], ['rehab', 'tak-rehabilitering']]) {
-    $(id).onclick = () => run(() => start(type));
+  const picker = $('checklist-picker').querySelector('.card');
+  picker.replaceChildren();
+  const preview = document.createElement('dialog');
+  preview.setAttribute('aria-labelledby', 'preview-title');
+  preview.style.cssText = 'width:min(640px,calc(100% - 24px));max-height:85dvh;border:1px solid #b8cbd5;border-radius:12px;padding:18px;background:var(--card,#fff);color:var(--text,#183244)';
+  const closePreview = document.createElement('button');
+  closePreview.type = 'button';
+  closePreview.textContent = 'Lukk forhåndsvisning';
+  closePreview.onclick = () => preview.close();
+  const previewTitle = document.createElement('h2');
+  previewTitle.id = 'preview-title';
+  const previewBody = document.createElement('div');
+  preview.append(previewTitle, previewBody, closePreview);
+  $('checklist-picker').append(preview);
+  const showPreview = (template, trigger) => {
+    previewTitle.textContent = template.title;
+    const intro = document.createElement('p');
+    intro.textContent = 'Forhåndsvisning · Ingen kontroll blir opprettet. I skjemaet kan du velge OK, Avvik eller Ikke aktuelt, legge til egne punkter og laste opp bilder.';
+    previewBody.replaceChildren(intro);
+    for (const { heading, points } of builtInSections(template)) {
+      if (heading) {
+        const title = document.createElement('h3');
+        title.textContent = heading;
+        previewBody.append(title);
+      }
+      const list = document.createElement('ul');
+      for (const point of points) {
+        const item = document.createElement('li');
+        item.textContent = point.label + (point.reference ? ' ★ Krav når relevant' : '');
+        list.append(item);
+      }
+      previewBody.append(list);
+    }
+    preview.addEventListener('close', () => trigger.focus(), { once: true });
+    preview.showModal();
+    preview.scrollTop = 0;
+  };
+  for (const [heading, types] of [
+    ['Ny taksjekk', ['tak-for-vinter', 'tak-etter-vinter']],
+    ['Egenkontroll', Object.keys(templates).filter(type => !['tak-for-vinter', 'tak-etter-vinter'].includes(type))]
+  ]) {
+    const title = document.createElement('h2');
+    title.textContent = heading;
+    picker.append(title);
+    for (const type of types) {
+      const template = templates[type];
+      const row = document.createElement('div');
+      row.className = 'actions';
+      const open = document.createElement('button');
+      open.type = 'button';
+      if (type === 'tak-for-vinter') open.id = 'autumn';
+      open.textContent = template.title;
+      open.onclick = () => run(() => start(type));
+      const view = document.createElement('button');
+      view.type = 'button';
+      view.className = 'alt';
+      view.textContent = 'Forhåndsvisning';
+      view.setAttribute('aria-label', 'Forhåndsvisning: ' + template.title);
+      view.onclick = () => showPreview(template, view);
+      row.append(open, view);
+      picker.append(row);
+    }
   }
   $('projects').onchange = () => run(async () => {
     const id = $('projects').value;
