@@ -135,6 +135,201 @@
       ]
     }
   });
+  Object.assign(templates, {
+    "ror-vann": {
+      "title": "Vannrør og rør-i-rør",
+      "sections": [
+        {
+          "heading": "Før lukking",
+          "points": [
+            {
+              "id": 0,
+              "label": "Kontroller rørføring, innfesting og skjøter mot systemets monteringsanvisning."
+            },
+            {
+              "id": 1,
+              "label": "Kontroller at skjulte vannrør har en løsning som synliggjør og håndterer lekkasjer. Ved rør-i-rør: sjekk skap, gjennomføringer og drenering.",
+              "reference": [
+                "DiBK · TEK17 § 15-5",
+                "https://www.dibk.no/regelverk/byggteknisk-forskrift-tek17/15/ii/15-5"
+              ]
+            },
+            {
+              "id": 2,
+              "label": "Kontroller stoppekraner, merking og eventuell sikring mot tilbakestrømning.",
+              "reference": [
+                "DiBK · TEK17 § 15-5",
+                "https://www.dibk.no/regelverk/byggteknisk-forskrift-tek17/15/ii/15-5"
+              ]
+            }
+          ]
+        },
+        {
+          "heading": "Prøving og overlevering",
+          "points": [
+            {
+              "id": 3,
+              "label": "Utfør tetthetsprøving etter prosjektets og systemets anvisning. Noter prøvetrykk, varighet og resultat."
+            },
+            {
+              "id": 4,
+              "label": "Spyl og funksjonstest aktuelle tappesteder. Ta bilder før lukking og legg ved prøveresultat og FDV."
+            }
+          ]
+        }
+      ]
+    },
+    "ror-avlop": {
+      "title": "Avløp og sluk",
+      "sections": [
+        {
+          "heading": "Før lukking",
+          "points": [
+            {
+              "id": 0,
+              "label": "Kontroller dimensjon, fall, innfesting og skjøter etter prosjektering og monteringsanvisning.",
+              "reference": [
+                "DiBK · TEK17 § 15-6",
+                "https://www.dibk.no/regelverk/byggteknisk-forskrift-tek17/15/ii/15-6"
+              ]
+            },
+            {
+              "id": 1,
+              "label": "Kontroller lufting og tilgang til rensepunkter og vannlåser der relevant.",
+              "reference": [
+                "DiBK · TEK17 § 15-6",
+                "https://www.dibk.no/regelverk/byggteknisk-forskrift-tek17/15/ii/15-6"
+              ]
+            },
+            {
+              "id": 2,
+              "label": "Sjekk slukets plassering, innfesting og grensesnitt mot membranen sammen med ansvarlig fag.",
+              "reference": [
+                "DiBK · TEK17 § 13-15",
+                "https://www.dibk.no/regelverk/byggteknisk-forskrift-tek17/13/vi/13-15"
+              ]
+            }
+          ]
+        },
+        {
+          "heading": "Sluttkontroll",
+          "points": [
+            {
+              "id": 3,
+              "label": "Kontroller tetthet og at vann renner unna. Dokumenter eventuelle avvik."
+            },
+            {
+              "id": 4,
+              "label": "Ta bilder av skjulte rør, sluk og tilkoblinger før tildekking."
+            }
+          ]
+        }
+      ]
+    },
+    "ror-vatrom": {
+      "title": "Sanitær på bad og vaskerom",
+      "sections": [
+        {
+          "heading": "Montering",
+          "points": [
+            {
+              "id": 0,
+              "label": "Kontroller innfesting og tilkoblinger for toalett, servant, dusj og øvrig utstyr."
+            },
+            {
+              "id": 1,
+              "label": "Kontroller gjennomføringer og avklar ansvar for tetting mot membran.",
+              "reference": [
+                "DiBK · TEK17 § 13-15",
+                "https://www.dibk.no/regelverk/byggteknisk-forskrift-tek17/13/vi/13-15"
+              ]
+            },
+            {
+              "id": 2,
+              "label": "For innebygd sisterne: kontroller at lekkasjevann blir synlig og håndtert som prosjektert.",
+              "reference": [
+                "DiBK · TEK17 § 13-15",
+                "https://www.dibk.no/regelverk/byggteknisk-forskrift-tek17/13/vi/13-15"
+              ]
+            }
+          ]
+        },
+        {
+          "heading": "Funksjonsprøving",
+          "points": [
+            {
+              "id": 3,
+              "label": "Test spyling, vannlås, armatur, avløp og tetthet under bruk."
+            },
+            {
+              "id": 4,
+              "label": "Kontroller tilgang til avstenging og service. Dokumenter med bilder og FDV."
+            }
+          ]
+        }
+      ]
+    },
+    "ror-kjokken": {
+      "title": "Kjøkken og lekkasjesikring",
+      "sections": [
+        {
+          "heading": "Montering og prøving",
+          "points": [
+            {
+              "id": 0,
+              "label": "Kontroller tilkobling og innfesting av armatur, oppvaskmaskin og avløpsslange etter produsentens anvisning."
+            },
+            {
+              "id": 1,
+              "label": "Kontroller tilgjengelig avstenging og lekkasjesikring. Funksjonstest automatisk lekkasjestopper der den kreves eller er montert.",
+              "reference": [
+                "DiBK · TEK17 § 15-5",
+                "https://www.dibk.no/regelverk/byggteknisk-forskrift-tek17/15/ii/15-5"
+              ]
+            },
+            {
+              "id": 2,
+              "label": "Kjør en funksjonstest og se etter lekkasje ved trykksatte koblinger og under tømming."
+            },
+            {
+              "id": 3,
+              "label": "Vis kunden avstenging og eventuell tilbakestilling av lekkasjestopper. Legg ved FDV."
+            }
+          ]
+        }
+      ]
+    },
+    "ror-bereder": {
+      "title": "Varmtvannsbereder",
+      "sections": [
+        {
+          "heading": "Montering og overlevering",
+          "points": [
+            {
+              "id": 0,
+              "label": "Kontroller plassering, understøtting og servicetilgang etter monteringsanvisningen."
+            },
+            {
+              "id": 1,
+              "label": "Kontroller sikkerhetsventil, håndtering av utløpsvann og lekkasjesikring etter anvisning og prosjektering.",
+              "reference": [
+                "DiBK · TEK17 § 15-5",
+                "https://www.dibk.no/regelverk/byggteknisk-forskrift-tek17/15/ii/15-5"
+              ]
+            },
+            {
+              "id": 2,
+              "label": "Fyll og luft berederen etter anvisningen før den settes i drift. Kontroller tetthet og funksjon."
+            },
+            {
+              "id": 3,
+              "label": "Avklar elektrisk tilkobling med registrert elvirksomhet der oppdraget krever det. Overlever FDV."
+            }
+          ]
+        }
+      ]
+    }
+  });
   const bucket = db.storage.from('kb-tak-vedlegg');
   const table = () => db.from('kb_tak_kontroller');
   let projects = [];
@@ -394,7 +589,7 @@
   preview.style.cssText = 'width:min(640px,calc(100% - 24px));max-height:85dvh;border:1px solid #b8cbd5;border-radius:12px;padding:18px;background:var(--card,#fff);color:var(--text,#183244)';
   const closePreview = document.createElement('button');
   closePreview.type = 'button';
-  closePreview.textContent = 'Lukk forhåndsvisning';
+  closePreview.textContent = 'Lukk';
   closePreview.onclick = () => preview.close();
   const previewTitle = document.createElement('h2');
   previewTitle.id = 'preview-title';
@@ -404,7 +599,7 @@
   const showPreview = (template, trigger) => {
     previewTitle.textContent = template.title;
     const intro = document.createElement('p');
-    intro.textContent = 'Forhåndsvisning · Ingen kontroll blir opprettet. I skjemaet kan du velge OK, Avvik eller Ikke aktuelt, legge til egne punkter og laste opp bilder.';
+    intro.textContent = 'Dette dekker sjekklisten. Ingen kontroll blir opprettet. I skjemaet kan du velge OK, Avvik eller Ikke aktuelt, legge til egne punkter og laste opp bilder.';
     previewBody.replaceChildren(intro);
     for (const { heading, points } of builtInSections(template)) {
       if (heading) {
@@ -426,7 +621,8 @@
   };
   for (const [heading, types] of [
     ['Ny taksjekk', ['tak-for-vinter', 'tak-etter-vinter']],
-    ['Egenkontroll', Object.keys(templates).filter(type => !['tak-for-vinter', 'tak-etter-vinter'].includes(type))]
+    ['Egenkontroll', Object.keys(templates).filter(type => !['tak-for-vinter', 'tak-etter-vinter'].includes(type) && !type.startsWith('ror-'))],
+    ['Rørlegger', Object.keys(templates).filter(type => type.startsWith('ror-'))]
   ]) {
     const title = document.createElement('h2');
     title.textContent = heading;
@@ -443,8 +639,8 @@
       const view = document.createElement('button');
       view.type = 'button';
       view.className = 'alt';
-      view.textContent = 'Forhåndsvisning';
-      view.setAttribute('aria-label', 'Forhåndsvisning: ' + template.title);
+      view.textContent = 'Sjekklisten dekker';
+      view.setAttribute('aria-label', 'Sjekklisten dekker: ' + template.title);
       view.onclick = () => showPreview(template, view);
       row.append(open, view);
       picker.append(row);
