@@ -759,8 +759,13 @@
 
     function heading(value) {
       room(15);
-      y += 4;
+      y += 5;
+      pdf.setDrawColor(196, 211, 220);
+      pdf.line(margin, y - 5, margin + width, y - 5);
+      pdf.setTextColor(22, 74, 82);
       text(value, 13, true);
+      pdf.setTextColor(24, 50, 68);
+      y += 2;
     }
 
     function field(label, id) {
@@ -768,10 +773,18 @@
       if (value) text(label + ': ' + value);
     }
 
-    text('Komplett Byggdrift AS', 11, true);
-    y += 4;
-    text(title, 20, true);
-    y += 4;
+    pdf.setFillColor(22, 46, 67);
+    pdf.rect(0, 0, 210, 40, 'F');
+    pdf.setFillColor(242, 186, 75);
+    pdf.rect(0, 40, 210, 1.5, 'F');
+    pdf.setTextColor(255);
+    y = 12;
+    text('KOMPLETT BYGGDRIFT AS  /  KONTROLLRAPPORT', 10, true);
+    y = 25;
+    text(title, 21, true);
+    pdf.setTextColor(24, 50, 68);
+    y = 52;
+    heading('Oppdragsinformasjon');
     if (!isRoofCheck()) field('Prosjekt', 'project_name');
     field('Kunde', 'customer');
     field('Adresse', 'address');
@@ -789,13 +802,29 @@
       if (section.heading) heading(section.heading);
       for (const { id, label, reference } of applicable) {
         const status = $('c' + id).value || 'Ikke vurdert';
+        const color = status === 'OK' ? [25, 105, 77] : status === 'Avvik' ? [163, 43, 48] : [76, 96, 112];
+        pdf.setFont('helvetica', 'normal');
+        pdf.setFontSize(10);
+        const lines = pdf.splitTextToSize(label, 138);
+        const rowHeight = Math.max(11, lines.length * 4.3 + 5 + (reference ? 4 : 0));
+        room(rowHeight);
+        pdf.setFillColor(243, 247, 249);
+        pdf.roundedRect(margin, y - 4, width, rowHeight - 1.5, 1.5, 1.5, 'F');
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(9);
+        pdf.setTextColor(...color);
+        pdf.text(status, margin + 3, y + 1);
+        pdf.setFont('helvetica', 'normal');
+        pdf.setFontSize(10);
+        pdf.setTextColor(24, 50, 68);
+        lines.forEach((line, index) => pdf.text(line, margin + 38, y + 1 + index * 4.3));
         if (reference) {
-          room(15);
+          pdf.setFontSize(8);
           pdf.setTextColor(157, 36, 46);
-          text('* Krav når relevant · ' + reference[0], 9, true);
-          pdf.setTextColor(0);
+          pdf.text('Krav når relevant · ' + reference[0], margin + 38, y + 1 + lines.length * 4.3);
+          pdf.setTextColor(24, 50, 68);
         }
-        text(status + ' – ' + label);
+        y += rowHeight;
       }
     }
     if ($('deviations').value.trim()) {
@@ -836,6 +865,10 @@
       pdf.setPage(page);
       pdf.setFont('helvetica', 'normal');
       pdf.setFontSize(9);
+      pdf.setDrawColor(196, 211, 220);
+      pdf.line(margin, 283, 195, 283);
+      pdf.setTextColor(76, 96, 112);
+      pdf.text('Komplett Byggdrift AS', margin, 288);
       pdf.text(page + ' / ' + pageCount, 195, 288, { align: 'right' });
     }
     const locationName = ($('address').value || $('project_name').value)
@@ -875,7 +908,7 @@
     const { pdf } = await buildPdf();
     pdfUrl = URL.createObjectURL(pdf.output('blob'));
     pdfLink.href = pdfUrl;
-    pdfFrame.src = pdfUrl;
+    pdfFrame.src = pdfUrl + '#navpanes=0&view=FitH';
     pdfDialog.showModal();
   });
 
