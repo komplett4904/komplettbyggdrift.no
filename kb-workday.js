@@ -16,6 +16,13 @@
   link('Arbeidsplan','/kalender.html');
   const url=new URL('https://calendar.google.com/calendar/u/0/r/day');url.searchParams.set('authuser',employee.email);
   const calendar=link('Dagens kalender ↗',url.href);calendar.target='_blank';calendar.rel='noopener noreferrer';
+  const googleMark = document.createElement('img');
+  googleMark.src = '/google-g.png';
+  googleMark.width = 18;
+  googleMark.height = 18;
+  googleMark.alt = '';
+  googleMark.style.marginInlineEnd = '8px';
+  calendar.prepend(googleMark);
  }
  if(KBAuth.can('hms'))link('Åpne HMS','/hms.html');
  const network=document.createElement('p');network.id='workday-network';network.setAttribute('role','status');
