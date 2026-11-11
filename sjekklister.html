@@ -12,6 +12,11 @@
     body{margin:0;background:var(--bg);color:var(--text);font:15px system-ui,sans-serif}
     header{background:#162e43;color:#fff}
     .brand{display:flex;align-items:center;gap:12px;max-width:1160px;margin:auto;padding:14px 20px;color:inherit;text-decoration:none;font-size:18px;font-weight:650}
+    .checklist-header{display:flex;align-items:center;justify-content:space-between;gap:8px;max-width:1160px;margin:auto;padding:8px clamp(8px,2vw,20px);flex-wrap:wrap}
+    .checklist-header .brand{margin:0;padding:6px 0;font-size:clamp(14px,3vw,18px)}
+    #kb-checklist-settings button{appearance:none;min-height:44px;padding:8px 12px;border:1px solid #47647a;border-radius:8px;background:#25445b;color:#fff;font:600 13px system-ui;cursor:pointer}
+    #kb-checklist-settings button:focus-visible{outline:2px solid #f3b94d;outline-offset:2px}
+    @media print{#kb-checklist-settings{display:none}}
     .brand img{border-radius:8px}
     main{max-width:1000px;margin:0 auto}
   </style>
@@ -19,13 +24,13 @@
   <script src="/kb-database.js"></script>
   <script src="/kb-auth.js"></script>
   <script src="/kb-media.js"></script>
-  <script src="/kb-gate.js?v=20261111-sjekklister-side" defer></script>
+  <script src="/kb-gate.js?v=20261111-checklist-settings" defer></script>
 </head>
 <body>
-  <header><a class="brand" href="/anbudskalkulator.html"><img src="/icon-192.png" width="36" height="36" alt="">Komplett Byggdrift AS</a></header>
+  <header><div class="checklist-header"><a class="brand" href="/anbudskalkulator.html"><img src="/icon-192.png" width="36" height="36" alt="">Komplett Byggdrift AS</a><div id="kb-checklist-settings"></div></div></header>
   <nav aria-label="Mine verktøy"><a href="/anbudskalkulator.html">Mine verktøy</a></nav>
   <main id="kb-inspection" hidden></main>
   <script type="text/plain" data-kb-script="/jspdf-4.2.1.umd.min.js"></script>
-  <script type="text/plain" data-kb-script="/kb-inspection.js?v=20261111-preview"></script>
+  <script type="text/plain" data-kb-script="/kb-inspection.js?v=20261111-checklists-preview"></script>
 </body>
 </html>
