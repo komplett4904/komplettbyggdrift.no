@@ -11,9 +11,9 @@
  if(toolNav){
   toolNav.id='kb-tool-nav';toolNav.setAttribute('aria-label','Mine verktøy');
   const row=document.createElement('div');row.className='kb-tool-nav-row';
-  for(const [module,label,path] of [['projects','Mine verktøy','/anbudskalkulator.html'],['finance','Økonomi','/okonomi.html'],['calendar','Kalender','/kalender.html'],['hms','HMS','/hms.html']]){
+  for(const [module,label,path] of [['projects','Mine verktøy','/anbudskalkulator.html'],['finance','Økonomi','/okonomi.html'],['calendar','Kalender','/kalender.html'],['hms','HMS','/hms.html'],['projects','Sjekklister','/anbudskalkulator.html#sjekklister']]){
    if(!KBAuth.can(module))continue;
-   const a=document.createElement('a');a.href=path;a.textContent=label;if(location.pathname===path)a.setAttribute('aria-current','page');row.append(a);
+   const a=document.createElement('a');a.href=path;a.textContent=label;if(location.pathname===path)a.setAttribute('aria-current','page');if(path.endsWith('#sjekklister')&&location.pathname==='/anbudskalkulator.html'){a.onclick=event=>{if(event.metaKey||event.ctrlKey||event.shiftKey||event.altKey||!window.KBInspection)return;event.preventDefault();window.KBInspection.open();};if(document.getElementById('kb-inspection')?.open)a.setAttribute('aria-current','page');}row.append(a);
   }
   toolNav.replaceChildren(row);
   const navStyle=document.createElement('style');navStyle.textContent='#kb-tool-nav{background:#0f2640;padding:0;border:0;border-bottom:1px solid #3b4e60}#kb-tool-nav .kb-tool-nav-row{max-width:1200px;margin:auto;padding:12px 20px;display:flex;flex-wrap:wrap;gap:10px}#kb-tool-nav a{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 20px;border:1px solid #627d95;border-radius:9px;background:#284863;color:#edf6ff!important;text-decoration:none;font:600 14px system-ui;box-sizing:border-box}#kb-tool-nav a:hover{background:#335b7a}#kb-tool-nav a[aria-current=page]{background:#f3ba4d;color:#142330!important;border-color:#f3ba4d}#kb-tool-nav a:focus-visible{outline:3px solid #f3ba4d;outline-offset:3px}@media(max-width:500px){#kb-tool-nav .kb-tool-nav-row{padding:10px 12px;gap:8px}#kb-tool-nav a{flex:1 1 calc(50% - 8px);padding:10px 12px}}@media print{#kb-tool-nav{display:none}}';document.head.append(navStyle);
