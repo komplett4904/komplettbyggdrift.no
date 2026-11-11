@@ -44,7 +44,7 @@
   if(address){const map=document.createElement('a');const url=new URL('https://www.google.com/maps/search/');url.searchParams.set('api','1');url.searchParams.set('query',address);map.href=url.href;map.target='_blank';map.rel='noopener noreferrer';map.textContent='Vis adresse i kart ↗';buttons.append(map);}
   function destination(label,path,kind){button(label,()=>{try{sessionStorage.setItem('kb-project-context',JSON.stringify({employee:employee.id,created:Date.now(),id:String(p.id),name:p.navn||'',address,kind}));location.href=path;}catch{const error=document.createElement('p');error.setAttribute('role','alert');error.textContent='Prosjektet kunne ikke overføres. Åpne verktøyet fra topplinjen og velg prosjekt manuelt.';buttons.after(error);}});}
   if(KBAuth.can('hms')){destination('Ny SJA','/hms.html','sja');destination('Meld avvik','/hms.html','avvik');}
-  if(window.KBInspection)button('Sjekklister',()=>{dialog.close();window.KBInspection.open(String(id));});
+  button('Sjekklister',()=>{location.href='/sjekklister.html?'+new URLSearchParams({prosjekt:String(id)});});
   if(KBAuth.can('projects'))destination('Før timer','/timer.html','time');
   function contact(label,url){const a=document.createElement('a');a.textContent=label;a.href=url;buttons.append(a);}
   const phone=String(p.state?.telefon||'').replace(/[^+0-9]/g,'');if(phone.length>=5)contact('Ring kunden','tel:'+phone);

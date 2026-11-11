@@ -1,8 +1,7 @@
 (() => {
   'use strict';
-  const trigger = document.getElementById('kb-inspection-open');
-  const dialog = document.getElementById('kb-inspection');
-  if (!trigger || !dialog || !window.KBAuth?.can('projects')) return;
+  const page = document.getElementById('kb-inspection');
+  if (!page || !window.KBAuth?.can('projects')) return;
   const db = window.KBDatabase.getClient();
   const rehabilitation = [
     { heading: "Før oppstart", points: [
@@ -78,12 +77,9 @@
   let projects = [];
   let customPoints = [];
   const host = document.createElement('div');
-  dialog.append(host);
-  const stylesheet = document.createElement('style');
-  stylesheet.textContent = '#kb-inspection{width:min(100% - 24px,1000px);max-width:none;max-height:94dvh;padding:0;border:1px solid var(--border,#dce4e9);border-radius:12px;background:var(--bg,#f1f5f8);color:inherit}#kb-inspection::backdrop{background:#12334288}@media(max-width:600px){#kb-inspection{width:100%;max-width:100%;max-height:100dvh;height:100dvh;margin:0;border:0;border-radius:0}}';
-  document.head.append(stylesheet);
+  page.append(host);
   const root = host.attachShadow({ mode: 'open' });
-  root.innerHTML = "<style>\n*{box-sizing:border-box}.card{background:var(--white,#fff);border:1px solid var(--border,#dce4e9);border-radius:13px;padding:22px;margin:15px 0;box-shadow:0 2px 9px #122b3b09}h1{font-size:27px;margin:8px 0}h2{font-size:18px;margin:0 0 15px}.muted{color:#637986;font-size:13px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}label{font-size:13px;font-weight:650;display:block}input,textarea,select{font:inherit;display:block;width:100%;border:1px solid #b8cbd5;border-radius:7px;padding:10px;margin-top:5px;background:white;color:#183244}textarea{min-height:80px}button{background:#16747a;color:white;border:0;border-radius:8px;padding:11px 17px;font:inherit;font-weight:650;cursor:pointer}button.alt{background:#e4eef1;color:#143644}button:disabled{opacity:.5;cursor:wait}.actions{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0}.line{display:grid;grid-template-columns:1fr 165px;gap:12px;align-items:center;border-bottom:1px solid #e7edf1;padding:10px 0}.line label{font-size:14px;font-weight:500}.photos{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.photo{border:1px solid #dae5ea;border-radius:9px;padding:8px;break-inside:avoid}.photo img{width:100%;height:145px;object-fit:contain}.photo p{font-size:12px;overflow-wrap:anywhere}.hidden{display:none!important}#notice{font-weight:650}.error{color:#b02c31}.ok{color:#147050}@media(max-width:650px){.grid{grid-template-columns:1fr}.line{grid-template-columns:1fr 135px}.photos{grid-template-columns:1fr 1fr}.card{padding:15px}}\n    article{padding:16px} .line{grid-template-columns:minmax(0,1fr) minmax(105px,26%)} [hidden]{display:none!important}\n    .requirement{display:block;margin-top:4px;color:#a5242e;font-size:12px;font-weight:700}.requirement a{color:inherit}.check-group{margin:18px 0 0;font-size:15px}\n    @media(max-width:600px){\n      article{padding:12px 12px max(16px,env(safe-area-inset-bottom))}\n      .actions>*{flex:1 1 auto} button,input,select{min-height:44px;font-size:16px}\n      .line{grid-template-columns:1fr;gap:4px} .line select{margin-top:0}\n    }\n  #notice:empty{display:none}#notice:not(:empty){position:sticky;bottom:0;padding:10px;background:#fff;border:1px solid #dce4e9;border-radius:8px}</style><article><section id=\"checklist-picker\"><button type=\"button\" id=\"close\" class=\"alt\">← Mine verktøy</button><h1>Sjekklister</h1><section class=\"card\"><h2>Ny taksjekk</h2><div class=\"actions\"><button id=\"autumn\" type=\"button\">Høstsjekk</button><button id=\"spring\" type=\"button\">Vårsjekk</button></div><h2>Egenkontroll</h2><button id=\"rehab\" type=\"button\" class=\"alt\">Takrehabilitering</button></section></section><section id=\"checklist-form\" hidden><button type=\"button\" id=\"back-to-picker\" class=\"alt\">← Sjekklister</button><h1 id=\"report-title\" tabindex=\"-1\"></h1><section class=\"card no-print\"><h2>Åpne en lagret kontroll</h2><select id=\"template\" hidden aria-label=\"Sjekklistetype\"></select><label>Lagrede kontroller<select id=\"projects\"><option value=\"\">Velg kontroll</option></select></label></section><section class=\"card\"><h2>Informasjon om oppdraget</h2><label>Tilknyttet prosjekt<select id=\"linked-project\"><option value=\"\">Frittstående sjekkliste</option></select></label><div class=\"grid\"><label>Prosjektnavn / nummer<input id=\"project_name\"></label><label>Kunde / tiltakshaver<input id=\"customer\"></label><label>Adresse<input id=\"address\"></label><label>Kontrollør<input id=\"inspector\"></label><label>Arbeid startet<input type=\"date\" id=\"start_date\"></label><label>Arbeid ferdigstilt<input type=\"date\" id=\"end_date\"></label></div><label>Beskrivelse av utført arbeid<textarea id=\"description\"></textarea></label></section><section class=\"card\"><h2>Kontrollpunkter</h2><p class=\"muted no-print\">Velg OK, Avvik eller Ikke aktuelt. Punkter merket Ikke aktuelt blir utelatt fra PDF.</p><p class=\"muted\" id=\"rehab-guide\" hidden><strong>Rød stjerne = krav når relevant.</strong> Avklar hvilke regler som gjelder for jobben. Ved rent vedlikehold gjelder TEK17 normalt ikke. Bruk «Ikke aktuelt» for punkter utenfor omfanget. Se <a href=\"https://www.dibk.no/bygge-eller-endre/arbeid-pa-eksisterende-bygg/nar-gjelder-byggteknisk-forskrift-tek17/\" target=\"_blank\" rel=\"noopener\">DiBK om når TEK17 gjelder</a> og monteringsanvisningen for taksystemet.</p><div id=\"checks\"></div><div class=\"actions\"><button class=\"alt\" type=\"button\" id=\"add-point\">+ Legg til eget punkt</button></div><form id=\"custom-point-form\" hidden><label>Beskriv kontrollpunktet<input id=\"custom-point-text\" required maxlength=\"180\"></label><div class=\"actions\"><button type=\"submit\">Legg til punkt</button><button type=\"button\" class=\"alt\" id=\"cancel-point\">Avbryt</button></div></form></section><section class=\"card\"><h2>Avvik og avgrensninger</h2><label>Beskriv eventuelle avvik og tiltak<textarea id=\"deviations\"></textarea></label></section><section class=\"card\"><h2>Vedlegg og FDV</h2><p class=\"muted no-print\">Kontrollen lagres når du laster opp. Bilder blir med i PDF. FDV-PDF-er lastes ned separat fra vedleggslisten og legges ved i Boligmappa.</p><label class=\"no-print\">Velg flere bilder fra bildebiblioteket, eller legg ved FDV. Maks 15 MB per fil.<input type=\"file\" id=\"uploads\" accept=\"image/jpeg,image/png,image/webp,application/pdf\" multiple></label><div class=\"actions no-print\"><button id=\"upload\">Last opp vedlegg</button></div><div id=\"attachments\" class=\"photos\"></div><label>FDV og øvrige dokumenter (merknad)<textarea id=\"fdv_notes\"></textarea></label></section><section class=\"card\"><h2>Bekreftelse</h2><p>Kontrollpunkter merket OK er kontrollert. Avvik er beskrevet ovenfor.</p><div class=\"grid\"><label>Kontrollert av<input id=\"signed_by\"></label><label>Kontrolldato<input type=\"date\" id=\"signed_date\"></label></div></section><div class=\"actions\"><button id=\"save\" type=\"button\" class=\"alt\">Lagre kontroll</button><button id=\"print\" type=\"button\">Last ned PDF</button></div></section><p id=\"notice\" role=\"status\"></p></article>";
+  root.innerHTML = "<style>\n*{box-sizing:border-box}.card{background:var(--card,#fff);border:1px solid var(--border,#dce4e9);border-radius:13px;padding:22px;margin:15px 0;box-shadow:0 2px 9px #122b3b09}h1{font-size:27px;margin:8px 0}h2{font-size:18px;margin:0 0 15px}.muted{color:var(--muted,#526779);font-size:13px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}label{font-size:13px;font-weight:650;display:block}input,textarea,select{font:inherit;display:block;width:100%;border:1px solid #b8cbd5;border-radius:7px;padding:10px;margin-top:5px;background:var(--field,#fff);color:var(--text,#183244)}textarea{min-height:80px}button{background:#16747a;color:white;border:0;border-radius:8px;padding:11px 17px;font:inherit;font-weight:650;cursor:pointer}button.alt{background:#e4eef1;color:#143644}button:disabled{opacity:.5;cursor:wait}.actions{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0}.line{display:grid;grid-template-columns:1fr 165px;gap:12px;align-items:center;border-bottom:1px solid #e7edf1;padding:10px 0}.line label{font-size:14px;font-weight:500}.photos{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.photo{border:1px solid #dae5ea;border-radius:9px;padding:8px;break-inside:avoid}.photo img{width:100%;height:145px;object-fit:contain}.photo p{font-size:12px;overflow-wrap:anywhere}.hidden{display:none!important}#notice{font-weight:650}.error{color:#b02c31}.ok{color:#147050}@media(max-width:650px){.grid{grid-template-columns:1fr}.line{grid-template-columns:1fr 135px}.photos{grid-template-columns:1fr 1fr}.card{padding:15px}}\n    article{padding:16px} .line{grid-template-columns:minmax(0,1fr) minmax(105px,26%)} [hidden]{display:none!important}\n    .requirement{display:block;margin-top:4px;color:var(--requirement,#a5242e);font-size:12px;font-weight:700}.requirement a{color:inherit}.check-group{margin:18px 0 0;font-size:15px}\n    @media(max-width:600px){\n      article{padding:12px 12px max(16px,env(safe-area-inset-bottom))}\n      .actions>*{flex:1 1 auto} button,input,select{min-height:44px;font-size:16px}\n      .line{grid-template-columns:1fr;gap:4px} .line select{margin-top:0}\n    }\n  #notice:empty{display:none}#notice:not(:empty){position:sticky;bottom:0;padding:10px;background:var(--card,#fff);border:1px solid var(--border,#dce4e9);border-radius:8px}</style><article><section id=\"checklist-picker\"><h1>Sjekklister</h1><section class=\"card\"><h2>Ny taksjekk</h2><div class=\"actions\"><button id=\"autumn\" type=\"button\">Høstsjekk</button><button id=\"spring\" type=\"button\">Vårsjekk</button></div><h2>Egenkontroll</h2><button id=\"rehab\" type=\"button\" class=\"alt\">Takrehabilitering</button></section></section><section id=\"checklist-form\" hidden><button type=\"button\" id=\"back-to-picker\" class=\"alt\">← Sjekklister</button><h1 id=\"report-title\" tabindex=\"-1\"></h1><section class=\"card no-print\"><h2>Åpne en lagret kontroll</h2><select id=\"template\" hidden aria-label=\"Sjekklistetype\"></select><label>Lagrede kontroller<select id=\"projects\"><option value=\"\">Velg kontroll</option></select></label></section><section class=\"card\"><h2>Informasjon om oppdraget</h2><label>Tilknyttet prosjekt<select id=\"linked-project\"><option value=\"\">Frittstående sjekkliste</option></select></label><div class=\"grid\"><label>Prosjektnavn / nummer<input id=\"project_name\"></label><label>Kunde / tiltakshaver<input id=\"customer\"></label><label>Adresse<input id=\"address\"></label><label>Kontrollør<input id=\"inspector\"></label><label>Arbeid startet<input type=\"date\" id=\"start_date\"></label><label>Arbeid ferdigstilt<input type=\"date\" id=\"end_date\"></label></div><label>Beskrivelse av utført arbeid<textarea id=\"description\"></textarea></label></section><section class=\"card\"><h2>Kontrollpunkter</h2><p class=\"muted no-print\">Velg OK, Avvik eller Ikke aktuelt. Punkter merket Ikke aktuelt blir utelatt fra PDF.</p><p class=\"muted\" id=\"rehab-guide\" hidden><strong>Rød stjerne = krav når relevant.</strong> Avklar hvilke regler som gjelder for jobben. Ved rent vedlikehold gjelder TEK17 normalt ikke. Bruk «Ikke aktuelt» for punkter utenfor omfanget. Se <a href=\"https://www.dibk.no/bygge-eller-endre/arbeid-pa-eksisterende-bygg/nar-gjelder-byggteknisk-forskrift-tek17/\" target=\"_blank\" rel=\"noopener\">DiBK om når TEK17 gjelder</a> og monteringsanvisningen for taksystemet.</p><div id=\"checks\"></div><div class=\"actions\"><button class=\"alt\" type=\"button\" id=\"add-point\">+ Legg til eget punkt</button></div><form id=\"custom-point-form\" hidden><label>Beskriv kontrollpunktet<input id=\"custom-point-text\" required maxlength=\"180\"></label><div class=\"actions\"><button type=\"submit\">Legg til punkt</button><button type=\"button\" class=\"alt\" id=\"cancel-point\">Avbryt</button></div></form></section><section class=\"card\"><h2>Avvik og avgrensninger</h2><label>Beskriv eventuelle avvik og tiltak<textarea id=\"deviations\"></textarea></label></section><section class=\"card\"><h2>Vedlegg og FDV</h2><p class=\"muted no-print\">Kontrollen lagres når du laster opp. Bilder blir med i PDF. FDV-PDF-er lastes ned separat fra vedleggslisten og legges ved i Boligmappa.</p><label class=\"no-print\">Velg flere bilder fra bildebiblioteket, eller legg ved FDV. Maks 15 MB per fil.<input type=\"file\" id=\"uploads\" accept=\"image/jpeg,image/png,image/webp,application/pdf\" multiple></label><div class=\"actions no-print\"><button id=\"upload\">Last opp vedlegg</button></div><div id=\"attachments\" class=\"photos\"></div><label>FDV og øvrige dokumenter (merknad)<textarea id=\"fdv_notes\"></textarea></label></section><section class=\"card\"><h2>Bekreftelse</h2><p>Kontrollpunkter merket OK er kontrollert. Avvik er beskrevet ovenfor.</p><div class=\"grid\"><label>Kontrollert av<input id=\"signed_by\"></label><label>Kontrolldato<input type=\"date\" id=\"signed_date\"></label></div></section><div class=\"actions\"><button id=\"save\" type=\"button\" class=\"alt\">Lagre kontroll</button><button id=\"print\" type=\"button\">Last ned PDF</button></div></section><p id=\"notice\" role=\"status\"></p></article>";
   const $ = id => root.getElementById(id);
   const fields = ['project_name','customer','address','inspector','start_date','end_date','description','deviations','fdv_notes'];
   function sections() {
@@ -301,39 +297,19 @@
     }
   }
 
-  trigger.hidden = false;
-  trigger.style.removeProperty('display');
-  let entryProjectId = null;
-
+  const entryProjectId = new URLSearchParams(location.search).get('prosjekt');
   function showPicker() {
     dirty = false;
     notice('');
     $('checklist-picker').hidden = false;
     $('checklist-form').hidden = true;
-    dialog.scrollTop = 0;
-    $('autumn').focus();
+    window.scrollTo(0, 0);
+    $('autumn').focus({ preventScroll: true });
   }
 
-  function open(projectId = null) {
-    if (dialog.open) return;
-    entryProjectId = projectId;
-    dialog.showModal();
-    showPicker();
-    document.querySelector('a[href="/anbudskalkulator.html#sjekklister"]')?.setAttribute('aria-current', 'page');
-  }
-  window.KBInspection = Object.freeze({ open });
-  trigger.onclick = () => open();
-  $('close').onclick = () => dialog.close();
   $('back-to-picker').onclick = () => { if (canLeave()) showPicker(); };
-  dialog.addEventListener('cancel', event => {
-    if (busy || !$('checklist-form').hidden) {
-      event.preventDefault();
-      if (!busy && canLeave()) showPicker();
-    }
-  });
-  dialog.addEventListener('close', () => {
-    document.querySelector('a[href="/anbudskalkulator.html#sjekklister"]')?.removeAttribute('aria-current');
-    if (['#sjekklister', '#egenkontroll'].includes(location.hash)) history.replaceState(history.state, '', location.pathname + location.search);
+  window.addEventListener('beforeunload', event => {
+    if (dirty) event.preventDefault();
   });
 
   async function start(type) {
@@ -343,7 +319,7 @@
     fill();
     $('checklist-picker').hidden = true;
     $('checklist-form').hidden = false;
-    dialog.scrollTop = 0;
+    window.scrollTo(0, 0);
     $('report-title').focus({ preventScroll: true });
     await Promise.all([loadProjects().then(() => chooseProject(entryProjectId)), list()]);
   }
@@ -553,9 +529,5 @@
     notice('PDF klar til å legges ved i e-post.');
   });
   fill();
-  function openFromLink() {
-    if (['#sjekklister', '#egenkontroll'].includes(location.hash)) open();
-  }
-  window.addEventListener('hashchange', openFromLink);
-  openFromLink();
+  page.hidden = false;
 })();
