@@ -107,6 +107,34 @@
       ] }
     ] }
   });
+  Object.assign(templates, {
+    "kledning": {
+      "title": "Kledning",
+      "points": [
+        "Kontroller underlaget for fukt og skader før det dekkes.",
+        "Sjekk vindsperre, luftespalte, lekter og innfesting. Fotografer før tildekking.",
+        "Sjekk panel, hjørner, beslag og vannbord for fri avrenning.",
+        "Kontroller kappflater, overflatebehandling og avslutninger."
+      ]
+    },
+    "dorbytte": {
+      "title": "Bytte dør",
+      "points": [
+        "Kontroller mål, slagretning og dørtype. Avklar krav til brann, lyd, rømning eller terskel ved behov.",
+        "Kontroller oppklossing, karmens lodd og vater og innfesting etter monteringsanvisningen.",
+        "Kontroller tetting og terskel. På ytterdør: kontroller beslag og avrenning før tildekking.",
+        "Test åpning, lukking, lås og jevne klaringer."
+      ]
+    },
+    "service": {
+      "title": "Service / småjobber",
+      "points": [
+        "Beskriv hva som skal repareres, og registrer tilstanden før arbeid.",
+        "Kontroller tilpasning og innfesting av lister, terskler, beslag eller hengsler som inngår.",
+        "Test funksjon og kontroller finish. Dokumenter avvik og eventuelt gjenstående arbeid."
+      ]
+    }
+  });
   const bucket = db.storage.from('kb-tak-vedlegg');
   const table = () => db.from('kb_tak_kontroller');
   let projects = [];
