@@ -669,6 +669,7 @@
   });
   async function save() {
     const record = Object.fromEntries(fields.map(id => [id, $(id).value.trim() || null]));
+    record.deviations = $('deviations').value.trim();
     if (isRoofCheck()) {
       if (!record.customer || !record.address) throw Error('Fyll ut kunde og adresse.');
       record.project_name = [record.customer, $('signed_date').value].filter(Boolean).join(' – ');
