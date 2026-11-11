@@ -4,8 +4,55 @@
   const dialog = document.getElementById('kb-inspection');
   if (!trigger || !dialog || !window.KBAuth?.can('projects')) return;
   const db = window.KBDatabase.getClient();
+  const rehabilitation = [
+    { heading: "Før oppstart", points: [
+      { id: 9, label: "Arbeidsomfang, vedlikehold eller søknadspliktig tiltak er avklart. Eventuelle plan- og vernebestemmelser samt nødvendige tillatelser er avklart.", reference: ["DiBK · Arbeid på tak","https://www.dibk.no/bygge-eller-endre/arbeid-pa-eksisterende-bygg/eksempler-pa-byggearbeid-pa-tak"] },
+      { id: 10, label: "Risiko ved arbeid i høyden er vurdert, inkludert adkomst, gjennomtråkk og fall. Fallsikring er etablert og kontrollert før oppstart.", reference: ["Arbeidstilsynet · Arbeid på tak","https://www.arbeidstilsynet.no/risikofylt-arbeid/arbeid-i-hoyden/unnga-fall-ved-arbeid-pa-tak/"] },
+      { id: 11, label: "Materialer som kan inneholde asbest er avklart før inngrep. Ved mistanke er arbeidet stanset inntil materialet er avklart.", reference: ["Arbeidstilsynet · Ved mistanke om asbest","https://www.arbeidstilsynet.no/risikofylt-arbeid/kjemikalier/asbest/hva-gjor-du-hvis-du-stoter-pa-asbest/"] },
+      { id: 12, label: "Berørte bærende deler og konsekvenser av økt egenlast, snølast og vindlast er avklart og dokumentert i prosjekteringen.", reference: ["TEK17 § 10-2","https://www.dibk.no/regelverk/byggteknisk-forskrift-tek17/10/10-2"] },
+      { id: 0, label: "Arbeid kontrollert mot relevant monteringsanvisning og produktunderlag", reference: ["TEK17 § 2-4","https://www.dibk.no/regelverk/byggteknisk-forskrift-tek17/2/2-4"] },
+      { id: 13, label: "Produktene er egnet for valgt takoppbygging, takfall, underlag og eksponering. Relevant produktdokumentasjon er tilgjengelig.", reference: ["TEK17 § 3-1","https://www.dibk.no/regelverk/byggteknisk-forskrift-tek17/3/3-1"] },
+      { id: 14, label: "Avfallsplan, miljøkartlegging og eventuelt rapporteringskrav er avklart for tiltaket.", reference: ["TEK17 kapittel 9","https://www.dibk.no/regelverk/byggteknisk-forskrift-tek17/9"] }
+    ] },
+    { heading: "Underlag, fukt og lufting", points: [
+      { id: 1, label: "Eksisterende rupanel/underlag kontrollert, nødvendige skader utbedret" },
+      { id: 15, label: "Underlag og materialer er tilstrekkelig tørre før lukking. Fukt er kontrollert og måleresultater dokumentert der nødvendig.", reference: ["TEK17 § 13-14","https://www.dibk.no/regelverk/byggteknisk-forskrift-tek17/13/vi/13-14"] },
+      { id: 2, label: "Undertak, skjøter, oppbrett og avslutninger kontrollert", reference: ["TEK17 § 13-12","https://www.dibk.no/regelverk/byggteknisk-forskrift-tek17/13/vi/13-12"] },
+      { id: 3, label: "Sløyfer, lekter, lufting og innfesting kontrollert" },
+      { id: 16, label: "Ved endring av isolasjon eller takoppbygging er lufttetting, dampsperre og ventilasjon kontrollert mot prosjektert løsning.", reference: ["TEK17 § 13-13","https://www.dibk.no/regelverk/byggteknisk-forskrift-tek17/13/vi/13-13"] },
+      { id: 17, label: "Berørte energikrav og utført isolasjon er kontrollert mot prosjektert løsning.", reference: ["TEK17 kapittel 14","https://www.dibk.no/regelverk/byggteknisk-forskrift-tek17/14"] },
+      { id: 18, label: "Midlertidig tildekking, renhold og bortledning av vann er kontrollert i byggeperioden." }
+    ] },
+    { heading: "Tekking og detaljer", points: [
+      { id: 4, label: "Takstein og innfesting/stormklips kontrollert" },
+      { id: 5, label: "Møne, takfot og fuglesperre kontrollert" },
+      { id: 6, label: "Beslag, overganger, renner og gjennomføringer kontrollert", reference: ["TEK17 § 13-12","https://www.dibk.no/regelverk/byggteknisk-forskrift-tek17/13/vi/13-12"] },
+      { id: 8, label: "Vindskier og pannebord kontrollert der dette inngår" },
+      { id: 19, label: "Takplater eller shingel er kontrollert mot monteringsanvisning, inkludert overlapp, avslutninger og innfestingsmønster." },
+      { id: 20, label: "Takfolie eller takbelegg er kontrollert mot systemanvisning, inkludert skjøter, sveiser, hjørner, oppkanter og avslutninger." },
+      { id: 21, label: "Takvinduer, piper, luftehatter og øvrige gjennomføringer er kontrollert for tetting og avrenning." },
+      { id: 22, label: "Takterrasse, grønt tak, solanlegg eller annet utstyr er kontrollert ved berørte innfestinger, overganger og gjennomføringer." },
+      { id: 23, label: "Tekking og takdeler er sikret mot nedfall og vindpåvirkning i tråd med prosjektert innfesting.", reference: ["TEK17 § 10-3","https://www.dibk.no/regelverk/byggteknisk-forskrift-tek17/10/10-3"] }
+    ] },
+    { heading: "Avrenning og sikkerhet", points: [
+      { id: 24, label: "Fall og avrenning er kontrollert. Regn- og smeltevann ledes bort uten å skade konstruksjon eller terreng.", reference: ["TEK17 § 13-12","https://www.dibk.no/regelverk/byggteknisk-forskrift-tek17/13/vi/13-12"] },
+      { id: 25, label: "På flate eller svakt skrånende tak er sluk, nedløp og avrenningsvei ved blokkering kontrollert, inkludert nødoverløp der det inngår.", reference: ["TEK17 § 13-12","https://www.dibk.no/regelverk/byggteknisk-forskrift-tek17/13/vi/13-12"] },
+      { id: 26, label: "Renner, nedløp, innfestinger og utkast er kontrollert. Avrenningen er funksjonsprøvd der praktisk." },
+      { id: 7, label: "Taksikring/snøfangere/takstige kontrollert der dette inngår" },
+      { id: 27, label: "Løsning for å hindre at snø og is faller ned på steder der personer eller husdyr oppholder seg er kontrollert.", reference: ["TEK17 § 10-3","https://www.dibk.no/regelverk/byggteknisk-forskrift-tek17/10/10-3"] },
+      { id: 28, label: "Der skorstein berøres, er muligheten for feiing og uttak av sot ivaretatt. Eventuell takstige eller feieplattform er kontrollert.", reference: ["TEK17 § 15-3","https://www.dibk.no/regelverk/byggteknisk-forskrift-tek17/15/i/15-3"] },
+      { id: 29, label: "Taktekkingens brannegenskaper og eventuelle berørte brannskiller ved takfot, loft eller gjennomføringer er kontrollert mot brannunderlaget.", reference: ["TEK17 §§ 11-8 og 11-9","https://www.dibk.no/regelverk/byggteknisk-forskrift-tek17/11"] }
+    ] },
+    { heading: "Sluttkontroll og dokumentasjon", points: [
+      { id: 30, label: "Utførelsen er dokumentert mot produksjonsunderlaget. Registrerte avvik, tiltak og eventuell gjenstående oppfølging er dokumentert.", reference: ["TEK17 § 2-4","https://www.dibk.no/regelverk/byggteknisk-forskrift-tek17/2/2-4"] },
+      { id: 31, label: "FDV, inkludert relevante opplysninger om taksystem, tilsyn og vedlikehold, er samlet og overlevert til eier der det kreves.", reference: ["TEK17 §§ 4-1 og 4-2","https://www.dibk.no/regelverk/byggteknisk-forskrift-tek17/4"] },
+      { id: 32, label: "Avfall er sortert og levert i henhold til gjeldende krav. Kvitteringer og sluttrapport er dokumentert der det kreves.", reference: ["TEK17 §§ 9-8 og 9-9","https://www.dibk.no/regelverk/byggteknisk-forskrift-tek17/9/9-9"] },
+      { id: 33, label: "Før-, underveis- og etterbilder er lagt ved, særlig av detaljer som er bygget inn." },
+      { id: 34, label: "Oversikt over takflater, produkter, garanti og anbefalt intervall for ettersyn er lagt ved der det er avtalt." }
+    ] }
+  ];
   const templates = {
-    'tak-rehabilitering': { title: 'Egenkontroll – takrehabilitering', points: ['Arbeid kontrollert mot relevant monteringsanvisning og produktunderlag','Eksisterende rupanel/underlag kontrollert, nødvendige skader utbedret','Undertak, skjøter, oppbrett og avslutninger kontrollert','Sløyfer, lekter, lufting og innfesting kontrollert','Takstein og innfesting/stormklips kontrollert','Møne, takfot og fuglesperre kontrollert','Beslag, overganger, renner og gjennomføringer kontrollert','Taksikring/snøfangere/takstige kontrollert der dette inngår','Vindskier og pannebord kontrollert der dette inngår'] },
+    'tak-rehabilitering': { title: 'Egenkontroll – takrehabilitering', sections: rehabilitation },
     'tak-for-vinter': { title: 'Høstsjekk av tak', points: [
       'Taksluk, rister og løvfang er kontrollert og renset ved behov',
       'Synlige taknedløp og utløp er kontrollert for blokkering og skader',
@@ -35,10 +82,14 @@
   stylesheet.textContent = '#kb-inspection{width:min(100% - 24px,1000px);max-width:none;max-height:94dvh;padding:0;border:1px solid var(--border,#dce4e9);border-radius:12px;background:var(--bg,#f1f5f8);color:inherit}#kb-inspection::backdrop{background:#12334288}@media(max-width:600px){#kb-inspection{width:100%;max-width:100%;max-height:100dvh;height:100dvh;margin:0;border:0;border-radius:0}}';
   document.head.append(stylesheet);
   const root = host.attachShadow({ mode: 'open' });
-  root.innerHTML = "<style>\n*{box-sizing:border-box}.card{background:var(--white,#fff);border:1px solid var(--border,#dce4e9);border-radius:13px;padding:22px;margin:15px 0;box-shadow:0 2px 9px #122b3b09}h1{font-size:27px;margin:8px 0}h2{font-size:18px;margin:0 0 15px}.muted{color:#637986;font-size:13px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}label{font-size:13px;font-weight:650;display:block}input,textarea,select{font:inherit;display:block;width:100%;border:1px solid #b8cbd5;border-radius:7px;padding:10px;margin-top:5px;background:white;color:#183244}textarea{min-height:80px}button{background:#16747a;color:white;border:0;border-radius:8px;padding:11px 17px;font:inherit;font-weight:650;cursor:pointer}button.alt{background:#e4eef1;color:#143644}button:disabled{opacity:.5;cursor:wait}.actions{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0}.line{display:grid;grid-template-columns:1fr 165px;gap:12px;align-items:center;border-bottom:1px solid #e7edf1;padding:10px 0}.line label{font-size:14px;font-weight:500}.photos{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.photo{border:1px solid #dae5ea;border-radius:9px;padding:8px;break-inside:avoid}.photo img{width:100%;height:145px;object-fit:contain}.photo p{font-size:12px;overflow-wrap:anywhere}.hidden{display:none!important}#notice{font-weight:650}.error{color:#b02c31}.ok{color:#147050}@media(max-width:650px){.grid{grid-template-columns:1fr}.line{grid-template-columns:1fr 135px}.photos{grid-template-columns:1fr 1fr}.card{padding:15px}}\n    article{padding:16px} .line{grid-template-columns:minmax(0,1fr) minmax(105px,26%)} [hidden]{display:none!important}\n    @media(max-width:600px){\n      article{padding:12px 12px max(16px,env(safe-area-inset-bottom))}\n      .actions>*{flex:1 1 auto} button,input,select{min-height:44px;font-size:16px}\n      .line{grid-template-columns:1fr;gap:4px} .line select{margin-top:0}\n    }\n  </style><article><button type=\"button\" id=\"close\" class=\"alt\">← Tilbake</button><h1>Sjekklister</h1><section class=\"card\"><h2>Ny taksjekk</h2><div class=\"actions\"><button id=\"autumn\" type=\"button\">Høstsjekk</button><button id=\"spring\" type=\"button\">Vårsjekk</button></div><h2>Egenkontroll</h2><button id=\"rehab\" type=\"button\" class=\"alt\">Takrehabilitering</button></section><div class=\"actions no-print\"><button id=\"save\">Lagre kontroll</button><button class=\"alt\" id=\"print\">Last ned PDF</button></div><p id=\"notice\" role=\"status\" class=\"no-print\"></p><section class=\"card no-print\"><h2>Velg sjekkliste og kontroll</h2><label>Sjekkliste<select id=\"template\"></select></label><label>Lagrede kontroller<select id=\"projects\"><option value=\"\">Velg prosjekt</option></select></label><p class=\"muted\">Viser lagrede sjekklister av valgt type.</p></section><section class=\"card\"><h1 id=\"report-title\"></h1><h2>Informasjon om oppdraget</h2><label>Tilknyttet prosjekt<select id=\"linked-project\"><option value=\"\">Frittstående sjekkliste</option></select></label><div class=\"grid\"><label>Prosjektnavn / nummer<input id=\"project_name\"></label><label>Kunde / tiltakshaver<input id=\"customer\"></label><label>Adresse<input id=\"address\"></label><label>Kontrollør<input id=\"inspector\"></label><label>Arbeid startet<input type=\"date\" id=\"start_date\"></label><label>Arbeid ferdigstilt<input type=\"date\" id=\"end_date\"></label></div><label>Beskrivelse av utført arbeid<textarea id=\"description\"></textarea></label></section><section class=\"card\"><h2>Kontrollpunkter</h2><p class=\"muted no-print\">Velg OK, Avvik eller Ikke aktuelt. Punkter merket Ikke aktuelt blir utelatt fra PDF.</p><div id=\"checks\"></div></section><section class=\"card\"><h2>Avvik og avgrensninger</h2><label>Beskriv eventuelle avvik og tiltak<textarea id=\"deviations\"></textarea></label></section><section class=\"card\"><h2>Vedlegg og FDV</h2><p class=\"muted no-print\">Kontrollen lagres når du laster opp. Bilder blir med i PDF. FDV-PDF-er lastes ned separat fra vedleggslisten og legges ved i Boligmappa.</p><label class=\"no-print\">Velg flere bilder fra bildebiblioteket, eller legg ved FDV. Maks 15 MB per fil.<input type=\"file\" id=\"uploads\" accept=\"image/jpeg,image/png,image/webp,application/pdf\" multiple></label><div class=\"actions no-print\"><button id=\"upload\">Last opp vedlegg</button></div><div id=\"attachments\" class=\"photos\"></div><label>FDV og øvrige dokumenter (merknad)<textarea id=\"fdv_notes\"></textarea></label></section><section class=\"card\"><h2>Bekreftelse</h2><p>Kontrollpunkter merket OK er kontrollert. Avvik er beskrevet ovenfor.</p><div class=\"grid\"><label>Kontrollert av<input id=\"signed_by\"></label><label>Kontrolldato<input type=\"date\" id=\"signed_date\"></label></div></section></article>";
+  root.innerHTML = "<style>\n*{box-sizing:border-box}.card{background:var(--white,#fff);border:1px solid var(--border,#dce4e9);border-radius:13px;padding:22px;margin:15px 0;box-shadow:0 2px 9px #122b3b09}h1{font-size:27px;margin:8px 0}h2{font-size:18px;margin:0 0 15px}.muted{color:#637986;font-size:13px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}label{font-size:13px;font-weight:650;display:block}input,textarea,select{font:inherit;display:block;width:100%;border:1px solid #b8cbd5;border-radius:7px;padding:10px;margin-top:5px;background:white;color:#183244}textarea{min-height:80px}button{background:#16747a;color:white;border:0;border-radius:8px;padding:11px 17px;font:inherit;font-weight:650;cursor:pointer}button.alt{background:#e4eef1;color:#143644}button:disabled{opacity:.5;cursor:wait}.actions{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0}.line{display:grid;grid-template-columns:1fr 165px;gap:12px;align-items:center;border-bottom:1px solid #e7edf1;padding:10px 0}.line label{font-size:14px;font-weight:500}.photos{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.photo{border:1px solid #dae5ea;border-radius:9px;padding:8px;break-inside:avoid}.photo img{width:100%;height:145px;object-fit:contain}.photo p{font-size:12px;overflow-wrap:anywhere}.hidden{display:none!important}#notice{font-weight:650}.error{color:#b02c31}.ok{color:#147050}@media(max-width:650px){.grid{grid-template-columns:1fr}.line{grid-template-columns:1fr 135px}.photos{grid-template-columns:1fr 1fr}.card{padding:15px}}\n    article{padding:16px} .line{grid-template-columns:minmax(0,1fr) minmax(105px,26%)} [hidden]{display:none!important}\n    .requirement{display:block;margin-top:4px;color:#a5242e;font-size:12px;font-weight:700}.requirement a{color:inherit}.check-group{margin:18px 0 0;font-size:15px}\n    @media(max-width:600px){\n      article{padding:12px 12px max(16px,env(safe-area-inset-bottom))}\n      .actions>*{flex:1 1 auto} button,input,select{min-height:44px;font-size:16px}\n      .line{grid-template-columns:1fr;gap:4px} .line select{margin-top:0}\n    }\n  </style><article><button type=\"button\" id=\"close\" class=\"alt\">← Tilbake</button><h1>Sjekklister</h1><section class=\"card\"><h2>Ny taksjekk</h2><div class=\"actions\"><button id=\"autumn\" type=\"button\">Høstsjekk</button><button id=\"spring\" type=\"button\">Vårsjekk</button></div><h2>Egenkontroll</h2><button id=\"rehab\" type=\"button\" class=\"alt\">Takrehabilitering</button></section><div class=\"actions no-print\"><button id=\"save\">Lagre kontroll</button><button class=\"alt\" id=\"print\">Last ned PDF</button></div><p id=\"notice\" role=\"status\" class=\"no-print\"></p><section class=\"card no-print\"><h2>Velg sjekkliste og kontroll</h2><label>Sjekkliste<select id=\"template\"></select></label><label>Lagrede kontroller<select id=\"projects\"><option value=\"\">Velg prosjekt</option></select></label><p class=\"muted\">Viser lagrede sjekklister av valgt type.</p></section><section class=\"card\"><h1 id=\"report-title\"></h1><h2>Informasjon om oppdraget</h2><label>Tilknyttet prosjekt<select id=\"linked-project\"><option value=\"\">Frittstående sjekkliste</option></select></label><div class=\"grid\"><label>Prosjektnavn / nummer<input id=\"project_name\"></label><label>Kunde / tiltakshaver<input id=\"customer\"></label><label>Adresse<input id=\"address\"></label><label>Kontrollør<input id=\"inspector\"></label><label>Arbeid startet<input type=\"date\" id=\"start_date\"></label><label>Arbeid ferdigstilt<input type=\"date\" id=\"end_date\"></label></div><label>Beskrivelse av utført arbeid<textarea id=\"description\"></textarea></label></section><section class=\"card\"><h2>Kontrollpunkter</h2><p class=\"muted no-print\">Velg OK, Avvik eller Ikke aktuelt. Punkter merket Ikke aktuelt blir utelatt fra PDF.</p><p class=\"muted\" id=\"rehab-guide\" hidden><strong>Rød stjerne = krav når relevant.</strong> Avklar hvilke regler som gjelder for jobben. Ved rent vedlikehold gjelder TEK17 normalt ikke. Bruk «Ikke aktuelt» for punkter utenfor omfanget. Se <a href=\"https://www.dibk.no/bygge-eller-endre/arbeid-pa-eksisterende-bygg/nar-gjelder-byggteknisk-forskrift-tek17/\" target=\"_blank\" rel=\"noopener\">DiBK om når TEK17 gjelder</a> og monteringsanvisningen for taksystemet.</p><div id=\"checks\"></div></section><section class=\"card\"><h2>Avvik og avgrensninger</h2><label>Beskriv eventuelle avvik og tiltak<textarea id=\"deviations\"></textarea></label></section><section class=\"card\"><h2>Vedlegg og FDV</h2><p class=\"muted no-print\">Kontrollen lagres når du laster opp. Bilder blir med i PDF. FDV-PDF-er lastes ned separat fra vedleggslisten og legges ved i Boligmappa.</p><label class=\"no-print\">Velg flere bilder fra bildebiblioteket, eller legg ved FDV. Maks 15 MB per fil.<input type=\"file\" id=\"uploads\" accept=\"image/jpeg,image/png,image/webp,application/pdf\" multiple></label><div class=\"actions no-print\"><button id=\"upload\">Last opp vedlegg</button></div><div id=\"attachments\" class=\"photos\"></div><label>FDV og øvrige dokumenter (merknad)<textarea id=\"fdv_notes\"></textarea></label></section><section class=\"card\"><h2>Bekreftelse</h2><p>Kontrollpunkter merket OK er kontrollert. Avvik er beskrevet ovenfor.</p><div class=\"grid\"><label>Kontrollert av<input id=\"signed_by\"></label><label>Kontrolldato<input type=\"date\" id=\"signed_date\"></label></div></section></article>";
   const $ = id => root.getElementById(id);
   const fields = ['project_name','customer','address','inspector','start_date','end_date','description','deviations','fdv_notes'];
-  const points = () => templates[$('template').value].points;
+  function sections() {
+    const template = templates[$('template').value];
+    return template.sections ?? [{ points: template.points.map((label, id) => ({ id, label })) }];
+  }
+  const points = () => sections().flatMap(section => section.points);
   const isRoofCheck = () => $('template').value !== 'tak-rehabilitering';
   const notice = (message, error = false) => {
     $('notice').textContent = message;
@@ -93,22 +144,49 @@
     for (const id of fields) $(id).value = record[id] ?? (id === 'inspector' ? window.KBAuth.employee?.name ?? '' : '');
     $('signed_by').value = record.checks?.signed_by ?? '';
     $('signed_date').value = record.checks?.signed_date ?? (isRoofCheck() ? new Date().toLocaleDateString('sv-SE') : '');
-    $('checks').replaceChildren(...points().map((point, index) => {
-      const row = document.createElement('div');
-      row.className = 'line';
-      const label = document.createElement('label');
-      label.htmlFor = 'c' + index;
-      label.textContent = point;
-      const select = document.createElement('select');
-      select.id = label.htmlFor;
-      for (const [text, value] of [['Ikke vurdert',''],['OK','OK'],['Avvik','Avvik'],['Ikke aktuelt','NA']]) {
-        select.add(new Option(text, value));
+    $('rehab-guide').hidden = isRoofCheck();
+    const checks = $('checks');
+    checks.replaceChildren();
+    for (const { heading, points } of sections()) {
+      if (heading) {
+        const title = document.createElement('h3');
+        title.className = 'check-group';
+        title.textContent = heading;
+        checks.append(title);
       }
-      select.value = record.checks?.[index] ?? '';
-      select.disabled = busy;
-      row.append(label, select);
-      return row;
-    }));
+      for (const { id, label: point, reference } of points) {
+        const row = document.createElement('div');
+        row.className = 'line';
+        const description = document.createElement('div');
+        const label = document.createElement('label');
+        label.htmlFor = 'c' + id;
+        label.textContent = point;
+        description.append(label);
+        if (reference) {
+          const badge = document.createElement('span');
+          badge.className = 'requirement';
+          badge.textContent = '★ Krav når relevant · ';
+          badge.id = 'requirement-' + id;
+          const link = document.createElement('a');
+          link.textContent = reference[0];
+          link.href = reference[1];
+          link.target = '_blank';
+          link.rel = 'noopener';
+          badge.append(link);
+          description.append(badge);
+        }
+        const select = document.createElement('select');
+        select.id = label.htmlFor;
+        if (reference) select.setAttribute('aria-describedby', 'requirement-' + id);
+        for (const [text, value] of [['Ikke vurdert',''],['OK','OK'],['Avvik','Avvik'],['Ikke aktuelt','NA']]) {
+          select.add(new Option(text, value));
+        }
+        select.value = record.checks?.[id] ?? '';
+        select.disabled = busy;
+        row.append(description, select);
+        checks.append(row);
+      }
+    }
     chooseProject(record.portal_project_id ?? projectId);
     $('uploads').value = '';
     $('attachments').replaceChildren();
@@ -225,7 +303,7 @@
       record.project_name = [record.customer, $('signed_date').value].filter(Boolean).join(' – ');
     }
     if (!record.project_name) throw Error('Fyll ut prosjektnavn eller prosjektnummer.');
-    record.checks = Object.fromEntries(points().map((_, index) => [index, $('c' + index).value]));
+    record.checks = Object.fromEntries(points().map(({ id }) => [id, $('c' + id).value]));
     record.checks.signed_by = $('signed_by').value;
     record.checks.signed_date = $('signed_date').value;
     record.checklist_type = $('template').value;
@@ -280,7 +358,7 @@
     notice('Vedlegg lastet opp.');
   });
   $('print').onclick = () => run(async () => {
-    if (points().some((_, index) => !$('c' + index).value) &&
+    if (points().some(({ id }) => !$('c' + id).value) &&
         !confirm('Noen kontrollpunkter er ikke vurdert. Vil du likevel laste ned rapporten?')) return;
     await save();
     await loadAttachments();
@@ -336,10 +414,21 @@
     }
     field('Beskrivelse', 'description');
     heading('Kontrollpunkter');
-    points().forEach((point, index) => {
-      const status = $('c' + index).value;
-      if (status !== 'NA') text((status || 'Ikke vurdert') + ' – ' + point);
-    });
+    for (const section of sections()) {
+      const applicable = section.points.filter(({ id }) => $('c' + id).value !== 'NA');
+      if (!applicable.length) continue;
+      if (section.heading) heading(section.heading);
+      for (const { id, label, reference } of applicable) {
+        const status = $('c' + id).value || 'Ikke vurdert';
+        if (reference) {
+          room(15);
+          pdf.setTextColor(157, 36, 46);
+          text('* Krav når relevant · ' + reference[0], 9, true);
+          pdf.setTextColor(0);
+        }
+        text(status + ' – ' + label);
+      }
+    }
     if ($('deviations').value.trim()) {
       heading('Avvik og tiltak');
       text($('deviations').value);
