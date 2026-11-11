@@ -93,12 +93,12 @@
             <div class="arrow">Åpne →</div>
           </button>
 
-          <a href="egenkontroll-tak.html" class="start-card" style="min-height:220px;text-decoration:none;color:inherit;display:flex;flex-direction:column;cursor:pointer">
+          <button type="button" class="start-card" id="kb-inspection-open" hidden>
             <div class="icon" style="background:#e0f2fe">🏠</div>
-            <h3>Egenkontroll tak</h3>
-            <p>Dokumenter takarbeid med sjekkliste, bilder og FDV. Lagre felles i Supabase og eksporter PDF.</p>
-            <div class="arrow">Åpne skjema →</div>
-          </a>
+            <h3>Egenkontroll og taksjekk</h3>
+            <p>Sjekklister, bilder og PDF-rapporter.</p>
+            <div class="arrow">Åpne →</div>
+          </button>
           <a href="kalender.html" class="start-card" style="min-height:220px;text-decoration:none;color:inherit;display:flex;flex-direction:column;cursor:pointer">
             <div class="icon" style="background:#e6f4ff">📅</div>
             <h3>Kalender</h3>
@@ -1279,5 +1279,7 @@ Generelt tverrfaglig samarbeid.</textarea>
 <script type="text/plain" data-kb-script="/kb-attachments.js"></script>
 <script type="text/plain" data-kb-script="/kb-feedback.js"></script>
 <script type="text/plain" data-kb-script="/kb-finance.js?v=20260928-customers"></script>
+<dialog id="kb-inspection" aria-label="Egenkontroll og taksjekk"></dialog>
+<script type="text/plain" data-kb-script="/kb-inspection.js"></script>
 </body>
 </html>
