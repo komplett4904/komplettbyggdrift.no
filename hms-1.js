@@ -1087,7 +1087,7 @@ async function slettAvvikBilde(idx){
 // =========================================
 // PDF-EKSPORT
 // =========================================
-const KB_LOGO_HTML='<svg width="56" height="56" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" rx="14" fill="#1a3a5c"/><text x="50" y="65" font-family="Arial" font-size="42" font-weight="800" text-anchor="middle" fill="#e8a317">KB</text></svg>';
+const KB_LOGO_HTML=window.KBBrand?.logo ? '<img src="'+window.KBBrand.logo+'" width="190" height="47" alt="Komplett Byggdrift AS" style="object-fit:contain">' : '';
 
 function pdfTopp(tittel,undertittel){
   return `<div style="display:flex;align-items:center;gap:14px;border-bottom:2px solid #1a3a5c;padding-bottom:12px;margin-bottom:18px">

@@ -5,9 +5,9 @@ function create(data,PDF){
  const clean=s=>String(s??'').replace(/\u00a0|\u202f/g,' ').replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g,'');
  function heading(){
  doc.setFillColor(23,50,77);doc.rect(0,0,210,2,'F');
- if(root.KBBrand?.logo)doc.addImage(root.KBBrand.logo,'PNG',20,9,30,18,undefined,'FAST');
- doc.setTextColor(23,50,77);doc.setFont('helvetica','bold');doc.setFontSize(12);doc.text('Komplett Byggdrift AS',59,17);
- doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(95,117,136);doc.text('Tømrerarbeid · Rørleggertjenester · Drift og vedlikehold',59,23);
+ if(root.KBBrand?.logo)doc.addImage(root.KBBrand.logo,'PNG',20,9,50,12.24,undefined,'FAST');
+ doc.setTextColor(23,50,77);doc.setFont('helvetica','bold');doc.setFontSize(12);doc.text('Komplett Byggdrift AS',79,17);
+ doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(95,117,136);doc.text('Tømrerarbeid · Rørleggertjenester · Drift og vedlikehold',79,23);
  doc.setFontSize(8);doc.text('TILBUDSBREV',190,30,{align:'right'});doc.setDrawColor(190,205,218);doc.line(left,34,190,34);
  }
  function need(height){if(y+height>bottom){doc.addPage();heading();y=44;}}

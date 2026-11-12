@@ -920,6 +920,10 @@
     pdf.rect(0, 40, 210, 1.5, 'F');
     pdf.setTextColor(255);
     y = 12;
+    if (window.KBBrand?.logo) {
+      pdf.addImage(window.KBBrand.logo, 'PNG', margin, 11, 54, 13.22, undefined, 'FAST');
+      y = 30;
+    }
     text('KOMPLETT BYGGDRIFT AS  /  KONTROLLRAPPORT', 10, true);
     y = 25;
     text(title, 21, true);
