@@ -2637,6 +2637,7 @@ function lastInnProsjekt(id){
     if(typeof recalc==='function')recalc();
   }
   closeProsjekter();
+  window.KBLastOpened?.record({kind:'project',id:p.id,title:p.navn||'Prosjekt'});
 }
 
 function slettProsjekt(id){

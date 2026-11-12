@@ -354,8 +354,21 @@
   let current = null;
   let busy = false;
   let dirty = false;
+  let savedAt = null;
+  const saveState = document.createElement('p');
+  saveState.setAttribute('role','status');
+  $('save').parentElement.before(saveState);
+  const saveClock = new Intl.DateTimeFormat('nb-NO', {hour:'2-digit',minute:'2-digit',timeZone:'Europe/Oslo'});
+  function renderSaveState() {
+    saveState.textContent = !navigator.onLine
+      ? (dirty ? 'Ingen nettforbindelse. Endringene er ikke lagret.' : 'Ingen nettforbindelse.')
+      : dirty ? 'Endringer venter på lagring.'
+      : savedAt ? 'Lagret kl. ' + saveClock.format(savedAt) : '';
+  }
+  window.addEventListener('online', renderSaveState);
+  window.addEventListener('offline', renderSaveState);
   $('checklist-form').addEventListener('input', event => {
-    if (event.target.id !== 'projects') dirty = true;
+    if (event.target.id !== 'projects') { dirty = true; renderSaveState(); }
   });
   const canLeave = () => !dirty || confirm('Kontrollen har endringer som ikke er lagret. Vil du gå videre?');
 
@@ -401,6 +414,8 @@
 
   function fill(record = {}, projectId = null) {
     dirty = false;
+    savedAt = record.updated_at ? new Date(record.updated_at) : null;
+    renderSaveState();
     $('report-title').textContent = templates[$('template').value].title;
     for (const id of ['project_name', 'start_date', 'end_date']) $(id).closest('label').hidden = isRoofCheck();
     for (const id of fields) $(id).value = record[id] ?? (id === 'inspector' ? window.KBAuth.employee?.name ?? '' : '');
@@ -447,6 +462,7 @@
             customPoints = customPoints.filter(item => item.id !== id);
             renderChecks(answers);
             dirty = true;
+    renderSaveState();
             $('add-point').focus();
           };
           description.append(remove);
@@ -526,6 +542,7 @@
     const id = 'extra-' + crypto.randomUUID();
     customPoints.push({ id, label, custom: true });
     dirty = true;
+    renderSaveState();
     renderChecks(answers);
     event.currentTarget.reset();
     event.currentTarget.hidden = true;
@@ -646,7 +663,14 @@
   more.className = 'alt';
   more.textContent = 'Vis flere';
   more.hidden = true;
-  recent.append(summary, searchLabel, status, results, more);
+  const mineLabel = document.createElement('label');
+  mineLabel.textContent = 'Vis sjekklister';
+  const mine = document.createElement('select');
+  mine.add(new Option('Alle', 'all'));
+  mine.add(new Option('Mine sjekklister', 'mine'));
+  mineLabel.append(mine);
+  mineLabel.hidden = !window.KBAuth.employee?.name;
+  recent.append(summary, searchLabel, mineLabel, status, results, more);
   $('checklist-picker').insertBefore(recent, picker);
   const recentStyle = document.createElement('style');
   recentStyle.textContent = '.recent-checklists summary{cursor:pointer;font-weight:700;padding:10px 0}.recent-checklists label{margin-top:12px}.recent-checklists p{color:var(--muted,#526779)}.recent-checklists p:empty{display:none}.recent-row{display:grid;gap:4px;width:100%;text-align:left;background:var(--field,#fff);color:var(--text,#183244);border:1px solid var(--border,#dce4e9);margin:8px 0;overflow-wrap:anywhere}.recent-row span{font-size:13px;font-weight:400}.recent-row:hover{border-color:#168289}.recent-row:focus-visible{outline:3px solid #e8a317;outline-offset:2px}';
@@ -664,6 +688,8 @@
   function renderRecent() {
     const terms = normalize(search.value.trim()).split(/\s+/).filter(Boolean);
     const matching = recentRows.filter(row => {
+      const ownName = normalize(window.KBAuth.employee?.name?.trim() || '');
+      if (mine.value === 'mine' && ![row.inspector, row.signed_by].some(name => normalize(name?.trim() || '') === ownName)) return false;
       const haystack = normalize([titleFor(row), templates[row.checklist_type].title,
         row.inspector, row.signed_by, row.customer, row.address].filter(Boolean).join(' '));
       return terms.every(term => haystack.includes(term));
@@ -684,7 +710,7 @@
       results.append(button);
     }
     more.hidden = matching.length <= visibleCount;
-    status.textContent = matching.length ? '' : terms.length ? 'Ingen sjekklister matcher søket.' : 'Ingen sjekklister er lagret ennå.';
+    status.textContent = matching.length ? '' : (terms.length || mine.value === 'mine') ? 'Ingen sjekklister matcher søket.' : 'Ingen sjekklister er lagret ennå.';
   }
 
   async function refreshRecent() {
@@ -711,6 +737,7 @@
 
   recent.addEventListener('toggle', refreshRecent);
   search.oninput = () => { visibleCount = 12; if (!loadingRecent) renderRecent(); };
+  mine.onchange = () => { visibleCount = 12; if (!loadingRecent) renderRecent(); };
   more.onclick = () => { visibleCount += 12; renderRecent(); };
   const preview = document.createElement('dialog');
   preview.setAttribute('aria-labelledby', 'preview-title');
@@ -802,6 +829,7 @@
     current = data.id;
     $('projects').value = current;
     fill(data);
+    window.KBLastOpened?.record({kind:'checklist',id:data.id,type:data.checklist_type,typeTitle:templates[data.checklist_type].title,title:titleFor(data)});
     await loadAttachments();
   }
 
@@ -827,6 +855,8 @@
     if (error) throw error;
     current = data.id;
     dirty = false;
+    savedAt = new Date(record.updated_at);
+    renderSaveState();
     await list();
   }
   $('save').onclick = () => run(async () => {
@@ -1065,16 +1095,72 @@
     pdfDialog.showModal();
   });
 
-  $('print').onclick = () => run(async () => {
+  async function prepareReport() {
     if (points().some(({ id }) => !$('c' + id).value) &&
         !confirm('Noen kontrollpunkter er ikke vurdert. Vil du likevel laste ned rapporten?')) return;
     await save();
     await loadAttachments();
-    const { pdf, filename } = await buildPdf();
-    pdf.save(filename);
+    return buildPdf();
+  }
+
+  $('print').onclick = () => run(async () => {
+    const report = await prepareReport();
+    if (!report) return;
+    report.pdf.save(report.filename);
     notice('PDF klar til å legges ved i e-post.');
   });
+  if (navigator.share && navigator.canShare?.({files:[new File([''], 'rapport.pdf', {type:'application/pdf'})]})) {
+    const share = document.createElement('button');
+    share.type = 'button';
+    share.textContent = 'Del PDF';
+    $('print').after(share);
+    const shareDialog = document.createElement('dialog');
+    shareDialog.setAttribute('aria-label','Del PDF');
+    shareDialog.className = 'card';
+    shareDialog.style.color = 'var(--text,#183244)';
+    const shareStatus = document.createElement('p');
+    shareStatus.setAttribute('role','status');
+    const nativeShare = document.createElement('button');
+    nativeShare.type = 'button';
+    nativeShare.textContent = 'Åpne delingsmenyen';
+    const cancel = document.createElement('button');
+    cancel.type = 'button';
+    cancel.className = 'alt';
+    cancel.textContent = 'Lukk';
+    cancel.onclick = () => shareDialog.close();
+    const shareActions = document.createElement('div');
+    shareActions.className = 'actions';
+    shareActions.append(nativeShare,cancel);
+    shareDialog.append(shareStatus,shareActions);
+    $('checklist-form').after(shareDialog);
+    share.onclick = () => run(async () => {
+      const report = await prepareReport();
+      if (!report) return;
+      const file = new File([report.pdf.output('blob')], report.filename, {type:'application/pdf'});
+      const payload = {files:[file]};
+      if (!navigator.canShare(payload)) {
+        report.pdf.save(report.filename);
+        notice('PDF lastet ned. Legg den ved i e-posten fra telefonen.');
+        return;
+      }
+      shareStatus.textContent = 'Rapporten er klar. Velg e-post eller en annen app i delingsmenyen.';
+      nativeShare.onclick = async () => {
+        try {
+          await navigator.share(payload);
+          shareDialog.close();
+        } catch (error) {
+          if (error.name !== 'AbortError') shareStatus.textContent = 'Kunne ikke dele PDF-en. Prøv igjen eller velg «Last ned PDF».';
+        }
+      };
+      shareDialog.showModal();
+    });
+    shareDialog.addEventListener('close', () => { nativeShare.onclick = null; share.focus(); });
+  }
   fill();
   page.hidden = false;
-  refreshRecent();
+  const linkParams = new URLSearchParams(location.search);
+  const requestedType = linkParams.get('type');
+  const requestedId = linkParams.get('kontroll');
+  if (requestedId && Object.hasOwn(templates, requestedType)) run(() => start(requestedType, requestedId));
+  else refreshRecent();
 })();

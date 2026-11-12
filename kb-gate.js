@@ -33,7 +33,7 @@
     for(const button of document.querySelectorAll('[onclick*="Passord"],[onclick*="passord"]'))button.hidden=true;
     screen.remove();
     const contextScript=document.createElement('script');contextScript.src='/kb-project-context.js?v=20261108';document.body.append(contextScript);
-    const uxScript=document.createElement('script');uxScript.src='/kb-ux.js?v=20261112-prosjekter';uxScript.onload=()=>{const workday=document.createElement('script');workday.src='/kb-workday.js?v=20261111-kalenderlogo';document.body.append(workday);};document.body.append(uxScript);
+    const uxScript=document.createElement('script');uxScript.src='/kb-ux.js?v=20261112-prosjekter';uxScript.onload=()=>{const workday=document.createElement('script');workday.src='/kb-workday.js?v=20261112-fortsett-del';document.body.append(workday);};document.body.append(uxScript);
     const floatingStyle=document.createElement('style');floatingStyle.textContent=`
       body{padding-bottom:100px!important}
       #kb-settings-button{appearance:none;box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:8px 13px;border:1px solid #9db4c9;border-radius:10px;background:#eef5fb;color:#17324d;font:650 14px/1.2 system-ui,sans-serif;cursor:pointer}

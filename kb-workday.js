@@ -29,7 +29,41 @@
  function connectivity(){network.hidden=navigator.onLine;network.textContent=navigator.onLine?'':'Du er uten nett. Skylagring og oppdatering kan vente. Behold siden åpen og kontroller lagringsstatus når nettet er tilbake.';}
  window.addEventListener('online',connectivity);window.addEventListener('offline',connectivity);connectivity();
  day.append(date,heading,intro,actions,network);home.prepend(day);
- const recent=home.querySelector('.kb-quick:not(#kb-workday)');if(recent)day.after(recent);
+ const lastOpened = document.createElement('section');
+ lastOpened.className = 'kb-quick';
+ const lastTitle = document.createElement('h3');
+ lastTitle.textContent = 'Sist åpnet';
+ const lastList = document.createElement('div');
+ lastList.className = 'kb-quick-list';
+ lastOpened.append(lastTitle, lastList);
+ function renderLastOpened() {
+  lastList.replaceChildren();
+  for (const entry of window.KBLastOpened?.read() || []) {
+   const item = document.createElement('button');
+   item.type = 'button';
+   const title = document.createElement('strong');
+   title.textContent = entry.title;
+   const type = document.createElement('small');
+   type.textContent = entry.kind === 'project' ? 'Prosjekt' : entry.typeTitle;
+   item.append(title, type);
+   item.onclick = () => {
+    if (entry.kind === 'checklist') {
+     location.href = '/sjekklister.html?' + new URLSearchParams({type:entry.type,kontroll:entry.id});
+    } else if (lasteProsjekter().some(project => project.id === entry.id)) {
+     lastInnProsjekt(entry.id);
+    } else {
+     openProsjekter();
+    }
+   };
+   lastList.append(item);
+  }
+  lastOpened.hidden = !lastList.children.length;
+ }
+ if (KBAuth.can('projects')) {
+  window.addEventListener('kb-last-opened-change', renderLastOpened);
+  renderLastOpened();
+ }
+ const recent=home.querySelector('.kb-quick:not(#kb-workday)');if(recent)day.after(recent);if(KBAuth.can('projects'))day.after(lastOpened);
  const finance=document.getElementById('kb-finance');if(finance){finance.classList.add('workday-finance');(recent||day).after(finance);finance.querySelector('.finance-scroll')?.remove();}
  if(KBAuth.can('projects')){const options=document.createElement('details');options.className='kb-alternative-tools';options.innerHTML='<summary>Mine verktøy · flere alternativer</summary><p>Valgfrie verktøy ved behov.</p><a href="/timer.html">Timeføring – alternativ →</a>';home.append(options);}
  const links=[...home.querySelectorAll('h3')].find(h=>h.textContent.trim()==='Nyttige lenker')?.parentElement;
