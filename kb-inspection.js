@@ -914,7 +914,7 @@
       if (value) text(label + ': ' + value);
     }
 
-    const logo = window.KBBrand?.logo;
+    const logo = window.KBBrand?.logoOnDark || window.KBBrand?.logo;
     const titleSize = 21;
     const titleY = logo ? 35 : 19;
     pdf.setFont('helvetica', 'bold');
