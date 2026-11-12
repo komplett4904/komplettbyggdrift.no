@@ -863,6 +863,29 @@
     await save();
     notice('Kontroll lagret.');
   });
+  if (window.KBDrivePicker) {
+    const drive = document.createElement('button');
+    drive.type = 'button';
+    drive.className = 'alt';
+    drive.textContent = 'Velg fra Google Disk';
+    $('upload').before(drive);
+    let ready = false;
+    window.KBDrivePicker.ready.then(() => { ready = true; }).catch(() => {});
+    drive.onclick = () => run(async () => {
+      if (!ready) {
+        await window.KBDrivePicker.ready;
+        notice('Google Disk er klar. Trykk «Velg fra Google Disk» igjen.');
+        return;
+      }
+      const files = await window.KBDrivePicker.pick();
+      if (!files.length) return;
+      const selected = new DataTransfer();
+      for (const file of [...$('uploads').files, ...files]) selected.items.add(file);
+      $('uploads').files = selected.files;
+      notice(files.length + ' filer hentet fra Google Disk. Trykk «Last opp vedlegg» for å lagre dem på sjekklisten.');
+    });
+  }
+
   $('upload').onclick = () => run(async () => {
     const files = [...$('uploads').files];
     if (!files.length) throw Error('Velg minst én fil.');
