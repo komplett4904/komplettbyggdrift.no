@@ -914,21 +914,24 @@
       if (value) text(label + ': ' + value);
     }
 
+    const logo = window.KBBrand?.logo;
+    const titleSize = 21;
+    const titleY = logo ? 35 : 19;
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(titleSize);
+    const titleLines = pdf.splitTextToSize(title, width);
+    const headerHeight = titleY + titleLines.length * titleSize * 0.43 + 8;
     pdf.setFillColor(22, 46, 67);
-    pdf.rect(0, 0, 210, 40, 'F');
+    pdf.rect(0, 0, 210, headerHeight, 'F');
     pdf.setFillColor(242, 186, 75);
-    pdf.rect(0, 40, 210, 1.5, 'F');
+    pdf.rect(0, headerHeight, 210, 1.5, 'F');
+    if (logo) pdf.addImage(logo, 'PNG', margin, 9, 54, 13.22, undefined, 'FAST');
     pdf.setTextColor(255);
-    y = 12;
-    if (window.KBBrand?.logo) {
-      pdf.addImage(window.KBBrand.logo, 'PNG', margin, 11, 54, 13.22, undefined, 'FAST');
-      y = 30;
-    }
-    text('KOMPLETT BYGGDRIFT AS  /  KONTROLLRAPPORT', 10, true);
-    y = 25;
-    text(title, 21, true);
+    y = titleY;
+    text(title, titleSize, true);
+    text('KONTROLLRAPPORT', 10, true);
     pdf.setTextColor(24, 50, 68);
-    y = 52;
+    y = headerHeight + 10;
     heading('Oppdragsinformasjon');
     if (!isRoofCheck()) field('Prosjekt', 'project_name');
     field('Kunde', 'customer');
