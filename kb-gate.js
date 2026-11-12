@@ -4,18 +4,19 @@
   const screen = document.createElement('section');
   screen.id='kb-secure-gate';
   screen.style.cssText='position:fixed;inset:0;z-index:2147483647;background:#f1f5f8;display:grid;place-items:center;padding:24px;font-family:system-ui,sans-serif;color:#17324d';
-  screen.className='kb-login-page';
-  const stylesheet=document.createElement('link');stylesheet.rel='stylesheet';stylesheet.href='/kb-login.css';document.head.append(stylesheet);
-  screen.innerHTML="<div class=\"kb-login-card\"><div class=\"kb-login-brand\"><img class=\"kb-login-mark\" src=\"/kb-k-192-dark.png\" alt=\"\"><span>Komplett Byggdrift<span class=\"kb-login-caption\">Arbeidsplassen din, samlet.</span></span></div><h1>Velkommen tilbake</h1><p class=\"kb-login-intro\">Logg inn for å åpne verktøyene dine.</p><p id=\"kb-gate-status\" class=\"kb-login-status\" role=\"status\" aria-live=\"polite\">Kontrollerer innlogging …</p><button id=\"kb-google\" class=\"kb-google-button\" hidden><img src=\"/google-g.png\" width=\"20\" height=\"20\" alt=\"\" aria-hidden=\"true\"><span>Logg på med Google</span></button><p class=\"kb-login-hint\">Bruk Google-kontoen med firmaadressen din.</p><div class=\"kb-login-footer\"><span>Har du en gjestekode?</span><a href=\"/demo.html\">Åpne demo <span aria-hidden=\"true\">→</span></a></div><a class=\"kb-login-back\" href=\"/\">← Til forsiden</a></div>";
+  screen.className='kb-login-page kb-logo-loading';
+  const stylesheet=document.createElement('link');stylesheet.rel='stylesheet';stylesheet.href='/kb-login.css?v=20261112-k-animasjon';document.head.append(stylesheet);
+  screen.innerHTML="<div class=\"kb-login-card\"><div class=\"kb-login-brand\"><span class=\"kb-login-mark\" aria-hidden=\"true\"><img src=\"/kb-k-192-dark.png\" alt=\"\"><span class=\"kb-k-piece\"></span><span class=\"kb-k-piece\"></span><span class=\"kb-k-piece\"></span></span><span>Komplett Byggdrift<span class=\"kb-login-caption\">Arbeidsplassen din, samlet.</span></span></div><h1>Velkommen tilbake</h1><p class=\"kb-login-intro\">Logg inn for å åpne verktøyene dine.</p><p id=\"kb-gate-status\" class=\"kb-login-status\" role=\"status\" aria-live=\"polite\">Kontrollerer innlogging …</p><button id=\"kb-google\" class=\"kb-google-button\" hidden><img src=\"/google-g.png\" width=\"20\" height=\"20\" alt=\"\" aria-hidden=\"true\"><span>Logg på med Google</span></button><p class=\"kb-login-hint\">Bruk Google-kontoen med firmaadressen din.</p><div class=\"kb-login-footer\"><span>Har du en gjestekode?</span><a href=\"/demo.html\">Åpne demo <span aria-hidden=\"true\">→</span></a></div><a class=\"kb-login-back\" href=\"/\">← Til forsiden</a></div>";
   document.body.append(screen);
   const button=screen.querySelector('button'),status=screen.querySelector('[role=status]');
-  button.addEventListener('click',async()=>{button.disabled=true;try{await window.KBAuth.signIn();}catch(e){status.textContent=e.message;button.disabled=false;}});
+  button.addEventListener('click',async()=>{button.disabled=true;screen.classList.add('kb-logo-loading');try{await window.KBAuth.signIn();}catch(e){screen.classList.remove('kb-logo-loading');status.textContent=e.message;button.disabled=false;}});
   try {
     const employee=await window.KBAuth.getEmployee();
-    if(!employee){status.textContent='';button.hidden=false;return;}
+    if(!employee){screen.classList.remove('kb-logo-loading');status.textContent='';button.hidden=false;return;}
     const pageModules={'/timer.html':'projects','/tilbud.html':'projects','/anbudskalkulator.html':'projects','/sjekklister.html':'projects','/hms.html':'hms','/kalender.html':'calendar','/okonomi.html':'finance'};
     const required=pageModules[location.pathname];
     if((required&&!KBAuth.can(required))||(location.pathname==='/tilganger.html'&&!employee.isAdmin)){
+      screen.classList.remove('kb-logo-loading');
       status.textContent='Du har ikke tilgang til dette verktøyet. Kontakt Stephen eller Eirik.';
       const back=document.createElement('a');back.href='/innlogging.html';back.textContent='Til mine verktøy';status.after(back);return;
     }
@@ -63,5 +64,5 @@
     for(const event of ['pointerdown','keydown','touchstart'])document.addEventListener(event,()=>{lastActivity=Date.now();},{passive:true});
     setInterval(()=>{if(window.parent===window&&Date.now()-lastActivity>30*60*1000)window.KBAuth.logoutAndReturn();},30000);
     if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js').catch(()=>{});
-  }catch(error){status.textContent=error.message||'Innloggingen kunne ikke bekreftes.';button.hidden=false;}
+  }catch(error){screen.classList.remove('kb-logo-loading');status.textContent=error.message||'Innloggingen kunne ikke bekreftes.';button.hidden=false;}
 })();

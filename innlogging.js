@@ -2,7 +2,9 @@
 const statusElement = document.getElementById('status');
 const loginButton = document.getElementById('login');
 const logoutButton = document.getElementById('logout');
+const setLoading = active => document.body.classList.toggle('kb-logo-loading', active);
 async function showIdentity() {
+  setLoading(true);
   try {
     const employee = await window.KBAuth.getEmployee();
     statusElement.textContent = employee ? `Innlogging bekreftet. Hei, ${employee.name}! Du bruker ${employee.email}.` : '';
@@ -28,12 +30,15 @@ async function showIdentity() {
     statusElement.textContent = error.message || 'Innloggingen kunne ikke kontrolleres.';
     loginButton.hidden = false;
     logoutButton.hidden = false;
+  } finally {
+    setLoading(false);
   }
 }
 loginButton.addEventListener('click', async () => {
   loginButton.disabled = true;
+  setLoading(true);
   try { await window.KBAuth.signIn(); }
-  catch(error) { statusElement.textContent = error.message; loginButton.disabled = false; }
+  catch(error) { setLoading(false); statusElement.textContent = error.message; loginButton.disabled = false; }
 });
 logoutButton.addEventListener('click', async () => {
   logoutButton.disabled = true;
