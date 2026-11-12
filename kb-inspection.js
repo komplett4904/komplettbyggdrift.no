@@ -604,6 +604,7 @@
     $('checklist-form').hidden = true;
     window.scrollTo(0, 0);
     $('autumn').focus({ preventScroll: true });
+    refreshRecent();
   }
 
   $('back-to-picker').onclick = () => { if (canLeave()) showPicker(); };
@@ -611,7 +612,7 @@
     if (dirty) event.preventDefault();
   });
 
-  async function start(type) {
+  async function start(type, id = null) {
     current = null;
     $('template').value = type;
     $('projects').replaceChildren(new Option('Velg kontroll', ''));
@@ -620,11 +621,97 @@
     $('checklist-form').hidden = false;
     window.scrollTo(0, 0);
     $('report-title').focus({ preventScroll: true });
-    await Promise.all([loadProjects().then(() => chooseProject(entryProjectId)), list()]);
+    await Promise.all([loadProjects().then(() => { if (!id) chooseProject(entryProjectId); }), list()]);
+    if (id) await openRecord(id);
   }
   $('linked-project').onchange = () => chooseProject($('linked-project').value);
   const picker = $('checklist-picker').querySelector('.card');
   picker.replaceChildren();
+  const recent = document.createElement('details');
+  recent.className = 'card recent-checklists';
+  recent.open = matchMedia('(min-width: 701px)').matches;
+  const summary = document.createElement('summary');
+  summary.textContent = 'Siste sjekklister';
+  const searchLabel = document.createElement('label');
+  searchLabel.textContent = 'Søk i sjekklister';
+  const search = document.createElement('input');
+  search.type = 'search';
+  search.placeholder = 'Tittel, type, adresse eller navn';
+  searchLabel.append(search);
+  const results = document.createElement('div');
+  const status = document.createElement('p');
+  status.setAttribute('role', 'status');
+  const more = document.createElement('button');
+  more.type = 'button';
+  more.className = 'alt';
+  more.textContent = 'Vis flere';
+  more.hidden = true;
+  recent.append(summary, searchLabel, status, results, more);
+  $('checklist-picker').insertBefore(recent, picker);
+  const recentStyle = document.createElement('style');
+  recentStyle.textContent = '.recent-checklists summary{cursor:pointer;font-weight:700;padding:10px 0}.recent-checklists label{margin-top:12px}.recent-checklists p{color:var(--muted,#526779)}.recent-checklists p:empty{display:none}.recent-row{display:grid;gap:4px;width:100%;text-align:left;background:var(--field,#fff);color:var(--text,#183244);border:1px solid var(--border,#dce4e9);margin:8px 0;overflow-wrap:anywhere}.recent-row span{font-size:13px;font-weight:400}.recent-row:hover{border-color:#168289}.recent-row:focus-visible{outline:3px solid #e8a317;outline-offset:2px}';
+  root.append(recentStyle);
+
+  const pageSize = 200;
+  let recentRows = [];
+  let visibleCount = 12;
+  let loadingRecent = false;
+  const dateFormat = new Intl.DateTimeFormat('nb-NO', { dateStyle: 'short', timeZone: 'Europe/Oslo' });
+  const normalize = value => value.toLocaleLowerCase('nb-NO').normalize('NFC');
+  const performer = row => row.signed_by?.trim() || row.inspector?.trim();
+  const titleFor = row => row.project_name?.trim() || row.address?.trim() || 'Sjekkliste uten tittel';
+
+  function renderRecent() {
+    const terms = normalize(search.value.trim()).split(/\s+/).filter(Boolean);
+    const matching = recentRows.filter(row => {
+      const haystack = normalize([titleFor(row), templates[row.checklist_type].title,
+        row.inspector, row.signed_by, row.customer, row.address].filter(Boolean).join(' '));
+      return terms.every(term => haystack.includes(term));
+    });
+    results.replaceChildren();
+    for (const row of matching.slice(0, visibleCount)) {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'recent-row';
+      const title = document.createElement('strong');
+      title.textContent = titleFor(row);
+      const meta = document.createElement('span');
+      const date = new Date(row.updated_at);
+      meta.textContent = [templates[row.checklist_type].title, performer(row) || 'Utført av ikke oppgitt',
+        row.updated_at && !Number.isNaN(date.getTime()) ? 'Oppdatert ' + dateFormat.format(date) : ''].filter(Boolean).join(' · ');
+      button.append(title, meta);
+      button.onclick = () => run(() => start(row.checklist_type, row.id));
+      results.append(button);
+    }
+    more.hidden = matching.length <= visibleCount;
+    status.textContent = matching.length ? '' : terms.length ? 'Ingen sjekklister matcher søket.' : 'Ingen sjekklister er lagret ennå.';
+  }
+
+  async function refreshRecent() {
+    if (!recent.open || loadingRecent) return;
+    loadingRecent = true;
+    status.textContent = 'Henter sjekklister …';
+    try {
+      const rows = [];
+      for (let offset = 0; ; offset += pageSize) {
+        const { data, error } = await table().select('id,checklist_type,project_name,customer,address,inspector,updated_at,signed_by:checks->>signed_by')
+          .order('updated_at', { ascending: false }).order('id').range(offset, offset + pageSize - 1);
+        if (error) throw error;
+        rows.push(...data.filter(row => Object.hasOwn(templates, row.checklist_type)));
+        if (data.length < pageSize) break;
+      }
+      recentRows = rows;
+      renderRecent();
+    } catch {
+      status.textContent = 'Kunne ikke hente sjekklister. Lukk og åpne listen for å prøve igjen.';
+    } finally {
+      loadingRecent = false;
+    }
+  }
+
+  recent.addEventListener('toggle', refreshRecent);
+  search.oninput = () => { visibleCount = 12; if (!loadingRecent) renderRecent(); };
+  more.onclick = () => { visibleCount += 12; renderRecent(); };
   const preview = document.createElement('dialog');
   preview.setAttribute('aria-labelledby', 'preview-title');
   preview.style.cssText = 'width:min(640px,calc(100% - 24px));max-height:85dvh;border:1px solid #b8cbd5;border-radius:12px;padding:18px;background:var(--card,#fff);color:var(--text,#183244)';
@@ -702,6 +789,10 @@
       fill();
       return;
     }
+    await openRecord(id);
+  });
+
+  async function openRecord(id) {
     const { data, error } = await table().select('*').eq('id', id)
       .eq('checklist_type', $('template').value).single();
     if (error) {
@@ -709,9 +800,11 @@
       throw error;
     }
     current = data.id;
+    $('projects').value = current;
     fill(data);
     await loadAttachments();
-  });
+  }
+
   async function save() {
     const record = Object.fromEntries(fields.map(id => {
       const value = $(id).value.trim();
@@ -976,4 +1069,5 @@
   });
   fill();
   page.hidden = false;
+  refreshRecent();
 })();
