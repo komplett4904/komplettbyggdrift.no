@@ -58,3 +58,11 @@
 #kb-finance .finance-help-content p{margin:0 0 12px}
 #kb-finance .finance-help-example{padding:16px;background:#fff;border-left:4px solid #718dff;border-radius:6px;margin:20px 0}
 #kb-finance .finance-help-example p:last-child{font-size:13px;color:#566979;margin:0}
+
+.finance-benchmark{margin-block:20px;line-height:1.55}
+.finance-benchmark h4{margin-block:14px 4px}
+.finance-benchmark ul{list-style:none;margin:0;padding:0;max-width:36rem}
+.finance-benchmark li{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--border,#526779)}
+.finance-benchmark li a{overflow-wrap:anywhere}
+.finance-benchmark li strong{white-space:nowrap;font-variant-numeric:tabular-nums}
+@media(max-width:600px){.finance-benchmark li{min-height:44px}.finance-benchmark li a{display:flex;align-items:center;min-height:44px}.finance-benchmark li{padding-block:0}.finance-benchmark{font-size:14px}}

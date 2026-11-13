@@ -113,8 +113,7 @@ if(income>0&&Number.isFinite((income-cost)/income*100)){
 const comparison=document.createElement('p');
 comparison.setAttribute('role','status');
 const guide=document.createElement('section');
-guide.style.marginBlock='16px';
-guide.style.lineHeight='1.5';
+guide.className='finance-benchmark';
 const guideHeading=document.createElement('h3');
 guideHeading.textContent='Sammenlign med Frydendal og andre lokale bedrifter';
 guideHeading.style.marginBottom='6px';
@@ -133,17 +132,18 @@ for(const [group, companies] of [
  ['Multiflis',5.8,'https://www.proff.no/regnskap/multiflis-as/arendal/bygningsh%C3%A5ndverkere/IGESFB507TR']]],
  ['Rørlegger og VVS',[
  ['Olsen Erling',9.3,'https://www.proff.no/regnskap/olsen-erling-as/tvedestrand/r%C3%B8rleggertjenester/IG2KZNF07RG'],
- ['BV VVS (nå Velure AS)',-0.1,'https://www.proff.no/selskap/bvs-klima-og-r%C3%B8r-as/tvedestrand/-/IDP7W8W0000'],
+ ['Velure AS',-0.1,'https://www.proff.no/selskap/bvs-klima-og-r%C3%B8r-as/tvedestrand/-/IDP7W8W0000'],
  ['Sørlandet VVS',2.4,'https://aktie.no/bedrift/933001539']]]
 ]){
  const heading=document.createElement('h4');heading.textContent=group+' · helår 2025';
  const examples=document.createElement('ul');
- examples.style.cssText='list-style:disc outside;padding-inline-start:1.6em;margin:4px 0 12px';
  for(const [name,margin,url] of companies){
   const item=document.createElement('li'),link=document.createElement('a');
   link.href=url;link.target='_blank';link.rel='noopener noreferrer';link.textContent=name;
-  item.style.cssText='padding-inline-start:.35em;margin-block:3px';
-  item.append(link,' · '+localFormat.format(margin)+' % driftsmargin');examples.append(item);
+  const value=document.createElement('strong');
+  value.textContent=localFormat.format(margin)+' %';
+  value.setAttribute('aria-label',value.textContent+' driftsmargin');
+  item.append(link,value);examples.append(item);
  }
  guide.append(heading,examples);
 }
