@@ -121,23 +121,27 @@ const frydendal=3432/19103*100;
 const localFormat=new Intl.NumberFormat('nb-NO',{maximumFractionDigits:1});
 const ownMargin=income>0?(income-cost)/income*100:null;
 const gap=ownMargin===null?null:Math.round((ownMargin-frydendal)*10)/10;
-benchmark.textContent='Frydendal er en lokal målestokk. '+(gap===null?'':gap===0?'Dere ligger omtrent likt i prosent. ': 'Dere ligger '+localFormat.format(Math.abs(gap))+' prosentpoeng '+(gap>0?'over':'under')+' Frydendals 2025-margin. ')+' Tallene deres gjelder perioden over. Proff-tallene gjelder hele 2025.';
+benchmark.textContent='Frydendal er en lokal målestokk. '+(gap===null?'':gap===0?'Dere ligger omtrent likt i prosent. ': 'Dere ligger '+localFormat.format(Math.abs(gap))+' prosentpoeng '+(gap>0?'over':'under')+' Frydendals 2025-margin. ')+' Tallene deres gjelder perioden over. De lokale regnskapstallene gjelder hele 2025.';
 guide.append(benchmark);
-const examples=document.createElement('ul');
-for(const [name,profit,revenue,url] of [
- ['Tømrermester Frydendal',3432,19103,'https://www.proff.no/regnskap/t%C3%B8mrermester-frydendal-as/tvedestrand/bygg-og-anleggsleverand%C3%B8rer/IF3QBNH0CVG'],
- ['Byggmester Atle Pedersen',957,7572,'https://www.proff.no/selskap/byggmester-atle-pedersen-as/arendal/bygg-og-anleggsleverand%C3%B8rer/IF9YUV40CVG'],
- ['Rørlegger Halvorsen',1099,14999,'https://www.proff.no/selskap/r%C3%B8rlegger-halvorsen-as/arendal/bygningsh%C3%A5ndverkere/IEB83WE07TR'],
- ['Arendal Rør',3457,12691,'https://www.proff.no/selskap/arendal-r%C3%B8r-as/arendal/r%C3%B8rleggertjenester/IDRJ7J207RG']
+for(const [group, companies] of [
+ ['Tømrer og bygg',[
+ ['Tømrermester Frydendal',18.0,'https://www.proff.no/regnskap/t%C3%B8mrermester-frydendal-as/tvedestrand/bygg-og-anleggsleverand%C3%B8rer/IF3QBNH0CVG'],
+ ['Sørensen & Moen Bygg',7.1,'https://firmadatabasen.no/selskap/sorensen-moen-bygg-as/996546438'],
+ ['Multiflis',5.8,'https://www.proff.no/regnskap/multiflis-as/arendal/bygningsh%C3%A5ndverkere/IGESFB507TR']]],
+ ['Rørlegger og VVS',[
+ ['Olsen Erling',9.3,'https://www.proff.no/regnskap/olsen-erling-as/tvedestrand/r%C3%B8rleggertjenester/IG2KZNF07RG'],
+ ['BV VVS (nå Velure AS)',-0.1,'https://www.proff.no/selskap/bvs-klima-og-r%C3%B8r-as/tvedestrand/-/IDP7W8W0000'],
+ ['Sørlandet VVS',2.4,'https://aktie.no/bedrift/933001539']]]
 ]){
- const item=document.createElement('li'),link=document.createElement('a');
- link.href=url;link.target='_blank';link.rel='noopener noreferrer';link.textContent=name;
- item.append(link,' · '+localFormat.format(profit/revenue*100)+' % driftsmargin');examples.append(item);
+ const heading=document.createElement('h4');heading.textContent=group+' · helår 2025';
+ const examples=document.createElement('ul');
+ for(const [name,margin,url] of companies){
+  const item=document.createElement('li'),link=document.createElement('a');
+  link.href=url;link.target='_blank';link.rel='noopener noreferrer';link.textContent=name;
+  item.append(link,' · '+localFormat.format(margin)+' % driftsmargin');examples.append(item);
+ }
+ guide.append(heading,examples);
 }
-guide.append(examples);
-const sample=document.createElement('p');
-sample.textContent='I et lite utvalg på 12 lokale bedrifter var medianen 6,9 %. Det betyr at halvparten lå under og halvparten over. Bruk tallene som en pekepinne.';
-guide.append(sample);
 insights.append(period,margin,comparison,guide);
 summary.after(insights);
 const selectedYear=Number(data.year);

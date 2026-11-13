@@ -7,6 +7,7 @@ const tourSteps=[
  ['calendar','Her ser du arbeidsplanen','Se hvem som skal gjøre hva, og når. I den ekte løsningen brukes Google Kalender. Denne planen er et eksempel og viser ingen private avtaler.'],
  ['hours','Prøv å føre noen timer','Velg prosjekt, start, slutt og pause. Skriv kort hva som ble gjort, og trykk «Legg til demotimer». Deretter kan du prøve «Simuler godkjenning». Ingen timer sendes til Tripletex. Demoen viser en enklere prøve enn ansattes timeassistent.'],
  ['hms','Her følger du opp HMS','Prøv å krysse av sjekklisten. Dette er en liten smakebit på HMS-verktøyene. Listen er bare et eksempel, ikke en fullstendig risikovurdering.'],
+ ['checklists','Prøv en sjekkliste','Velg kontrolltype, fyll ut punktene og last ned en PDF med demodata.'],
  ['calculator','Prøv selv – du kan ikke ødelegge noe','Endre timer og materialkostnader for å se eksempelprisen. Denne enkle kalkylen er ikke et ekte tilbud. Bruk menyen for å utforske videre. «Vis omvisning» starter denne gjennomgangen på nytt.']
 ];
 function tourStep(){const [view,title,text]=tourSteps[tourIndex];showView(view);document.getElementById('tour-title').textContent=title;document.getElementById('tour-text').textContent=text;document.getElementById('tour-step').textContent='Kort omvisning · '+(tourIndex+1)+' av '+tourSteps.length;document.getElementById('tour-back').disabled=tourIndex===0;document.getElementById('tour-next').textContent=tourIndex===tourSteps.length-1?'Ferdig – prøv selv':'Neste →';document.querySelector('[data-panel="'+view+'"]').scrollIntoView({block:'start'});document.getElementById('tour-title').focus({preventScroll:true});}
@@ -46,3 +47,65 @@ let timeEntries=[];const hoursText=n=>(n/60).toLocaleString('nb-NO',{maximumFrac
 function renderTimes(){const list=document.getElementById('time-list');list.replaceChildren();const sum=timeEntries.reduce((n,e)=>n+e.minutes,0);document.getElementById('time-total').textContent=sum?hoursText(sum)+' registrert i denne demoøkten.':'Ingen nye timer ennå.';document.getElementById('week-hours').textContent=hoursText(1350+sum);document.getElementById('approve-hours').disabled=!timeEntries.some(e=>!e.approved);timeEntries.forEach((entry,index)=>{const row=document.createElement('div');row.className='time-row';const title=document.createElement('strong'),text=document.createElement('p'),state=document.createElement('p'),remove=document.createElement('button');title.textContent=entry.project+' · '+hoursText(entry.minutes);text.textContent=entry.date+' · '+entry.note;state.textContent=entry.approved?'Godkjent (simulert)':'Til kontroll (demo)';remove.type='button';remove.className='secondary';remove.textContent='Fjern demolinje';remove.onclick=()=>{timeEntries.splice(index,1);renderTimes();};row.append(title,text,state,remove);list.append(row);});}
 document.getElementById('time-form').addEventListener('submit',event=>{event.preventDefault();const value=id=>document.getElementById(id).value;const minutes=t=>{const [h,m]=t.split(':').map(Number);return h*60+m;};const start=minutes(value('time-start')),end=minutes(value('time-end')),pause=Number(value('time-break'));const error=document.getElementById('time-error');if(end<=start||!Number.isInteger(pause)||pause<0||pause>=end-start){error.textContent='Slutt må være etter start samme dag, og pausen må være kortere enn arbeidsperioden.';return;}const note=value('time-note').trim();if(!note){error.textContent='Beskriv kort hva som ble gjort.';return;}timeEntries.push({project:value('time-project'),date:value('time-date'),minutes:end-start-pause,note,approved:false});error.textContent='Demotimene er lagt til. Ingen data er sendt til Tripletex.';renderTimes();});
 document.getElementById('approve-hours').onclick=()=>{timeEntries.forEach(e=>e.approved=true);renderTimes();};renderTimes();
+
+(() => {
+ const el=id=>document.getElementById('demo-check-'+id);
+ const templates=[
+  ['Taksluk og nedløp er kontrollert','Nødoverløp er frie','Takbelegg og gjennomføringer er kontrollert'],
+  ['Avrenning og stående vann er kontrollert','Takbelegg er kontrollert for vinterskader','Beslag og innfestinger er kontrollert'],
+  ['Underlaget er kontrollert','Tekking og gjennomføringer er kontrollert','Avrenning og fallsikring er kontrollert'],
+  ['Rør og innfestinger er kontrollert','Avløp og sluk er kontrollert','Lekkasjesikring er kontrollert']
+ ];
+ const key='kb-demo-checks-v1';
+ let rows=[];
+ try {const saved=JSON.parse(localStorage.getItem(key)||'null');if(Array.isArray(saved))rows=saved;}catch{}
+ if(!rows.length)rows=[{id:'example',type:0,name:'Høstsjekk · Solsiden',person:'Ola Eksempel',note:'Løv fjernet fra sluk.',answers:['OK','OK','OK']}];
+ let id=null;
+ function points(answers=[]){
+  el('points').replaceChildren();
+  templates[el('type').selectedIndex].forEach((point,index)=>{
+   const label=document.createElement('label'),select=document.createElement('select');
+   label.textContent=point;
+   for(const value of ['Ikke vurdert','OK','Avvik','Ikke aktuelt'])select.add(new Option(value));
+   select.value=answers[index]||'Ikke vurdert';label.append(select);el('points').append(label);
+  });
+ }
+ function render(){
+  el('list').replaceChildren();
+  for(const row of rows){
+   const button=document.createElement('button');
+   button.type='button';button.className='secondary';button.textContent=row.name+' · '+row.person;
+   button.onclick=()=>{id=row.id;el('type').selectedIndex=row.type;el('name').value=row.name;el('person').value=row.person;el('note').value=row.note;points(row.answers);el('status').textContent='Åpnet demokontroll.';};
+   const item=document.createElement('p');item.append(button);el('list').append(item);
+  }
+  const fresh=document.createElement('button');fresh.type='button';fresh.textContent='Ny demokontroll';
+  fresh.onclick=()=>{id=null;el('form').reset();points();el('status').textContent='';el('name').focus();};
+  el('list').append(fresh);
+ }
+ function collect(){
+  return {type:el('type').selectedIndex,name:el('name').value.trim(),person:el('person').value.trim(),note:el('note').value.trim(),answers:[...el('points').querySelectorAll('select')].map(field=>field.value)};
+ }
+ el('type').onchange=points.bind(null,[]);
+ el('form').onsubmit=event=>{
+  event.preventDefault();
+  if(demo.hidden)return;
+  const row=collect();
+  if(!row.name||!row.person){el('status').textContent='Fyll ut tittel og kontrollør.';return;}
+  id??=crypto.randomUUID();
+  rows=[{...row,id},...rows.filter(item=>item.id!==id)].slice(0,20);
+  try{localStorage.setItem(key,JSON.stringify(rows));el('status').textContent='Demokontroll lagret.';}
+  catch{el('status').textContent='Demokontrollen er tilgjengelig til siden lukkes.';}
+  render();
+ };
+ el('pdf').onclick=()=>{
+  if(demo.hidden||!el('form').reportValidity())return;
+  const row=collect();
+  if(!window.jspdf){el('status').textContent='PDF kunne ikke lastes. Oppdater siden og prøv igjen.';return;}
+  const doc=new window.jspdf.jsPDF();
+  doc.setFontSize(16);doc.text('DEMO – Sjekkliste',16,20);doc.setFontSize(11);
+  const lines=[el('type').selectedOptions[0].text,row.name,'Kontrollør: '+row.person,'',...templates[row.type].flatMap((point,index)=>row.answers[index]==='Ikke aktuelt'?[]:[row.answers[index]+' – '+point]),'',row.note];
+  doc.text(doc.splitTextToSize(lines.join('\n'),178),16,32);
+  doc.save('demo-sjekkliste.pdf');
+ };
+ points();render();
+})();
