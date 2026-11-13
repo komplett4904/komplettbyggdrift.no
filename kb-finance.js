@@ -113,8 +113,11 @@ if(income>0&&Number.isFinite((income-cost)/income*100)){
 const comparison=document.createElement('p');
 comparison.setAttribute('role','status');
 const guide=document.createElement('section');
+guide.style.marginBlock='16px';
+guide.style.lineHeight='1.5';
 const guideHeading=document.createElement('h3');
 guideHeading.textContent='Sammenlign med Frydendal og andre lokale bedrifter';
+guideHeading.style.marginBottom='6px';
 guide.append(guideHeading);
 const benchmark=document.createElement('p');
 const frydendal=3432/19103*100;
@@ -135,9 +138,11 @@ for(const [group, companies] of [
 ]){
  const heading=document.createElement('h4');heading.textContent=group+' · helår 2025';
  const examples=document.createElement('ul');
+ examples.style.cssText='list-style:disc outside;padding-inline-start:1.6em;margin:4px 0 12px';
  for(const [name,margin,url] of companies){
   const item=document.createElement('li'),link=document.createElement('a');
   link.href=url;link.target='_blank';link.rel='noopener noreferrer';link.textContent=name;
+  item.style.cssText='padding-inline-start:.35em;margin-block:3px';
   item.append(link,' · '+localFormat.format(margin)+' % driftsmargin');examples.append(item);
  }
  guide.append(heading,examples);
