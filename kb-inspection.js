@@ -412,6 +412,8 @@
     $('linked-project').value = selected;
   }
 
+  let photoInfo = Object.create(null);
+
   function fill(record = {}, projectId = null) {
     dirty = false;
     savedAt = record.updated_at ? new Date(record.updated_at) : null;
@@ -427,9 +429,11 @@
       .map(({ id, label }) => ({ id, label, custom: true }));
     $('custom-point-form').reset();
     $('custom-point-form').hidden = true;
+    photoInfo = Object.assign(Object.create(null), record.checks?.photo_info);
     renderChecks(record.checks);
     chooseProject(record.portal_project_id ?? projectId);
     $('uploads').value = '';
+    setPhotoOptions($('photo-point'));
     $('attachments').replaceChildren();
   }
 
@@ -504,6 +508,17 @@
         updateCommentVisibility();
         select.addEventListener('change', updateCommentVisibility);
         row.append(commentLabel);
+        const addPhoto = document.createElement('button');
+        addPhoto.type = 'button';
+        addPhoto.className = 'alt';
+        addPhoto.textContent = '+ Legg til bilde';
+        addPhoto.setAttribute('aria-label','Legg til bilde: ' + point);
+        addPhoto.disabled = busy;
+        addPhoto.onclick = () => {
+          $('photo-point').value = String(id);
+          $('uploads').click();
+        };
+        row.append(addPhoto);
         checks.append(row);
       }
     }
@@ -580,7 +595,28 @@
         const img = document.createElement('img');
         img.src = file.signedUrl;
         img.alt = name;
-        box.append(img);
+        img.dataset.photoKey = file.path.split('/').pop();
+        const key = img.dataset.photoKey;
+        const photoLabel = document.createElement('label');
+        photoLabel.textContent = 'Bildekommentar (valgfritt)';
+        const comment = document.createElement('textarea');
+        comment.maxLength = 300;
+        comment.value = photoInfo[key]?.comment || '';
+        comment.oninput = () => {
+          photoInfo[key] = {...photoInfo[key],comment:comment.value};
+        };
+        photoLabel.append(comment);
+        const pointLabel = document.createElement('label');
+        pointLabel.textContent = 'Knytt bildet til';
+        const pointSelect = document.createElement('select');
+        setPhotoOptions(pointSelect);
+        pointSelect.value = photoInfo[key]?.point || '';
+        if (pointSelect.selectedIndex < 0) pointSelect.value = '';
+        pointSelect.onchange = () => {
+          photoInfo[key] = {...photoInfo[key],point:pointSelect.value};
+        };
+        pointLabel.append(pointSelect);
+        box.append(img,photoLabel,pointLabel);
       }
       const caption = document.createElement('p');
       caption.textContent = name;
@@ -603,6 +639,7 @@
         const { data: removed, error } = await bucket.remove([file.path]);
         if (error) throw error;
         if (!removed?.length) throw Error('Kunne ikke fjerne vedlegget.');
+        delete photoInfo[file.path.split('/').pop()];
         box.remove();
         $('upload').focus();
         notice('Vedlegget er fjernet.');
@@ -844,6 +881,7 @@
     }
     if (!record.project_name) throw Error('Fyll ut prosjektnavn eller prosjektnummer.');
     record.checks = checkAnswers();
+    record.checks.photo_info = photoInfo;
     if (customPoints.length) record.checks.custom_points = customPoints;
     record.checks.signed_by = $('signed_by').value;
     record.checks.signed_date = $('signed_date').value;
@@ -863,6 +901,21 @@
     await save();
     notice('Kontroll lagret.');
   });
+  function setPhotoOptions(select) {
+    select.replaceChildren(new Option('Generelt vedlegg',''));
+    for (const {id,label} of points()) select.add(new Option(label,String(id)));
+  }
+
+  const photoDestination = document.createElement('label');
+  photoDestination.textContent = 'Knytt nye bilder til';
+  const photoPoint = document.createElement('select');
+  photoPoint.id = 'photo-point';
+  photoDestination.append(photoPoint);
+  $('uploads').closest('label').before(photoDestination);
+  $('uploads').addEventListener('change', () => {
+    if ($('uploads').files.length) $('upload').scrollIntoView({block:'nearest'});
+  });
+
   if (window.KBDrivePicker) {
     const drive = document.createElement('button');
     drive.type = 'button';
@@ -916,11 +969,18 @@
         uploadFile=new File([blob],f.name.replace(/\.[^.]+$/,'')+'.jpg',{type:'image/jpeg'});
       }
       const safeName = uploadFile.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-      const { error } = await bucket.upload(current + '/' + crypto.randomUUID() + '-' + safeName, uploadFile, { contentType: uploadFile.type });
+      const key = crypto.randomUUID() + '-' + safeName;
+      const { error } = await bucket.upload(current + '/' + key, uploadFile, { contentType: uploadFile.type });
       if (error) throw Error(f.name + ': ' + error.message);
+      if (uploadFile.type.startsWith('image/') && photoPoint.value) {
+        photoInfo[key] = {point:photoPoint.value};
+        dirty = true;
+        renderSaveState();
+      }
       pending.items.remove(0);
       $('uploads').files = pending.files;
     }
+    if (dirty) await save();
     await loadAttachments();
     notice('Vedlegg lastet opp.');
   });
@@ -1040,7 +1100,11 @@
     field('Kontrollert av', 'signed_by');
     field('FDV og øvrige dokumenter', 'fdv_notes');
 
-    const images = [...$('attachments').querySelectorAll('img')];
+    const pointLabels = new Map(points().map(({id,label})=>[String(id),label]));
+    const images = [...$('attachments').querySelectorAll('img')].filter(image => {
+      const point = photoInfo[image.dataset.photoKey]?.point;
+      return !pointLabels.has(point) || $('c' + point).value !== 'NA';
+    });
     if (images.length) heading('Bilder');
     for (let index = 0; index < images.length; index += 2) {
       room(63);
@@ -1063,7 +1127,13 @@
         const x = margin + column * 92 + (86 - imageWidth) / 2;
         pdf.addImage(canvas.toDataURL('image/jpeg', 0.82), 'JPEG', x, y, imageWidth, imageHeight);
       }
-      y += 63;
+      y += 59;
+      for (const image of images.slice(index,index+2)) {
+        const info = photoInfo[image.dataset.photoKey];
+        const point = pointLabels.get(info?.point);
+        if (point || info?.comment?.trim()) text([image.alt,point,info?.comment?.trim()].filter(Boolean).join(' · '),9);
+      }
+      y += 4;
     }
 
     const pageCount = pdf.getNumberOfPages();
