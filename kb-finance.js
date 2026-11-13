@@ -162,7 +162,7 @@ else{
   comparison.textContent='Driftsresultat '+comparisonPeriod+': '+nok(currentResult)+' mot '+nok(previousResult)+'. '+(Math.round(Math.abs(delta))===0?'Omtrent likt.':nok(Math.abs(delta))+(delta>0?' høyere.':' lavere.'));
  }).catch(()=>{comparison.textContent='Sammenligning for '+comparisonPeriod+' er ikke tilgjengelig.';});
 }
-const top=document.createElement('section'),heading=document.createElement('h3'),explain=document.createElement('p'),list=document.createElement('ol');top.className='finance-top-customers';heading.textContent='Våre tre største kunder · '+data.year;explain.className='finance-note';explain.textContent='Henter fakturert omsetning …';top.append(heading,explain,list);(host.classList.contains('kb-finance-home')?results.querySelector('details'):results).append(top);
+const top=document.createElement('section'),heading=document.createElement('h3'),explain=document.createElement('p'),list=document.createElement('ol');top.className='finance-top-customers';heading.textContent='Våre fem største kunder · '+data.year;explain.className='finance-note';explain.textContent='Henter fakturert omsetning …';top.append(heading,explain,list);(host.classList.contains('kb-finance-home')?results.querySelector('details'):results).append(top);
 KBFinanceRequest({view:'topCustomers',year:data.year}).then(({data:ranking,error})=>{
  if(error||!ranking?.ok||ranking.basis!=='invoiced_ex_vat_nok_credit_notes_net'||!Array.isArray(ranking.customers))throw Error('Kundeoversikten kunne ikke hentes. Trykk «Oppdater tall» for å prøve igjen.');
  explain.textContent='Fakturert omsetning uten MVA i valgt år, i NOK. Kreditnotaer er trukket fra. Dette viser salg, ikke fortjeneste eller innbetalinger.';
