@@ -24,14 +24,11 @@ const rows=data.months.map((m,i)=>{if(m.month!==i+1||!(m.income===null&&m.cost==
 const info=document.createElement('details');info.className='finance-help';
 const infoButton=document.createElement('summary');infoButton.textContent='ⓘ Hva betyr tallene?';info.append(infoButton);
 const help=document.createElement('div');help.className='finance-help-content';
-help.innerHTML='<h3>Økonomi forklart enkelt</h3><p>Disse tallene viser hvordan selve driften går i året du har valgt. De bygger på det som er ført i regnskapet i Tripletex, og summerer månedene som vises i grafen.</p>'+
-'<h4>Driftsinntekter – det firmaet har tjent på jobber og salg</h4><p>For eksempel inntekter fra rørleggerarbeid, byggearbeid og materialer dere selger. En faktura kan være registrert som inntekt selv om kunden ikke har betalt ennå. Innbetalinger av lån er ikke driftsinntekter.</p>'+
-'<h4>Driftskostnader – det det koster å drive firmaet</h4><p>For eksempel materialer, lønn, arbeidsgiveravgift, underleverandører, bilhold, forsikring og husleie. Det er kostnadene som er bokført i perioden som teller, også når regningen ikke er betalt ennå. Større kjøp kan fordeles over flere år i regnskapet; derfor er ikke alle utbetalinger en kostnad med en gang.</p>'+
-'<h4>Driftsresultat – inntekter minus kostnader</h4><p>Dette er forskjellen mellom de to første tallene. Pluss betyr at driften har gitt overskudd i perioden. Minus betyr at de bokførte driftskostnadene er større enn driftsinntektene.</p>'+
-'<div class="finance-help-example"><strong>Et enkelt eksempel</strong><p>Dere har 100 000 kr i driftsinntekter og 75 000 kr i driftskostnader.</p><p><strong>100 000 − 75 000 = 25 000 kr i driftsresultat.</strong></p><p>Alle beløp i eksemplet er uten MVA.</p></div>'+
-'<h4>Betyr overskudd at vi har så mye penger på konto?</h4><p>Nei. Kunden kan fortsatt skylde dere penger, og dere kan ha regninger, MVA, skatt eller lån å betale. Resultatet er derfor ikke beløpet dere fritt kan bruke eller ta ut. MVA dere krever inn for staten er normalt ikke en driftsinntekt.</p>'+
-'<h4>Slik leser du grafen</h4><p>Blå søyler viser inntektene hver måned. Oransje søyler viser kostnadene. Den blå linjen legger sammen månedenes driftsresultat fra januar og fremover. Det er dette «akkumulert» betyr. En god måned kan løfte linjen selv om året samlet fortsatt går i minus.</p>'+
-'<h4>Hva er ikke med, og hvor oppdaterte er tallene?</h4><p>Denne oversikten viser driften, uten finansinntekter, finanskostnader (for eksempel renter), og skatt. Tallene kan også endres ved årsoppgjøret. Visningen er derfor ikke et ferdig årsresultat. Bilag som ikke er bokført ennå, er heller ikke med. Inneværende måned er foreløpig, og tallene kan endre seg når flere bilag føres eller korrigeres.</p><p>Bruk «Oppdater tall» for å hente på nytt. Tidspunktet over viser når tallene sist ble hentet. Åpne «Se detaljert rapport i Tripletex» for å undersøke hva som ligger bak dem.</p>';
+help.innerHTML='<h3>Økonomi forklart enkelt</h3><p><strong>Inntekter</strong> er det vi har tjent på jobber og salg. <strong>Kostnader</strong> er blant annet materialer, lønn og bilhold. Det som står igjen, er <strong>driftsresultatet</strong>.</p>'+
+'<div class="finance-help-example"><strong>Eksempel</strong><p>100 000 kr i inntekter og 85 000 kr i kostnader gir 15 000 kr i driftsoverskudd. Det er <strong>15 % driftsmargin</strong>, eller 15 kr igjen av hver hundrelapp før renter og skatt.</p></div>'+
+'<p>En faktura kan telle som inntekt før kunden har betalt. For å se hvor mye penger vi har tilgjengelig, sjekk bankkontoen og regningene som forfaller.</p>'+
+'<p><strong>Grafen:</strong> Pek på eller trykk på en måned for å se månedens tall og samlet driftsresultat fra januar til den måneden.</p>'+
+'<p><strong>Mot i fjor:</strong> Vi sammenligner de samme avsluttede månedene. Denne måneden er foreløpig. «Oppdater tall» henter det som er bokført i Tripletex nå.</p>';
 info.append(help);
 const summary=document.createElement('div');summary.className='finance-summary';
 for(const [title,value] of [['Driftsresultat',income-cost],['Driftsinntekter',income],['Driftskostnader',cost]]){const p=document.createElement('p'),strong=document.createElement('strong');strong.textContent=nok(value);p.append(document.createTextNode(title),strong);summary.append(p);}
@@ -115,10 +112,33 @@ if(income>0&&Number.isFinite((income-cost)/income*100)){
 }
 const comparison=document.createElement('p');
 comparison.setAttribute('role','status');
-const guide=document.createElement('p');
-guide.textContent='Tommelfingerregel: Rundt 10 % er en god driftsmargin, og rundt 15 % er en sterk driftsmargin. Bruk det som en grov pekepinne. Lønnsomheten varierer med type oppdrag, materialandel og hvilke kostnader som er bokført.';
-insights.append(period,margin,comparison);
-if(margin.textContent)insights.append(guide);
+const guide=document.createElement('details');
+const guideButton=document.createElement('summary');
+guideButton.textContent='ⓘ Sammenlign med Frydendal og andre lokale bedrifter';
+guide.append(guideButton);
+const benchmark=document.createElement('p');
+const frydendal=3432/19103*100;
+const localFormat=new Intl.NumberFormat('nb-NO',{maximumFractionDigits:1});
+const ownMargin=income>0?(income-cost)/income*100:null;
+const gap=ownMargin===null?null:Math.round((ownMargin-frydendal)*10)/10;
+benchmark.textContent='Frydendal er en lokal målestokk. '+(gap===null?'':gap===0?'Dere ligger omtrent likt i prosent. ': 'Dere ligger '+localFormat.format(Math.abs(gap))+' prosentpoeng '+(gap>0?'over':'under')+' Frydendals 2025-margin. ')+' Tallene deres gjelder perioden over. Proff-tallene gjelder hele 2025.';
+guide.append(benchmark);
+const examples=document.createElement('ul');
+for(const [name,profit,revenue,url] of [
+ ['Tømrermester Frydendal',3432,19103,'https://www.proff.no/regnskap/t%C3%B8mrermester-frydendal-as/tvedestrand/bygg-og-anleggsleverand%C3%B8rer/IF3QBNH0CVG'],
+ ['Byggmester Atle Pedersen',957,7572,'https://www.proff.no/selskap/byggmester-atle-pedersen-as/arendal/bygg-og-anleggsleverand%C3%B8rer/IF9YUV40CVG'],
+ ['Rørlegger Halvorsen',1099,14999,'https://www.proff.no/selskap/r%C3%B8rlegger-halvorsen-as/arendal/bygningsh%C3%A5ndverkere/IEB83WE07TR'],
+ ['Arendal Rør',3457,12691,'https://www.proff.no/selskap/arendal-r%C3%B8r-as/arendal/r%C3%B8rleggertjenester/IDRJ7J207RG']
+]){
+ const item=document.createElement('li'),link=document.createElement('a');
+ link.href=url;link.target='_blank';link.rel='noopener noreferrer';link.textContent=name;
+ item.append(link,' · '+localFormat.format(profit/revenue*100)+' % driftsmargin');examples.append(item);
+}
+guide.append(examples);
+const sample=document.createElement('p');
+sample.textContent='I et lite utvalg på 12 lokale bedrifter var medianen 6,9 %. Det betyr at halvparten lå under og halvparten over. Bruk tallene som en pekepinne.';
+guide.append(sample);
+insights.append(period,margin,comparison,guide);
 summary.after(insights);
 const selectedYear=Number(data.year);
 const closedMonths=selectedYear===currentYear?currentMonth-1:selectedYear<currentYear?12:0;
