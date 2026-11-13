@@ -112,10 +112,10 @@ if(income>0&&Number.isFinite((income-cost)/income*100)){
 }
 const comparison=document.createElement('p');
 comparison.setAttribute('role','status');
-const guide=document.createElement('details');
-const guideButton=document.createElement('summary');
-guideButton.textContent='ⓘ Sammenlign med Frydendal og andre lokale bedrifter';
-guide.append(guideButton);
+const guide=document.createElement('section');
+const guideHeading=document.createElement('h3');
+guideHeading.textContent='Sammenlign med Frydendal og andre lokale bedrifter';
+guide.append(guideHeading);
 const benchmark=document.createElement('p');
 const frydendal=3432/19103*100;
 const localFormat=new Intl.NumberFormat('nb-NO',{maximumFractionDigits:1});
