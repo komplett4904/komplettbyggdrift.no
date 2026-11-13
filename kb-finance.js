@@ -62,11 +62,15 @@ const margin=document.createElement('p');
 if(income>0&&Number.isFinite((income-cost)/income*100)){
  const value=(income-cost)/income*100;
  const amount=new Intl.NumberFormat('nb-NO',{maximumFractionDigits:1}).format(Math.abs(value));
- margin.textContent=amount+' kr '+(value<0?'i underskudd':'igjen')+' per 100 kr i driftsinntekt, før renter og skatt.';
+ const percent=new Intl.NumberFormat('nb-NO',{maximumFractionDigits:1}).format(value);
+ margin.textContent='Driftsmargin: '+percent+' % · '+amount+' kr '+(value<0?'i underskudd':'igjen')+' per 100 kr i driftsinntekt, før renter og skatt.';
 }
 const comparison=document.createElement('p');
 comparison.setAttribute('role','status');
+const guide=document.createElement('p');
+guide.textContent='Tommelfingerregel: Rundt 10 % er en god driftsmargin, og rundt 15 % er en sterk driftsmargin. Bruk det som en grov pekepinne. Lønnsomheten varierer med type oppdrag, materialandel og hvilke kostnader som er bokført.';
 insights.append(period,margin,comparison);
+if(margin.textContent)insights.append(guide);
 summary.after(insights);
 const selectedYear=Number(data.year);
 const closedMonths=selectedYear===currentYear?currentMonth-1:selectedYear<currentYear?12:0;
