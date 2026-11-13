@@ -34,7 +34,7 @@ help.innerHTML='<h3>Økonomi forklart enkelt</h3><p>Disse tallene viser hvordan 
 '<h4>Hva er ikke med, og hvor oppdaterte er tallene?</h4><p>Denne oversikten viser driften, uten finansinntekter, finanskostnader (for eksempel renter), og skatt. Tallene kan også endres ved årsoppgjøret. Visningen er derfor ikke et ferdig årsresultat. Bilag som ikke er bokført ennå, er heller ikke med. Inneværende måned er foreløpig, og tallene kan endre seg når flere bilag føres eller korrigeres.</p><p>Bruk «Oppdater tall» for å hente på nytt. Tidspunktet over viser når tallene sist ble hentet. Åpne «Se detaljert rapport i Tripletex» for å undersøke hva som ligger bak dem.</p>';
 info.append(help);
 const summary=document.createElement('div');summary.className='finance-summary';
-for(const [title,value] of [['Driftsinntekter',income],['Driftskostnader',cost],['Driftsresultat',income-cost]]){const p=document.createElement('p'),strong=document.createElement('strong');strong.textContent=nok(value);p.append(document.createTextNode(title),strong);summary.append(p);}
+for(const [title,value] of [['Driftsresultat',income-cost],['Driftsinntekter',income],['Driftskostnader',cost]]){const p=document.createElement('p'),strong=document.createElement('strong');strong.textContent=nok(value);p.append(document.createTextNode(title),strong);summary.append(p);}
 const svg=svgEl('svg',{viewBox:'0 0 900 330',class:'finance-chart',role:'img','aria-label':'Månedlige driftsinntekter og driftskostnader, med akkumulert driftsresultat. Nøyaktige tall finnes i tabellen nedenfor.'});
 const values=rows.flatMap(r=>[r.income,r.cost,r.accumulated]).filter(v=>v!==null),min=Math.min(0,...values),max=Math.max(1,...values),range=max-min,y=v=>25+(max-v)/range*245,zero=y(0);
 for(let t=0;t<=4;t++){const v=min+range*t/4,yp=y(v);svg.append(svgEl('line',{x1:80,x2:890,y1:yp,y2:yp,stroke:'#e4ebf0'}),svgEl('text',{x:72,y:yp+4,'text-anchor':'end','font-size':11,fill:'#566979'},new Intl.NumberFormat('nb-NO',{notation:'compact'}).format(v)));}
@@ -50,6 +50,46 @@ for(const r of rows){const tr=document.createElement('tr');for(const v of [names
 const note=document.createElement('p');note.className='finance-note';note.textContent='Bokførte bevegelser på konto 3000–3999 (inntekter) og 4000–7999 (kostnader), i NOK. Finansposter og skatt er ikke med. Tallene kan endres ved årsoppgjøret. Pågående måned er foreløpig. Fremtidige måneder vises uten tall.';
 const chartFrame=document.createElement('div');chartFrame.className='finance-chart-frame';chartFrame.tabIndex=0;chartFrame.setAttribute('aria-label','Økonomigraf. Sveip sidelengs på små skjermer.');chartFrame.append(svg);
 if(host.classList.contains('kb-finance-home')){const more=document.createElement('details'),toggle=document.createElement('summary');toggle.textContent='Vis graf og forklaring';more.append(toggle,info,chartFrame,legend,details,note);results.replaceChildren(summary,more);}else results.replaceChildren(info,summary,chartFrame,legend,details,note);
+const insights=document.createElement('div');
+insights.className='finance-note';
+const period=document.createElement('p');
+const osloDate=new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Oslo',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+const [currentYear,currentMonth]=osloDate.split('-').map(Number);
+const lastAvailable=rows.findLast(row=>Number.isFinite(row.income))?.month;
+const monthSpan=count=>count===1?'jan':'jan–'+names[count-1];
+if(lastAvailable)period.textContent='Bokført periode: '+monthSpan(lastAvailable)+' '+data.year+(Number(data.year)===currentYear&&lastAvailable===currentMonth?' · inneværende måned er foreløpig':'');
+const margin=document.createElement('p');
+if(income>0&&Number.isFinite((income-cost)/income*100)){
+ const value=(income-cost)/income*100;
+ const amount=new Intl.NumberFormat('nb-NO',{maximumFractionDigits:1}).format(Math.abs(value));
+ margin.textContent=amount+' kr '+(value<0?'i underskudd':'igjen')+' per 100 kr i driftsinntekt, før renter og skatt.';
+}
+const comparison=document.createElement('p');
+comparison.setAttribute('role','status');
+insights.append(period,margin,comparison);
+summary.after(insights);
+const selectedYear=Number(data.year);
+const closedMonths=selectedYear===currentYear?currentMonth-1:selectedYear<currentYear?12:0;
+const completedResult=(months,count)=>{
+ if(!Array.isArray(months)||months.length!==12)return null;
+ const window=months.slice(0,count);
+ if(!window.every((month,index)=>month?.month===index+1&&Number.isFinite(month.income)&&Number.isFinite(month.cost)))return null;
+ return window.reduce((sum,month)=>sum+month.income-month.cost,0);
+};
+const currentResult=closedMonths?completedResult(rows,closedMonths):null;
+if(!closedMonths)comparison.textContent='Sammenligning blir tilgjengelig når første måned er avsluttet.';
+else if(currentResult===null)comparison.textContent='Sammenligning krever tall for alle avsluttede måneder.';
+else{
+ const comparisonPeriod=monthSpan(closedMonths)+' '+selectedYear+' mot '+(selectedYear-1);
+ comparison.textContent='Henter sammenligning for '+comparisonPeriod+' …';
+ KBFinanceRequest({year:selectedYear-1}).then(({data:previous,error})=>{
+  if(error||!previous?.connected||Number(previous.year)!==selectedYear-1||previous.basis!==data.basis)throw Error();
+  const previousResult=completedResult(previous.months,closedMonths);
+  if(previousResult===null)throw Error();
+  const delta=currentResult-previousResult;
+  comparison.textContent='Driftsresultat '+comparisonPeriod+': '+nok(currentResult)+' mot '+nok(previousResult)+'. '+(Math.round(Math.abs(delta))===0?'Omtrent likt.':nok(Math.abs(delta))+(delta>0?' høyere.':' lavere.'));
+ }).catch(()=>{comparison.textContent='Sammenligning for '+comparisonPeriod+' er ikke tilgjengelig.';});
+}
 const top=document.createElement('section'),heading=document.createElement('h3'),explain=document.createElement('p'),list=document.createElement('ol');top.className='finance-top-customers';heading.textContent='Våre tre største kunder · '+data.year;explain.className='finance-note';explain.textContent='Henter fakturert omsetning …';top.append(heading,explain,list);(host.classList.contains('kb-finance-home')?results.querySelector('details'):results).append(top);
 KBFinanceRequest({view:'topCustomers',year:data.year}).then(({data:ranking,error})=>{
  if(error||!ranking?.ok||ranking.basis!=='invoiced_ex_vat_nok_credit_notes_net'||!Array.isArray(ranking.customers))throw Error('Kundeoversikten kunne ikke hentes. Trykk «Oppdater tall» for å prøve igjen.');

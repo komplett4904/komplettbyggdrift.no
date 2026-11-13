@@ -25,7 +25,7 @@
     window.KBMedia.start();
     for(const placeholder of document.querySelectorAll('script[data-kb-script]')){
       if(placeholder.dataset.kbScript==='/kb-feedback.js'&&!KBAuth.can('feedback'))continue;
-      await new Promise((resolve,reject)=>{const script=document.createElement('script');script.src=placeholder.dataset.kbScript==='/kb-feedback.js'?'/kb-feedback.js?v=20261108-polish':placeholder.dataset.kbScript;if(script.src.includes('/kb-finance.js'))script.src='/kb-finance.js?v=20261108-workday';script.onload=resolve;script.onerror=()=>reject(Error('Verktøyet kunne ikke lastes. Last siden på nytt.'));document.body.append(script);});
+      await new Promise((resolve,reject)=>{const script=document.createElement('script');script.src=placeholder.dataset.kbScript==='/kb-feedback.js'?'/kb-feedback.js?v=20261108-polish':placeholder.dataset.kbScript;if(script.src.includes('/kb-finance.js'))script.src='/kb-finance.js?v=20261113-resultat';script.onload=resolve;script.onerror=()=>reject(Error('Verktøyet kunne ikke lastes. Last siden på nytt.'));document.body.append(script);});
     }
     for(const id of ['passordSperre','pwd-screen']){const old=document.getElementById(id);if(old)old.remove();}
     // Existing initialization listeners run after the verified scripts are loaded.
