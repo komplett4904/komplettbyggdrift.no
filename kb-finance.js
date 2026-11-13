@@ -35,12 +35,12 @@ help.innerHTML='<h3>Økonomi forklart enkelt</h3><p>Disse tallene viser hvordan 
 info.append(help);
 const summary=document.createElement('div');summary.className='finance-summary';
 for(const [title,value] of [['Driftsresultat',income-cost],['Driftsinntekter',income],['Driftskostnader',cost]]){const p=document.createElement('p'),strong=document.createElement('strong');strong.textContent=nok(value);p.append(document.createTextNode(title),strong);summary.append(p);}
-const svg=svgEl('svg',{viewBox:'0 0 900 330',class:'finance-chart',role:'img','aria-label':'Månedlige driftsinntekter og driftskostnader, med akkumulert driftsresultat. Nøyaktige tall finnes i tabellen nedenfor.'});
+const svg=svgEl('svg',{viewBox:'0 0 900 330',class:'finance-chart',role:'group','aria-label':'Månedlige driftsinntekter og driftskostnader, med akkumulert driftsresultat. Nøyaktige tall finnes i tabellen nedenfor.'});
 const values=rows.flatMap(r=>[r.income,r.cost,r.accumulated]).filter(v=>v!==null),min=Math.min(0,...values),max=Math.max(1,...values),range=max-min,y=v=>25+(max-v)/range*245,zero=y(0);
 for(let t=0;t<=4;t++){const v=min+range*t/4,yp=y(v);svg.append(svgEl('line',{x1:80,x2:890,y1:yp,y2:yp,stroke:'#e4ebf0'}),svgEl('text',{x:72,y:yp+4,'text-anchor':'end','font-size':11,fill:'#566979'},new Intl.NumberFormat('nb-NO',{notation:'compact'}).format(v)));}
 const points=[];
 rows.forEach((r,i)=>{const x=92+i*66;svg.append(svgEl('text',{x:x+23,y:293,'text-anchor':'middle','font-size':12,fill:'#566979'},names[i]));if(r.income===null)return;
-for(const [v,dx,color] of [[r.income,0,'#718dff'],[r.cost,26,'#ffbf70']]){const rect=svgEl('rect',{x:x+dx,y:Math.min(zero,y(v)),width:24,height:Math.max(1,Math.abs(y(v)-zero)),rx:4,fill:color});rect.append(svgEl('title',{},names[i]+': '+nok(v)));svg.append(rect);}
+for(const [v,dx,color] of [[r.income,0,'#718dff'],[r.cost,26,'#ffbf70']]){const rect=svgEl('rect',{x:x+dx,y:Math.min(zero,y(v)),width:24,height:Math.max(1,Math.abs(y(v)-zero)),rx:4,fill:color});svg.append(rect);}
 points.push((x+23)+','+y(r.accumulated));
 });svg.append(svgEl('polyline',{points:points.join(' '),fill:'none',stroke:'#204ecf','stroke-width':4,'stroke-linejoin':'round'}));
 const legend=document.createElement('p');legend.textContent='Blå søyler: inntekter · Oransje søyler: kostnader · Blå linje: akkumulert driftsresultat';legend.className='finance-note';
@@ -49,7 +49,55 @@ const header=document.createElement('tr');for(const t of ['Måned','Inntekter','
 for(const r of rows){const tr=document.createElement('tr');for(const v of [names[r.month-1],r.income===null?'–':nok(r.income),r.cost===null?'–':nok(r.cost),r.accumulated===null?'–':nok(r.accumulated)]){const td=document.createElement('td');td.textContent=v;tr.append(td);}table.append(tr);}details.append(table);
 const note=document.createElement('p');note.className='finance-note';note.textContent='Bokførte bevegelser på konto 3000–3999 (inntekter) og 4000–7999 (kostnader), i NOK. Finansposter og skatt er ikke med. Tallene kan endres ved årsoppgjøret. Pågående måned er foreløpig. Fremtidige måneder vises uten tall.';
 const chartFrame=document.createElement('div');chartFrame.className='finance-chart-frame';chartFrame.tabIndex=0;chartFrame.setAttribute('aria-label','Økonomigraf. Sveip sidelengs på små skjermer.');chartFrame.append(svg);
-if(host.classList.contains('kb-finance-home')){const more=document.createElement('details'),toggle=document.createElement('summary');toggle.textContent='Vis graf og forklaring';more.append(toggle,info,chartFrame,legend,details,note);results.replaceChildren(summary,more);}else results.replaceChildren(info,summary,chartFrame,legend,details,note);
+const tooltip=document.createElement('div');
+tooltip.hidden=true;
+tooltip.style.cssText='position:fixed;z-index:200;pointer-events:none;max-width:calc(100vw - 16px);padding:12px 14px;border:1px solid var(--border,#9cb3c6);border-radius:10px;background:var(--card,#fff);color:var(--text,#183244);box-shadow:0 4px 18px #0003;font-size:14px;line-height:1.55';
+
+const percent=new Intl.NumberFormat('nb-NO',{style:'percent',maximumFractionDigits:1});
+let selected=null;
+function hideTooltip(){tooltip.hidden=true;selected?.setAttribute('fill-opacity','0');selected=null;}
+rows.forEach((row,index)=>{
+ if(row.income===null)return;
+ const month=names[index]+' '+data.year;
+ const result=row.income-row.cost;
+ const lines=[month,'Inntekter: '+nok(row.income),'Kostnader: '+nok(row.cost),'Driftsresultat: '+nok(result),
+  'Driftsmargin: '+(row.income>0?percent.format(result/row.income):'–'),'Driftsresultat hittil i år: '+nok(row.accumulated)];
+ const target=svgEl('rect',{x:82+index*66,y:23,width:66,height:280,fill:'currentColor','fill-opacity':0,tabindex:0,role:'button','aria-label':lines.join('. ')});
+ target.style.cursor='pointer';
+ function show(){
+  hideTooltip();selected=target;target.setAttribute('fill-opacity','0.09');
+  tooltip.replaceChildren(...lines.map((line,i)=>{const node=document.createElement(i===0?'strong':'div');node.textContent=line;return node;}));
+  tooltip.hidden=false;
+  const anchor=target.getBoundingClientRect(),box=tooltip.getBoundingClientRect();
+  const left=Math.min(window.innerWidth-box.width-8,anchor.right+8);
+  tooltip.style.left=Math.max(8,left)+'px';
+  tooltip.style.top=Math.max(8,Math.min(anchor.top+8,window.innerHeight-box.height-8))+'px';
+ }
+ target.addEventListener('pointerenter',event=>{if(event.pointerType!=='touch')show();});
+ target.addEventListener('pointerleave',()=>{if(document.activeElement!==target)hideTooltip();});
+ target.addEventListener('focus',show);
+ target.addEventListener('blur',hideTooltip);
+ target.addEventListener('click',show);
+ target.addEventListener('keydown',event=>{
+  if(event.key==='Escape'){hideTooltip();return;}
+  if(event.key==='Enter'||event.key===' '){event.preventDefault();show();}
+ });
+ svg.append(target);
+});
+chartFrame.addEventListener('scroll',hideTooltip);
+const dismiss=event=>{if(!svg.contains(event.target))hideTooltip();};
+const onViewportChange=()=>hideTooltip();
+window.financeChartCleanup?.();
+document.addEventListener('pointerdown',dismiss);
+window.addEventListener('scroll',onViewportChange,{passive:true});
+window.addEventListener('resize',onViewportChange);
+window.financeChartCleanup=()=>{
+ document.removeEventListener('pointerdown',dismiss);
+ window.removeEventListener('scroll',onViewportChange);
+ window.removeEventListener('resize',onViewportChange);
+ hideTooltip();
+};
+if(host.classList.contains('kb-finance-home')){const more=document.createElement('details'),toggle=document.createElement('summary');toggle.textContent='Vis graf og forklaring';more.append(toggle,info,chartFrame,tooltip,legend,details,note);results.replaceChildren(summary,more);}else results.replaceChildren(info,summary,chartFrame,tooltip,legend,details,note);
 const insights=document.createElement('div');
 insights.className='finance-note';
 const period=document.createElement('p');
@@ -101,7 +149,7 @@ KBFinanceRequest({view:'topCustomers',year:data.year}).then(({data:ranking,error
  for(const customer of ranking.customers){if(!Number.isSafeInteger(customer.cents))throw Error('Kundebeløpene kunne ikke bekreftes.');const item=document.createElement('li');item.textContent=customer.name+' — '+nok(customer.cents/100);item.style.padding='8px 0';list.append(item);}if(!ranking.customers.length)list.append(document.createTextNode('Ingen kunder med positiv fakturert omsetning i perioden.'));
 }).catch(e=>{list.replaceChildren();explain.textContent=e.message;});
 }
-async function load(){button.disabled=true;year.disabled=true;results.replaceChildren();status.textContent='Henter økonomitall fra Tripletex …';try{
+async function load(){window.financeChartCleanup?.();button.disabled=true;year.disabled=true;results.replaceChildren();status.textContent='Henter økonomitall fra Tripletex …';try{
 const {data,error}=await KBFinanceRequest({year:Number(year.value)});
 if(error){let code='';try{code=(await error.context.json()).error||'';}catch{}const messages={ledger_access_failed:'Tripletex gir ikke integrasjonen tilgang til regnskapstallene ennå.',login_required:'Logg inn på nytt.',employee_required:'Du har ikke tilgang til økonomi.',tripletex_auth_failed:'Tripletex-nøkkelen kunne ikke bekreftes.'};throw Error(messages[code]||'Økonomitallene kunne ikke hentes'+(code?' ('+code+')':'')+'. Prøv igjen.');}
 if(!data?.connected)throw Error('Forbindelsen er ikke bekreftet.');render(data);status.textContent=data.company+' · Oppdatert '+new Date(data.checkedAt).toLocaleString('nb-NO');
